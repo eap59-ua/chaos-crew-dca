@@ -1,0 +1,88 @@
+# Compiled Object files
+*.o
+*.obj
+*.ko
+*.elf
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+main
+chaos-crew
+chaos-crew-game
+
+# Build directories
+build/
+bin/
+obj/
+Debug/
+Release/
+x64/
+x86/
+cmake-build-*/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# IDE
+.vscode/
+*.code-workspace
+.idea/
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.sln
+*.suo
+*.user
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+*~
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary
+*.tmp
+*.bak
+*.swp
+
+# Raylib (if building from source)
+raylib/build/
+
+# Assets temp
+assets/temp/
+assets/*.psd
+assets/*.xcf
+
+# Documentation temp
+docs/temp/
+*.pdf
