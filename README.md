@@ -116,9 +116,10 @@ chmod +x build.sh
 | ------------------------ | --------------------- | -------------------------------------------------------------- | ------------------------------------- |
 | **Erardo Aldana Pessoa** | Project Lead / DevOps | [@eap59-ua](https://github.com/eap59-ua)                       | Gestión del proyecto, CI/CD, releases |
 | **Ángel Gonjar Verdejo** | Gameplay Programmer   | [@agv114-ua](https://github.com/agv114-ua)                     | Mecánicas de juego, controles         |
-| **Rachid Mouradi**       | Systems Programmer    | [@mouradirachid8-lgtm](https://github.com/mouradirachid8-lgtm) | Físicas, colisiones, input manager    |
-| **Youssef S.A.**         | Level Designer        | [@ysa9-ua](https://github.com/ysa9-ua)                         | Diseño de niveles, trampas            |
-| **Darío S.D.**           | UI/Screens Developer  | [@dsd17-ua](https://github.com/dsd17-ua)                       | Interfaces, menús, HUD                |
+| **Rachid Mouradi**       | UI/Screens Developer  | [@mouradirachid8-lgtm](https://github.com/mouradirachid8-lgtm) | Interfaces, menús, HUD                |
+| **Youssef S.A.**         | Systems Programmer    | [@ysa9-ua](https://github.com/ysa9-ua)                         | Físicas, colisiones, input manager    |
+| **Darío S.D.**           | Level Designer        | [@dsd17-ua](https://github.com/dsd17-ua)                       | Diseño de niveles, trampas            |
+
 
 ## 📋 Gestión del Proyecto
 
@@ -187,3 +188,4 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 **Desarrollado con ❤️ por el equipo de Chaos Crew**  
 _Grado en Ingeniería Informática - Universidad de Alicante - 2025_
+
