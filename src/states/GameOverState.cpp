@@ -1,6 +1,4 @@
-#include "states/GameOverState.hpp"
-#include "states/GameplayState.hpp"
-#include "core/StateMachine.hpp"
+#include "GameOverState.hpp"
 
 constexpr int SCREEN_WIDTH = 1280;
 constexpr int SCREEN_HEIGHT = 720;

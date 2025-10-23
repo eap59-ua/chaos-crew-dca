@@ -1,6 +1,7 @@
 #pragma once
-#include "core/GameState.hpp"
-#include "core/StateMachine.hpp"
+#include "../core/GameState.hpp"
+#include "../core/StateMachine.hpp"
+#include "GameOverState.hpp"
 #include <vector>
 #include <raylib.h>
 

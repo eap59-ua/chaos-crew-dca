@@ -1,5 +1,7 @@
 #pragma once
-#include "core/GameState.hpp"
+#include "../core/GameState.hpp"
+#include "GameplayState.hpp"
+
 
 class GameOverState : public GameState {
 public:
