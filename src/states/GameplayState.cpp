@@ -40,6 +40,8 @@ void GameplayState::init() {
 
     levelCompleted = false;
     isGameOver = false;
+    isExitVisible = true; // parte del nivel troll del hito 1
+    isExitMoved = false; // parte del nivel troll del hito 1
 }
 
 void GameplayState::handleInput() {
@@ -100,7 +102,21 @@ void GameplayState::update(float deltaTime) {
     bool p1AtExit = CheckCollisionRecs(player1.rect, exitZone);
     bool p2AtExit = CheckCollisionRecs(player2.rect, exitZone);
 
-    if (p1AtExit && p2AtExit) {
+    // Parte de nivel troll hito 1 -> buscar idea para añadir niveles sin cambiar la lógica de los métodos de esta clase
+    bool near = player1.rect.x > exitZone.x - 50 && player2.rect.x > exitZone.x - 50;
+
+    // Si ambos jugadores están cerca, movemos la puerta -> todo esto para nivel troll hito 1
+    if (!isExitMoved && near) {
+        // Calculamos la posición de la puerta como el promedio de las posiciones de los dos jugadores
+        exitZone.x = 20;
+        
+        // La puerta ya ha sido movida, por lo que evitamos que se mueva más de una vez
+        isExitMoved = true;
+        isExitVisible = true;  // La puerta vuelve a ser visible
+    }
+    // ------------------------
+
+    if (isExitMoved && p1AtExit && p2AtExit) {
         state_machine->add_state(std::make_unique<GameOverState>(true), true);
     }
 }
@@ -113,8 +129,10 @@ void GameplayState::render() {
     for (auto& plat : platforms) DrawRectangleRec(plat.rect, plat.color);
 
     // Zona de salida
-    DrawRectangleRec(exitZone, GREEN);
-    DrawText("EXIT", exitZone.x + 20, exitZone.y + 40, 20, DARKGREEN);
+    if (isExitVisible) {
+        DrawRectangleRec(exitZone, GREEN);
+        DrawText("EXIT", exitZone.x + 20, exitZone.y + 40, 20, DARKGREEN);
+    }
 
     // Jugadores
     DrawRectangleRec(player1.rect, player1.color);

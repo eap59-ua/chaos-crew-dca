@@ -68,7 +68,7 @@ build_linux() {
     
     check_vendor
     
-    g++ $SRC_DIR/main.cpp \
+    g++ $(find $SRC_DIR -name '*.cpp')  \
         -o $BIN_DIR/$PROJECT_NAME \
         -I$VENDOR_DIR/include \
         -L$VENDOR_DIR/lib \
@@ -108,7 +108,7 @@ build_windows() {
         exit 1
     fi
     
-    x86_64-w64-mingw32-g++ $SRC_DIR/main.cpp \
+    x86_64-w64-mingw32-g++ $(find $SRC_DIR -name '*.cpp') \
         -o $BIN_DIR/$PROJECT_NAME.exe \
         -I$VENDOR_DIR/include \
         -L$VENDOR_DIR/lib \

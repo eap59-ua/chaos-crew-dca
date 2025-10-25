@@ -38,6 +38,7 @@ private:
     Player player2;
     std::vector<Platform> platforms;
     Rectangle exitZone;
+    bool isExitVisible, isExitMoved; // parte del nivel troll del hito 1
     bool levelCompleted;
     bool isGameOver;
 };
