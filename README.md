@@ -85,7 +85,11 @@ git clone https://github.com/eap59-ua/chaos-crew-dca.git
 cd chaos-crew-dca
 
 # Compilar para Linux
-g++ src/main.cpp -o bin/chaos-crew -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -std=c++17
+g++ -std=c++17 -Isrc \
+  $(find src -name '*.cpp') \
+  -o bin/chaos-crew \
+  -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+
 
 # Ejecutar
 ./bin/chaos-crew
