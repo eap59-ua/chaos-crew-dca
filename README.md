@@ -23,16 +23,16 @@ Inspirado en **Level Devil** (mecánicas de trampas dinámicas) y **Pico Park** 
 - [x] Repositorio creado y configurado
 - [x] Estructura de carpetas implementada
 - [x] Estrategia de ramas definida
-- [] Sistema de bugtracking configurado
+- [x] Sistema de bugtracking configurado
 
 #### 🔄 Hito 1 - Alpha (3-22 Oct)
 
-- [ ] Pantalla de juego básica
+- [x] Pantalla de juego básica
 - [ ] Pantalla de Game Over
-- [ ] Mecánica de movimiento de 2 jugadores
-- [ ] Sistema básico de colisiones
+- [x] Mecánica de movimiento de 2 jugadores
+- [x] Sistema básico de colisiones
 - [ ] Nivel funcional con objetivo
-- [ ] Bucle de juego completo
+- [x] Bucle de juego completo
 - [ ] Release v0.1.0-alpha
 
 #### 📅 Hito 2 - Beta (TBD)
@@ -192,4 +192,5 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 **Desarrollado con ❤️ por el equipo de Chaos Crew**  
 _Grado en Ingeniería Informática - Universidad de Alicante - 2025_
+
 
