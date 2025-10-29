@@ -38,7 +38,7 @@ public:
     
     // Constantes de gameplay
     static constexpr float MOVE_SPEED = 4.5f;
-    static constexpr float JUMP_FORCE = -15.0f;
+    static constexpr float JUMP_FORCE = -16.0f;
     static constexpr float MAX_FALL_SPEED = 20.0f;
     
     // Constructor

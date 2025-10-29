@@ -46,15 +46,39 @@ void GameplayState::setupPlayers() {
 }
 
 void GameplayState::setupPlatforms() {
-    // Suelo principal
-    platforms.push_back(Platform::createGround(SCREEN_WIDTH));
+    // ❌ ANTES: Suelo completo (sin agujeros)
+    // platforms.push_back(Platform::createGround(SCREEN_WIDTH));
     
-    // Plataformas intermedias
+    // ✅ AHORA: Suelo dividido con agujero en el centro
+    
+    // Definir dimensiones del agujero
+    const float HOLE_START = 500.0f;   // Inicio del agujero
+    const float HOLE_WIDTH = 300.0f;   // Ancho del agujero
+    const float HOLE_END = HOLE_START + HOLE_WIDTH;  // 800.0f
+    
+    const float GROUND_Y = SCREEN_HEIGHT - 50.0f;  // 670.0f
+    const float GROUND_HEIGHT = 50.0f;
+    
+    // Suelo IZQUIERDO (desde inicio hasta el agujero)
+    platforms.push_back(Platform(
+        {0.0f, GROUND_Y},
+        {HOLE_START, GROUND_HEIGHT},
+        DARKGRAY
+    ));
+    
+    // Suelo DERECHO (desde después del agujero hasta el final)
+    platforms.push_back(Platform(
+        {HOLE_END, GROUND_Y},
+        {SCREEN_WIDTH - HOLE_END, GROUND_HEIGHT},
+        DARKGRAY
+    ));
+    
+    // Plataformas intermedias (mantener igual)
     platforms.push_back(Platform::createNormalPlatform(200, SCREEN_HEIGHT - 200, 200));
     platforms.push_back(Platform::createNormalPlatform(500, SCREEN_HEIGHT - 300, 200));
     platforms.push_back(Platform::createNormalPlatform(800, SCREEN_HEIGHT - 400, 200));
     platforms.push_back(Platform::createNormalPlatform(1000, SCREEN_HEIGHT - 250, 150));
-    
+
     // TODO: Para Hito 2, añadir:
     // - Plataformas móviles
     // - Plataformas que desaparecen
@@ -113,8 +137,14 @@ void GameplayState::checkVictoryCondition() {
 }
 
 void GameplayState::checkDefeatCondition() {
-    // Derrota: si CUALQUIER jugador ha muerto
-    for (const auto& player : players) {
+    // Derrota: si CUALQUIER jugador ha muerto o cayó por el agujero
+    for (auto& player : players) {
+        // Comprobar si cayó fuera de la pantalla (DESPUÉS de las colisiones)
+        if (player.position.y > SCREEN_HEIGHT + 100.0f) {
+            player.isAlive = false;
+        }
+        
+        // Si el jugador está muerto, Game Over
         if (!player.isAlive) {
             isGameOver = true;
             return;

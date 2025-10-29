@@ -69,8 +69,8 @@ void Player::updatePosition(float deltaTime) {
     }
     
     // Detectar caída fuera de pantalla (muerte)
-    const float SCREEN_HEIGHT = 720.0f;
-    if (position.y > SCREEN_HEIGHT + 50.0f) {
+    const float SCREEN_HEIGHT = 730.0f;
+    if (position.y > SCREEN_HEIGHT + 50.0f) {  // Si Y > 770
         isAlive = false;
     }
 }
