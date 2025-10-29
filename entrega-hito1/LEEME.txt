@@ -1,0 +1,19 @@
+CHAOS CREW - HITO 1 ALPHA
+=========================
+
+REPOSITORIO: https://github.com/eap59-ua/chaos-crew-dca
+RELEASE: https://github.com/eap59-ua/chaos-crew-dca/releases/tag/v0.1.0-alpha
+
+EJECUTAR EN LINUX:
+    chmod +x chaos-crew-linux
+    ./chaos-crew-linux
+
+DOCUMENTACIÓN:
+    - Entrega-Hito1.md : Documentación completa de entrega
+    - GDD.md : Game Design Document
+    - README.md : Información general
+
+EQUIPO: Chaos Crew (5 miembros)
+FECHA: 29 de octubre de 2025
+
+NOTA: Windows estará disponible en Hito 2
