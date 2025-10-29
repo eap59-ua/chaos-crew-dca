@@ -1,4 +1,5 @@
 #include "GameplayState.hpp"
+#include "GameOverState.hpp"  // ✅ Incluir en .cpp
 
 GameplayState::GameplayState() 
     : exitZone(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 150, 80, 100)
@@ -61,7 +62,7 @@ void GameplayState::setupPlatforms() {
 }
 
 void GameplayState::handleInput() {
-    // Reinicio manual con ENTER
+    // Reinicio manual con ENTER (útil para debugging)
     if (IsKeyPressed(KEY_ENTER)) {
         init();
         return;

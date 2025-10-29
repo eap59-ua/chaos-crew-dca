@@ -8,7 +8,7 @@ PhysicsEngine::PhysicsEngine()
 
 // Aplicar gravedad a un jugador
 void PhysicsEngine::applyGravity(Player& player, float deltaTime) {
-    player.applyGravity(gravity * deltaTime);
+    player.applyGravity(gravity);
 }
 
 // Aplicar gravedad a todos los jugadores
@@ -18,15 +18,18 @@ void PhysicsEngine::applyGravityToAll(std::vector<Player>& players, float deltaT
     }
 }
 
+
 // Actualizar físicas de un jugador
 void PhysicsEngine::updatePlayer(Player& player, float deltaTime) {
-    // Primero aplicar gravedad
+    // CRÍTICO: Resetear isGrounded ANTES de aplicar física
+    player.isGrounded = false;
+    
+    // Aplicar gravedad
     applyGravity(player, deltaTime);
     
-    // Luego actualizar posición
+    // Actualizar posición
     player.updatePosition(deltaTime);
 }
-
 // Actualizar físicas de todos los jugadores
 void PhysicsEngine::updateAllPlayers(std::vector<Player>& players, float deltaTime) {
     for (auto& player : players) {
@@ -39,7 +42,7 @@ void PhysicsEngine::processCollisions(Player& player, const std::vector<Platform
     if (!player.isAlive) return;
     
     // Asumir que no está en el suelo hasta que se demuestre lo contrario
-    player.isGrounded = false;
+    //player.isGrounded = false;
     
     Rectangle playerRect = player.getCollisionRect();
     

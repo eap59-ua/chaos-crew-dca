@@ -1,12 +1,16 @@
-#pragma once
+#ifndef GAMEPLAYSTATE_HPP
+#define GAMEPLAYSTATE_HPP
+
 #include "../core/GameState.hpp"
 #include "../core/StateMachine.hpp"
-#include "GameOverState.hpp"
 #include "../entities/Player.hpp"
 #include "../entities/Platform.hpp"
 #include "../physics/Physics.hpp"
 #include <vector>
 #include <raylib.h>
+
+// Forward declaration para evitar dependencia circular
+class GameOverState;
 
 class GameplayState : public GameState {
 public:
@@ -48,3 +52,5 @@ private:
     void checkDefeatCondition();
     void handleTrollMechanic();  // Para el nivel troll del Hito 1
 };
+
+#endif // GAMEPLAYSTATE_HPP

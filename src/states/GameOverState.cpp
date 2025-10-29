@@ -1,4 +1,5 @@
 #include "GameOverState.hpp"
+#include "GameplayState.hpp"  // ✅ Incluir en .cpp, no en .hpp
 
 constexpr int SCREEN_WIDTH = 1280;
 constexpr int SCREEN_HEIGHT = 720;
@@ -25,5 +26,7 @@ void GameOverState::render() {
     }
 
     DrawText("Press ENTER to retry", SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 + 50, 25, GRAY);
+    DrawText("Chaos Crew - DCA UA 2025", SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT - 50, 20, DARKGRAY);
+    
     EndDrawing();
 }
