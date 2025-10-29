@@ -1,149 +1,210 @@
 #include "GameplayState.hpp"
-
-constexpr int SCREEN_WIDTH = 1280;
-constexpr int SCREEN_HEIGHT = 720;
-constexpr float GRAVITY = 0.6f;
-constexpr float JUMP_FORCE = -12.0f;
-constexpr float MOVE_SPEED = 4.5f;
+#include "GameOverState.hpp"  // ✅ Incluir en .cpp
 
 GameplayState::GameplayState() 
-    : levelCompleted(false), isGameOver(false) {}
+    : exitZone(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 150, 80, 100)
+    , levelCompleted(false)
+    , isGameOver(false)
+    , isExitVisible(true)
+    , isExitMoved(false)
+{
+}
 
 void GameplayState::init() {
-    // Jugador 1
-    player1.rect = {100, SCREEN_HEIGHT - 200, 30, 40};
-    player1.velocity = {0, 0};
-    player1.color = BLUE;
-    player1.isGrounded = false;
-    player1.leftKey = KEY_A;
-    player1.rightKey = KEY_D;
-    player1.jumpKey = KEY_W;
-
-    // Jugador 2
-    player2.rect = {150, SCREEN_HEIGHT - 200, 30, 40};
-    player2.velocity = {0, 0};
-    player2.color = RED;
-    player2.isGrounded = false;
-    player2.leftKey = KEY_LEFT;
-    player2.rightKey = KEY_RIGHT;
-    player2.jumpKey = KEY_UP;
-
-    // Plataformas
+    // Limpiar estado anterior
+    players.clear();
     platforms.clear();
-    platforms.push_back({{0, SCREEN_HEIGHT - 50, SCREEN_WIDTH, 50}, DARKGRAY});
-    platforms.push_back({{200, SCREEN_HEIGHT - 200, 200, 20}, GRAY});
-    platforms.push_back({{500, SCREEN_HEIGHT - 300, 200, 20}, GRAY});
-    platforms.push_back({{800, SCREEN_HEIGHT - 400, 200, 20}, GRAY});
-    platforms.push_back({{1000, SCREEN_HEIGHT - 250, 150, 20}, GRAY});
-
-    exitZone = {SCREEN_WIDTH - 100, SCREEN_HEIGHT - 150, 80, 100};
-
+    
+    // Configurar jugadores y nivel
+    setupPlayers();
+    setupPlatforms();
+    
+    // Resetear flags
     levelCompleted = false;
     isGameOver = false;
-    isExitVisible = true; // parte del nivel troll del hito 1
-    isExitMoved = false; // parte del nivel troll del hito 1
+    isExitVisible = true;
+    isExitMoved = false;
+    exitZone.reset();
+    
+    // Posicionar zona de salida al final del nivel
+    exitZone.rect.x = SCREEN_WIDTH - 100;
+    exitZone.rect.y = SCREEN_HEIGHT - 150;
+}
+
+void GameplayState::setupPlayers() {
+    // Crear jugador 1 (Azul - WASD)
+    Player p1 = createPlayer1({100, SCREEN_HEIGHT - 200});
+    players.push_back(p1);
+    
+    // Crear jugador 2 (Rojo - Flechas)
+    Player p2 = createPlayer2({150, SCREEN_HEIGHT - 200});
+    players.push_back(p2);
+    
+    // TODO: Para Hito 2, añadir soporte para 3-5 jugadores
+    // Player p3 = createPlayer3({200, SCREEN_HEIGHT - 200});
+    // players.push_back(p3);
+}
+
+void GameplayState::setupPlatforms() {
+    // ❌ ANTES: Suelo completo (sin agujeros)
+    // platforms.push_back(Platform::createGround(SCREEN_WIDTH));
+    
+    // ✅ AHORA: Suelo dividido con agujero en el centro
+    
+    // Definir dimensiones del agujero
+    const float HOLE_START = 500.0f;   // Inicio del agujero
+    const float HOLE_WIDTH = 300.0f;   // Ancho del agujero
+    const float HOLE_END = HOLE_START + HOLE_WIDTH;  // 800.0f
+    
+    const float GROUND_Y = SCREEN_HEIGHT - 50.0f;  // 670.0f
+    const float GROUND_HEIGHT = 50.0f;
+    
+    // Suelo IZQUIERDO (desde inicio hasta el agujero)
+    platforms.push_back(Platform(
+        {0.0f, GROUND_Y},
+        {HOLE_START, GROUND_HEIGHT},
+        DARKGRAY
+    ));
+    
+    // Suelo DERECHO (desde después del agujero hasta el final)
+    platforms.push_back(Platform(
+        {HOLE_END, GROUND_Y},
+        {SCREEN_WIDTH - HOLE_END, GROUND_HEIGHT},
+        DARKGRAY
+    ));
+    
+    // Plataformas intermedias (mantener igual)
+    platforms.push_back(Platform::createNormalPlatform(200, SCREEN_HEIGHT - 200, 200));
+    platforms.push_back(Platform::createNormalPlatform(500, SCREEN_HEIGHT - 300, 200));
+    platforms.push_back(Platform::createNormalPlatform(800, SCREEN_HEIGHT - 400, 200));
+    platforms.push_back(Platform::createNormalPlatform(1000, SCREEN_HEIGHT - 250, 150));
+
+    // TODO: Para Hito 2, añadir:
+    // - Plataformas móviles
+    // - Plataformas que desaparecen
+    // - Trampas dinámicas
 }
 
 void GameplayState::handleInput() {
-    // Reinicio manual si se desea
+    // Reinicio manual con ENTER (útil para debugging)
     if (IsKeyPressed(KEY_ENTER)) {
         init();
+        return;
+    }
+    
+    // Procesar input de cada jugador
+    for (auto& player : players) {
+        player.handleInput();
     }
 }
 
 void GameplayState::update(float deltaTime) {
-    auto updatePlayer = [&](Player& p) {
-        // Movimiento horizontal
-        p.velocity.x = 0;
-        if (IsKeyDown(p.leftKey)) p.velocity.x = -MOVE_SPEED;
-        if (IsKeyDown(p.rightKey)) p.velocity.x = MOVE_SPEED;
-
-        // Salto
-        if (IsKeyPressed(p.jumpKey) && p.isGrounded) {
-            p.velocity.y = JUMP_FORCE;
-            p.isGrounded = false;
-        }
-
-        // Gravedad
-        if (!p.isGrounded) p.velocity.y += GRAVITY;
-
-        // Movimiento
-        p.rect.x += p.velocity.x;
-        p.rect.y += p.velocity.y;
-
-        // Límites
-        if (p.rect.x < 0) p.rect.x = 0;
-        if (p.rect.x + p.rect.width > SCREEN_WIDTH)
-            p.rect.x = SCREEN_WIDTH - p.rect.width;
-
-        // Colisiones con plataformas
-        p.isGrounded = false;
-        for (auto& plat : platforms) {
-            if (CheckCollisionRecs(p.rect, plat.rect) && p.velocity.y > 0) {
-                p.rect.y = plat.rect.y - p.rect.height;
-                p.velocity.y = 0;
-                p.isGrounded = true;
-            }
-        }
-
-        // Muerte
-        if (p.rect.y > SCREEN_HEIGHT) isGameOver = true;
-    };
-
-    updatePlayer(player1);
-    updatePlayer(player2);
-
+    // Actualizar físicas de todos los jugadores
+    physicsEngine.updateAllPlayers(players, deltaTime);
+    
+    // Procesar colisiones con plataformas
+    physicsEngine.processAllCollisions(players, platforms);
+    
+    // Verificar condiciones de victoria/derrota
+    checkDefeatCondition();
     if (isGameOver) {
         state_machine->add_state(std::make_unique<GameOverState>(false), true);
         return;
     }
-
-    // Condición de victoria
-    bool p1AtExit = CheckCollisionRecs(player1.rect, exitZone);
-    bool p2AtExit = CheckCollisionRecs(player2.rect, exitZone);
-
-    // Parte de nivel troll hito 1 -> buscar idea para añadir niveles sin cambiar la lógica de los métodos de esta clase
-    bool near = player1.rect.x > exitZone.x - 50 && player2.rect.x > exitZone.x - 50;
-
-    // Si ambos jugadores están cerca, movemos la puerta -> todo esto para nivel troll hito 1
-    if (!isExitMoved && near) {
-        // Calculamos la posición de la puerta como el promedio de las posiciones de los dos jugadores
-        exitZone.x = 20;
-        
-        // La puerta ya ha sido movida, por lo que evitamos que se mueva más de una vez
-        isExitMoved = true;
-        isExitVisible = true;  // La puerta vuelve a ser visible
-    }
-    // ------------------------
-
-    if (isExitMoved && p1AtExit && p2AtExit) {
+    
+    // Mecánica del nivel troll (Hito 1)
+    handleTrollMechanic();
+    
+    // Verificar victoria
+    checkVictoryCondition();
+    if (levelCompleted) {
         state_machine->add_state(std::make_unique<GameOverState>(true), true);
+        return;
+    }
+}
+
+void GameplayState::checkVictoryCondition() {
+    if (players.size() < 2) return;  // Necesitamos al menos 2 jugadores
+    
+    // Verificar si cada jugador está en la zona de salida
+    exitZone.player1Inside = physicsEngine.checkExitCollision(players[0], exitZone);
+    exitZone.player2Inside = physicsEngine.checkExitCollision(players[1], exitZone);
+    
+    // Victoria: AMBOS jugadores deben estar en la salida Y el nivel troll debe estar completo
+    if (isExitMoved && exitZone.bothPlayersInside()) {
+        levelCompleted = true;
+    }
+}
+
+void GameplayState::checkDefeatCondition() {
+    // Derrota: si CUALQUIER jugador ha muerto o cayó por el agujero
+    for (auto& player : players) {
+        // Comprobar si cayó fuera de la pantalla (DESPUÉS de las colisiones)
+        if (player.position.y > SCREEN_HEIGHT + 100.0f) {
+            player.isAlive = false;
+        }
+        
+        // Si el jugador está muerto, Game Over
+        if (!player.isAlive) {
+            isGameOver = true;
+            return;
+        }
+    }
+}
+
+void GameplayState::handleTrollMechanic() {
+    // Nivel troll del Hito 1: la salida se mueve cuando ambos jugadores se acercan
+    if (isExitMoved || players.size() < 2) return;
+    
+    // Verificar si ambos jugadores están cerca de la salida
+    bool player1Near = players[0].position.x > (exitZone.rect.x - 50);
+    bool player2Near = players[1].position.x > (exitZone.rect.x - 50);
+    
+    if (player1Near && player2Near) {
+        // ¡Sorpresa! La salida se mueve al principio del nivel
+        exitZone.rect.x = 20;
+        exitZone.rect.y = SCREEN_HEIGHT - 150;
+        
+        isExitMoved = true;
+        isExitVisible = true;
+        
+        // Resetear los flags de jugadores dentro
+        exitZone.reset();
     }
 }
 
 void GameplayState::render() {
     BeginDrawing();
     ClearBackground(RAYWHITE);
-
-    // Plataformas
-    for (auto& plat : platforms) DrawRectangleRec(plat.rect, plat.color);
-
-    // Zona de salida
-    if (isExitVisible) {
-        DrawRectangleRec(exitZone, GREEN);
-        DrawText("EXIT", exitZone.x + 20, exitZone.y + 40, 20, DARKGREEN);
+    
+    // Renderizar plataformas
+    for (const auto& platform : platforms) {
+        platform.render();
     }
-
-    // Jugadores
-    DrawRectangleRec(player1.rect, player1.color);
-    DrawText("P1", player1.rect.x + 5, player1.rect.y + 10, 20, WHITE);
-
-    DrawRectangleRec(player2.rect, player2.color);
-    DrawText("P2", player2.rect.x + 5, player2.rect.y + 10, 20, WHITE);
-
-    // HUD
+    
+    // Renderizar zona de salida (si es visible)
+    if (isExitVisible) {
+        exitZone.render();
+    }
+    
+    // Renderizar jugadores
+    for (const auto& player : players) {
+        player.render();
+    }
+    
+    // HUD superior
     DrawRectangle(0, 0, SCREEN_WIDTH, 100, Fade(BLACK, 0.7f));
-    DrawText("CHAOS CREW - HITO 1", 20, 10, 30, YELLOW);
-    DrawText("P1: A/D/W | P2: Arrows", 20, 45, 20, GRAY);
+    DrawText("CHAOS CREW - Hito 1 Alpha", 20, 10, 30, YELLOW);
+    DrawText("P1: A/D move, W jump | P2: Arrows move, UP jump", 20, 45, 20, GRAY);
+    DrawText("COOPERATIVE: Both must reach EXIT!", 20, 70, 18, GREEN);
+    
+    // Indicador de FPS (útil para debugging)
+    DrawText(TextFormat("FPS: %d", GetFPS()), SCREEN_WIDTH - 100, 10, 20, LIME);
+    
+    // Indicador si la salida se ha movido (nivel troll)
+    if (isExitMoved) {
+        DrawText("The exit moved! Go back!", SCREEN_WIDTH/2 - 150, 120, 25, RED);
+    }
+    
     EndDrawing();
 }

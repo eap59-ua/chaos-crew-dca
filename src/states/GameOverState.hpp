@@ -1,7 +1,10 @@
-#pragma once
-#include "../core/GameState.hpp"
-#include "GameplayState.hpp"
+#ifndef GAMEOVERSTATE_HPP
+#define GAMEOVERSTATE_HPP
 
+#include "../core/GameState.hpp"
+
+// Forward declaration para evitar dependencia circular
+class GameplayState;
 
 class GameOverState : public GameState {
 public:
@@ -18,3 +21,5 @@ public:
 private:
     bool levelCompleted;
 };
+
+#endif // GAMEOVERSTATE_HPP
