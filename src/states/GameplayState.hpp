@@ -3,11 +3,13 @@
 
 #include "../core/GameState.hpp"
 #include "../core/StateMachine.hpp"
-#include "../entities/Player.hpp"
-#include "../entities/Platform.hpp"
-#include "../physics/Physics.hpp"
+// #include "../entities/Player.hpp"
+// #include "../entities/Platform.hpp"
+// #include "../physics/Physics.hpp"
 #include <vector>
 #include <raylib.h>
+#include "../entt/entt.hpp"
+
 
 // Forward declaration para evitar dependencia circular
 class GameOverState;
@@ -25,13 +27,13 @@ public:
     void resume() override {}
 
 private:
+    entt::registry registry;
     // Entidades del juego
-    std::vector<Player> players;
-    std::vector<Platform> platforms;
-    ExitZone exitZone;
+    //std::vector<Player> players;
+    //std::vector<Platform> platforms;
     
     // Motor de físicas
-    PhysicsEngine physicsEngine;
+    // PhysicsEngine physicsEngine;
     
     // Estado del nivel
     bool levelCompleted;
