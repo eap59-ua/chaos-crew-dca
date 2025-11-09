@@ -7,6 +7,7 @@
 #include "../systems/MovimentSystem.hpp"
 #include "../systems/InputSystem.hpp"
 #include "../systems/CollisionSystem.hpp"
+#include "../systems/WinSystem.hpp"
 
 GameplayState::GameplayState() 
     : 
@@ -149,9 +150,21 @@ void GameplayState::update(float deltaTime) {
         state_machine->add_state(std::make_unique<GameOverState>(true), true);
         return;
     }*/
+    
+    
 
     MovementSystem(registry, deltaTime, SCREEN_WIDTH, SCREEN_HEIGHT);
     CollisionSystem(registry);
+    
+    if (CheckDefeat(registry)) {
+        state_machine->add_state(std::make_unique<GameOverState>(false), true);
+        return;
+    }
+    
+    if (CheckVictory(registry)) {
+        state_machine->add_state(std::make_unique<GameOverState>(true), true);
+        return;
+    }
 }
 
 void GameplayState::checkVictoryCondition() {
