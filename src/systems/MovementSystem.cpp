@@ -14,10 +14,15 @@ static constexpr float JUMP_FORCE = -700.0f;  // fuerza de salto (negativa hacia
 static constexpr float MAX_FALL_SPEED = 1200.0f; // velocidad máxima de caída (px/s)
 
 void MovementSystem(entt::registry& registry, float deltaTime, int SCREEN_WIDTH, int SCREEN_HEIGHT) {
-    auto view = registry.view<Player, Velocity, Position, Solid>();
-
-    view.each([&](auto /*entity*/, Player& player, Velocity& velocity, Position& position, Solid& solid) {
-        // Dirección de entrada: -1 = izquierda, +1 = derecha
+    auto players = registry.view<Player, Velocity, Position, Solid>();
+    
+    for (auto playerEntity : players) {
+    	auto &position = players.get<Position>(playerEntity);
+    	auto &solid = players.get<Solid>(playerEntity);
+    	auto &velocity = players.get<Velocity>(playerEntity);
+    	auto &player = players.get<Player>(playerEntity);
+    	
+    	// Dirección de entrada: -1 = izquierda, +1 = derecha
         float dir = (player.right ? 1.0f : 0.0f) - (player.left ? 1.0f : 0.0f);
 
         // Movimiento horizontal inmediato (mejor respuesta)
@@ -60,5 +65,5 @@ void MovementSystem(entt::registry& registry, float deltaTime, int SCREEN_WIDTH,
             velocity.vy = 0;
             player.onGround = true; // Considerar el suelo de la pantalla como superficie
         }
-    });
+	}
 }

@@ -10,34 +10,47 @@
 #include "RenderSystem.hpp"
 
 void renderPlayers(entt::registry& registry) {
-    auto view = registry.view<Player, Position, Solid, Sprite>();
+    auto players = registry.view<Player, Position, Solid, Sprite>();
     
-    view.each([&registry](const auto entity, const Position& pos, const Solid& solid, Sprite& sprite) {
-        // Draw player rectangle
-        sprite.rect.x = pos.x;
+    for (auto playerEntity : players) {
+    	auto &pos = players.get<Position>(playerEntity);
+    	auto &solid = players.get<Solid>(playerEntity);
+    	auto &sprite = players.get<Sprite>(playerEntity);
+    	
+    	sprite.rect.x = pos.x;
         sprite.rect.y = pos.y;
         DrawRectangleRec(sprite.rect, solid.color);
         DrawRectangleLinesEx(sprite.rect, 2, BLACK);
-    });
+	}
 }
 
 void renderPlatforms(entt::registry& registry) {
-    auto view = registry.view<Platform, Position, Solid, Sprite>();
+    auto platforms = registry.view<Platform, Position, Solid, Sprite>();
     
-    view.each([](const auto&, const Position& pos, const Solid& solid, const Sprite& sprite) {
-        // Draw platform rectangle
+    for (auto platformEntity : platforms) {
+    	auto &pos = platforms.get<Position>(platformEntity);
+    	auto &solid = platforms.get<Solid>(platformEntity);
+    	auto &sprite = platforms.get<Sprite>(platformEntity);
+    	
+    	sprite.rect.x = pos.x;
+        sprite.rect.y = pos.y;
         DrawRectangleRec(sprite.rect, solid.color);
         DrawRectangleLinesEx(sprite.rect, 2, BLACK);
-    });
+	}
 }
 
 void renderDoors(entt::registry& registry) {
-    auto view = registry.view<Door, Position, Solid, Sprite>();
+    auto door = registry.view<Door, Position, Solid, Sprite>();
     
-    view.each([](const auto&, const Position& pos, const Solid& solid, const Sprite& sprite) {
-        // Draw door rectangle
+    for (auto doorEntity : door) {
+    	auto &pos = door.get<Position>(doorEntity);
+    	auto &solid = door.get<Solid>(doorEntity);
+    	auto &sprite = door.get<Sprite>(doorEntity);
+    	
+    	sprite.rect.x = pos.x;
+        sprite.rect.y = pos.y;
         DrawRectangleRec(sprite.rect, solid.color);
-        DrawRectangleLinesEx(sprite.rect, 2, DARKGREEN);
+        DrawRectangleLinesEx(sprite.rect, 2, BLACK);
         const char* text = "EXIT";
         int textWidth = MeasureText(text, 30);
         DrawText(text,
@@ -45,7 +58,7 @@ void renderDoors(entt::registry& registry) {
                 sprite.rect.y + (sprite.rect.height - 30) / 2,
                 30,
                 WHITE);
-    });
+	}
 }
 
 void renderScene(entt::registry& registry) {
