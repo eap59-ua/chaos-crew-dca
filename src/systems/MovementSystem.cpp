@@ -7,10 +7,10 @@
 #include "MovimentSystem.hpp"
 
 // Tunables: ajustar para el "feel"
-static constexpr float H_SPEED = 360.0f;      // velocidad horizontal (px/s)
+static constexpr float H_SPEED = 200.0f;      // velocidad horizontal (px/s)
 static constexpr float AIR_CONTROL = 0.85f;   // control horizontal en el aire (0..1)
-static constexpr float GRAVITY = 700.0f;     // gravedad (px/s^2)
-static constexpr float JUMP_FORCE = -700.0f;  // fuerza de salto (negativa hacia arriba)
+static constexpr float GRAVITY = 900.0f;     // gravedad (px/s^2)
+static constexpr float JUMP_FORCE = -600.0f;  // fuerza de salto (negativa hacia arriba)
 static constexpr float MAX_FALL_SPEED = 1200.0f; // velocidad máxima de caída (px/s)
 
 void MovementSystem(entt::registry& registry, float deltaTime, int SCREEN_WIDTH, int SCREEN_HEIGHT) {
