@@ -11,15 +11,19 @@ void CollisionSystem(entt::registry& registry) {
     auto players = registry.view<Player, Position, Velocity, Solid>();
     auto platforms = registry.view<Platform, Position, Solid>();
 
-    players.each([&](auto entity, Player& player, Position& pos, Velocity& vel, Solid& solid) {
+    for(auto playerEntity : players) {
+        auto& player = players.get<Player>(playerEntity);
+        auto& pos = players.get<Position>(playerEntity);
+        auto& vel = players.get<Velocity>(playerEntity);
+        auto& solid = players.get<Solid>(playerEntity);
+
         // Reset ground state
         player.onGround = false;
 
-        // Guardar posición anterior para mejor detección
-        float prevY = pos.y;
-        float prevX = pos.x;
+        for(auto platformEntity : platforms) {
+            auto& platPos = platforms.get<Position>(platformEntity);
+            auto& platSolid = platforms.get<Solid>(platformEntity);
 
-        platforms.each([&](const auto&, const Position& platPos, const Solid& platSolid) {
             Rectangle playerRect = {pos.x, pos.y, solid.width, solid.height};
             Rectangle platformRect = {platPos.x, platPos.y, platSolid.width, platSolid.height};
             
@@ -57,6 +61,6 @@ void CollisionSystem(entt::registry& registry) {
                     vel.vx = 0;
                 }
             }
-        });
-    });
+        }
+    }
 }
