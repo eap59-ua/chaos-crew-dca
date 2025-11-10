@@ -8,6 +8,7 @@
 #include "../systems/InputSystem.hpp"
 #include "../systems/CollisionSystem.hpp"
 #include "../systems/WinSystem.hpp"
+#include "../systems/TrollSystem.hpp"
 
 GameplayState::GameplayState() 
     : 
@@ -155,6 +156,7 @@ void GameplayState::update(float deltaTime) {
 
     MovementSystem(registry, deltaTime, SCREEN_WIDTH, SCREEN_HEIGHT);
     CollisionSystem(registry);
+    logicTroll(registry);
     
     if (CheckDefeat(registry)) {
         state_machine->add_state(std::make_unique<GameOverState>(false), true);
