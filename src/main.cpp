@@ -1,5 +1,6 @@
 #include "core/StateMachine.hpp"
 #include "states/GameplayState.hpp"
+#include "states/MainMenuState.hpp"
 #include <raylib.h>
 
 int main() {
@@ -18,7 +19,7 @@ int main() {
     float deltaTime = 0.0f;
     
     // Cargar estado inicial (GameplayState)
-    stateMachine.add_state(std::make_unique<GameplayState>(), false);
+    stateMachine.add_state(std::make_unique<MainMenuState>(), false);
     stateMachine.handle_state_changes(deltaTime);
     
     // Bucle principal del juego
