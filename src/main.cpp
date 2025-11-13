@@ -6,8 +6,11 @@ int main() {
     // Configuración de ventana
     const int SCREEN_WIDTH = 1280;
     const int SCREEN_HEIGHT = 720;
+
     
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Chaos Crew - Hito 1 Alpha");
+    SetExitKey(KEY_NULL); //quitamos que con esc se salga del juego, para añadirlo en la pantalla de pausa.
+
     SetTargetFPS(60);
     
     // Crear máquina de estados
