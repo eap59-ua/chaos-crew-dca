@@ -24,12 +24,12 @@
   <objectgroup id="3" name="ObjetosLógicos">
 
     <!-- Plataforma móvil -->
-    <object id="1" name="Plataforma1" type="Platform" x="0" y="8" width="10" height="3" /> <!--El suelo de la izquierda-->
-    <object id="1" name="Plataforma2" type="Platform" x="16" y="8" width="15" height="3" /> <!--El suelo de la derecha-->
-    <object id="1" name="Plataforma3" type="Platform" x="7" y="6" width="3" height="1" /> <!--PLataforma de arriba de izquierda-->
-    <object id="1" name="Plataforma4" type="Platform" x="16" y="6" width="3" height="1" /> <!--Plataforma de arriba de derecha-->
+    <object id="1" name="Plataforma1" type="Platform" x="0" y="9.3" width="10" height="1" /> <!--El suelo de la izquierda-->
+    <object id="1" name="Plataforma2" type="Platform" x="16" y="9.3" width="15" height="1" /> <!--El suelo de la derecha-->
+    <object id="1" name="Plataforma3" type="Platform" x="7" y="7" width="3" height="0.5" /> <!--PLataforma de arriba de izquierda-->
+    <object id="1" name="Plataforma4" type="Platform" x="16" y="6.5" width="3" height="0.5" /> <!--Plataforma de arriba de derecha-->
 
-    <object id="1" name="Plataforma5" type="Platform" x="12" y="5" width="3" height="1"> <!--Plataforma del centro con logica (se mueve)-->
+    <object id="1" name="Plataforma5" type="Platform" x="12" y="5" width="3" height="0.5"> <!--Plataforma del centro con logica (se mueve)-->
       <properties>
         <property name="movimiento" value="horizontal"/>
         <property name="amplitud" type="int" value="50"/>
