@@ -1,0 +1,336 @@
+# ============================================================================
+# Makefile para Chaos Crew - Arquitectura ECS
+# ============================================================================
+# Equipo: 5 integrantes
+# Asignatura: Desarrollo Colaborativo de Aplicaciones (DCA)
+# Universidad de Alicante - 2025
+# ============================================================================
+
+.PHONY: all clean info clean-cache dev-deps install uninstall dist run debug help
+
+# ============================================================================
+# Colors para output terminal
+# ============================================================================
+RED    := \033[0;31m
+GREEN  := \033[0;32m
+YELLOW := \033[1;33m
+BLUE   := \033[0;34m
+CYAN   := \033[0;36m
+NC     := \033[0m # No Color
+
+# ============================================================================
+# Configuración del compilador
+# ============================================================================
+CXX      := ccache g++
+CXXFLAGS := -std=c++17 -Wall -Wextra -Wpedantic
+OPTFLAGS := -O3
+DBGFLAGS := -g -O0
+
+# ============================================================================
+# Estructura de directorios
+# ============================================================================
+SRC_DIR    := src
+OBJ_DIR    := obj
+BIN_DIR    := bin
+LIB_DIR    := vendor/lib
+INCLUDE    := vendor/include
+
+# Subdirectorios con código fuente (.cpp)
+# IMPORTANTE: No incluir 'components' ni 'entt' (solo headers)
+SRC_SUBDIRS := core entities states systems
+
+# Directorios de includes adicionales
+INC_DIRS := -I$(SRC_DIR) \
+            -I$(SRC_DIR)/components \
+            -I$(SRC_DIR)/entt \
+            -I$(INCLUDE)
+
+# ============================================================================
+# Detección automática de archivos fuente
+# ============================================================================
+# Encontrar todos los .cpp en los subdirectorios especificados
+SOURCES := $(foreach dir,$(SRC_SUBDIRS),$(wildcard $(SRC_DIR)/$(dir)/*.cpp))
+# Añadir main.cpp si existe en raíz de src/
+SOURCES += $(wildcard $(SRC_DIR)/main.cpp)
+
+# Generar nombres de objetos manteniendo estructura de directorios
+OBJECTS := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SOURCES))
+
+# Archivos de dependencias automáticas
+DEPS := $(OBJECTS:.o=.d)
+
+# Nombre del ejecutable
+TARGET := $(BIN_DIR)/chaos-crew
+
+# ============================================================================
+# Librerías
+# ============================================================================
+# Raylib y dependencias del sistema
+LIBS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+
+# Si tienes librerías adicionales en vendor/lib
+ifneq ($(wildcard $(LIB_DIR)/*),)
+    LDFLAGS += -L$(LIB_DIR)
+endif
+
+# ============================================================================
+# Regla por defecto
+# ============================================================================
+all: banner $(TARGET) success
+
+# ============================================================================
+# Banner informativo
+# ============================================================================
+banner:
+	@echo "$(CYAN)╔════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║$(NC)  $(GREEN)Compilando Chaos Crew (ECS)$(NC)       $(CYAN)║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════╝$(NC)"
+
+success:
+	@echo ""
+	@echo "$(GREEN)✅ Compilación exitosa!$(NC)"
+	@echo "$(YELLOW)📁 Ejecutable: $(TARGET)$(NC)"
+	@echo "$(CYAN)▶️  Ejecutar con: make run$(NC)"
+	@echo ""
+
+# ============================================================================
+# Compilación del ejecutable
+# ============================================================================
+$(TARGET): $(OBJECTS)
+	@echo "$(BLUE)🔗 Linkeando ejecutable...$(NC)"
+	@mkdir -p $(BIN_DIR)
+	@$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) $(LIBS)
+
+# ============================================================================
+# Compilación de archivos objeto (con dependencias automáticas)
+# ============================================================================
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@echo "$(YELLOW)🔨 Compilando$(NC) $<"
+	@mkdir -p $(dir $@)
+	@$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(INC_DIRS) -MMD -MP -c $< -o $@
+
+# Incluir archivos de dependencias
+-include $(DEPS)
+
+# ============================================================================
+# Reglas de limpieza
+# ============================================================================
+clean:
+	@echo "$(RED)🧹 Limpiando archivos de compilación...$(NC)"
+	@rm -rf $(OBJ_DIR) $(BIN_DIR)
+	@echo "$(GREEN)✅ Limpieza completada$(NC)"
+
+clean-cache:
+	@echo "$(RED)🧹 Limpiando caché de ccache...$(NC)"
+	@ccache -C
+	@ccache -z
+	@echo "$(GREEN)✅ Caché limpiada y estadísticas reseteadas$(NC)"
+
+# ============================================================================
+# Compilación en modo debug
+# ============================================================================
+debug: OPTFLAGS := $(DBGFLAGS)
+debug: CXXFLAGS += -DDEBUG
+debug: clean
+	@echo "$(YELLOW)🐛 Compilando en modo DEBUG...$(NC)"
+	@$(MAKE) --no-print-directory all
+
+# ============================================================================
+# Ejecutar el juego
+# ============================================================================
+run: all
+	@echo "$(GREEN)🎮 Ejecutando Chaos Crew...$(NC)"
+	@echo ""
+	@./$(TARGET)
+
+# ============================================================================
+# Información del proyecto
+# ============================================================================
+info:
+	@echo "$(CYAN)═══════════════════════════════════════════════$(NC)"
+	@echo "$(GREEN)   Información del Proyecto Chaos Crew$(NC)"
+	@echo "$(CYAN)═══════════════════════════════════════════════$(NC)"
+	@echo "$(YELLOW)Compilador:$(NC)     $(CXX)"
+	@echo "$(YELLOW)Flags:$(NC)          $(CXXFLAGS) $(OPTFLAGS)"
+	@echo "$(YELLOW)Archivos .cpp:$(NC)  $(words $(SOURCES))"
+	@echo "$(YELLOW)Subdirectorios:$(NC) $(SRC_SUBDIRS)"
+	@echo "$(YELLOW)Ejecutable:$(NC)     $(TARGET)"
+	@echo "$(YELLOW)Librerías:$(NC)      Raylib + EnTT (header-only)"
+	@echo "$(CYAN)═══════════════════════════════════════════════$(NC)"
+	@echo ""
+	@echo "$(BLUE)📊 Estadísticas ccache:$(NC)"
+	@ccache -s | grep -E "(cache (hit|miss)|files in cache|cache size)" || echo "  ccache no disponible"
+	@echo ""
+
+# ============================================================================
+# Verificar estructura de directorios
+# ============================================================================
+check-dirs:
+	@echo "$(BLUE)📂 Verificando estructura de directorios...$(NC)"
+	@for dir in $(SRC_SUBDIRS); do \
+		if [ -d $(SRC_DIR)/$$dir ]; then \
+			echo "  $(GREEN)✅$(NC) $(SRC_DIR)/$$dir"; \
+		else \
+			echo "  $(RED)❌$(NC) $(SRC_DIR)/$$dir (no existe)"; \
+		fi \
+	done
+	@if [ -d $(SRC_DIR)/components ]; then \
+		echo "  $(GREEN)✅$(NC) $(SRC_DIR)/components (headers)"; \
+	fi
+	@if [ -d $(SRC_DIR)/entt ]; then \
+		echo "  $(GREEN)✅$(NC) $(SRC_DIR)/entt (librería header-only)"; \
+	fi
+
+# ============================================================================
+# Listar archivos fuente detectados
+# ============================================================================
+list-sources:
+	@echo "$(BLUE)📄 Archivos fuente detectados:$(NC)"
+	@for src in $(SOURCES); do \
+		echo "  - $$src"; \
+	done
+	@echo ""
+	@echo "$(YELLOW)Total: $(words $(SOURCES)) archivos$(NC)"
+
+# ============================================================================
+# Dependencias de desarrollo (opcional)
+# ============================================================================
+dev-deps:
+	@echo "$(BLUE)📦 Instalando dependencias de desarrollo...$(NC)"
+	@command -v ccache >/dev/null 2>&1 || { \
+		echo "$(YELLOW)Instalando ccache...$(NC)"; \
+		sudo apt update && sudo apt install -y ccache; \
+	}
+	@command -v raylib >/dev/null 2>&1 || { \
+		echo "$(YELLOW)Raylib no detectada. Instalación manual requerida.$(NC)"; \
+		echo "Ver: https://github.com/raysan5/raylib"; \
+	}
+	@echo "$(GREEN)✅ Verificación de dependencias completada$(NC)"
+
+# ============================================================================
+# Instalación del juego (copia a /usr/local/bin)
+# ============================================================================
+install: all
+	@echo "$(BLUE)📦 Instalando Chaos Crew...$(NC)"
+	@sudo install -d /usr/local/bin
+	@sudo install -m 755 $(TARGET) /usr/local/bin/chaos-crew
+	@echo "$(GREEN)✅ Chaos Crew instalado en /usr/local/bin/chaos-crew$(NC)"
+	@echo "$(CYAN)Ejecutar con: chaos-crew$(NC)"
+
+uninstall:
+	@echo "$(RED)🗑️  Desinstalando Chaos Crew...$(NC)"
+	@sudo rm -f /usr/local/bin/chaos-crew
+	@echo "$(GREEN)✅ Chaos Crew desinstalado$(NC)"
+
+# ============================================================================
+# Crear tarball para distribución
+# ============================================================================
+dist: clean
+	@echo "$(BLUE)📦 Creando tarball de distribución...$(NC)"
+	@tar -czf chaos-crew-src.tar.gz \
+		--exclude='*.o' \
+		--exclude='*.d' \
+		--exclude='bin/*' \
+		--exclude='obj/*' \
+		--exclude='.git' \
+		--exclude='*.tar.gz' \
+		--exclude='*.zip' \
+		.
+	@echo "$(GREEN)✅ Tarball creado: chaos-crew-src.tar.gz$(NC)"
+
+# ============================================================================
+# Análisis de código (opcional)
+# ============================================================================
+analyze:
+	@echo "$(BLUE)🔍 Analizando código con cppcheck...$(NC)"
+	@command -v cppcheck >/dev/null 2>&1 && \
+		cppcheck --enable=all --suppress=missingIncludeSystem \
+		$(SRC_DIR) 2>&1 | tee cppcheck-report.txt || \
+		echo "$(YELLOW)cppcheck no instalado. Usar: sudo apt install cppcheck$(NC)"
+
+# ============================================================================
+# Formateo de código (opcional)
+# ============================================================================
+format:
+	@echo "$(BLUE)🎨 Formateando código con clang-format...$(NC)"
+	@command -v clang-format >/dev/null 2>&1 && \
+		find $(SRC_DIR) -name '*.cpp' -o -name '*.hpp' | \
+		xargs clang-format -i -style=file || \
+		echo "$(YELLOW)clang-format no instalado$(NC)"
+
+# ============================================================================
+# Testing (preparado para futura integración)
+# ============================================================================
+test:
+	@echo "$(YELLOW)⚠️  Suite de tests aún no implementada$(NC)"
+	@echo "$(CYAN)TODO: Integrar GoogleTest o Catch2$(NC)"
+
+# ============================================================================
+# Benchmark de compilación
+# ============================================================================
+benchmark:
+	@echo "$(BLUE)⏱️  Benchmark de compilación...$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Compilación secuencial:$(NC)"
+	@make clean > /dev/null 2>&1
+	@time make -j1 > /dev/null 2>&1
+	@echo ""
+	@echo "$(YELLOW)Compilación paralela (-j4):$(NC)"
+	@make clean > /dev/null 2>&1
+	@time make -j4 > /dev/null 2>&1
+	@echo ""
+
+# ============================================================================
+# Ayuda
+# ============================================================================
+help:
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║$(NC)     $(GREEN)Makefile de Chaos Crew - Comandos Disponibles$(NC)    $(CYAN)║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════╝$(NC)"
+	@echo ""
+	@echo "$(YELLOW)📦 Compilación:$(NC)"
+	@echo "  make              - Compila el proyecto (optimizado)"
+	@echo "  make -j4          - Compila en paralelo (4 threads)"
+	@echo "  make debug        - Compila en modo debug"
+	@echo "  make clean        - Limpia archivos de compilación"
+	@echo "  make clean-cache  - Limpia caché de ccache"
+	@echo ""
+	@echo "$(YELLOW)🎮 Ejecución:$(NC)"
+	@echo "  make run          - Compila y ejecuta el juego"
+	@echo ""
+	@echo "$(YELLOW)ℹ️  Información:$(NC)"
+	@echo "  make info         - Muestra información del proyecto"
+	@echo "  make check-dirs   - Verifica estructura de directorios"
+	@echo "  make list-sources - Lista archivos fuente detectados"
+	@echo "  make help         - Muestra esta ayuda"
+	@echo ""
+	@echo "$(YELLOW)🛠️  Utilidades:$(NC)"
+	@echo "  make dev-deps     - Instala dependencias de desarrollo"
+	@echo "  make install      - Instala el juego en el sistema"
+	@echo "  make uninstall    - Desinstala el juego"
+	@echo "  make dist         - Crea tarball de distribución"
+	@echo "  make analyze      - Análisis estático con cppcheck"
+	@echo "  make format       - Formatea código con clang-format"
+	@echo "  make benchmark    - Benchmark de compilación"
+	@echo ""
+	@echo "$(CYAN)═══════════════════════════════════════════════════════$(NC)"
+
+# ============================================================================
+# Información adicional
+# ============================================================================
+.DEFAULT_GOAL := all
+
+# Mostrar comandos ejecutados (verbose mode)
+# Descomentar la siguiente línea para ver comandos:
+# .SILENT:
+
+# ============================================================================
+# Notas para el equipo:
+# ============================================================================
+# 1. Este Makefile detecta automáticamente archivos .cpp en subdirectorios
+# 2. NO necesitas modificarlo al añadir nuevos archivos .cpp
+# 3. EnTT es header-only, no necesita compilarse
+# 4. Components son solo headers, no se compilan
+# 5. Para compilar más rápido: make -j4 (o -j8 según tu CPU)
+# 6. Para depurar: make debug && gdb bin/chaos-crew
+# ============================================================================
