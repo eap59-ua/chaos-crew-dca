@@ -40,3 +40,11 @@
   </objectgroup>
 
 </map>
+
+<!--
+PARA INCLUIR LA LIBRERÍA DE LECTURA DE FICHEROS XML
+git clone https://github.com/leethomason/tinyxml2.git
+cd tinyxml2
+cmake .
+make
+-->
