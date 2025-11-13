@@ -72,7 +72,7 @@ build_linux() {
         -o $BIN_DIR/$PROJECT_NAME \
         -I$VENDOR_DIR/include \
         -L$VENDOR_DIR/lib \
-        -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 \
+        -lraylib -ltinyxml2 -lGL -lm -lpthread -ldl -lrt -lX11 \
         -std=c++17 \
         -Wall -Wextra \
         -O2

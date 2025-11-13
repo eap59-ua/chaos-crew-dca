@@ -9,6 +9,9 @@
 #include "../systems/CollisionSystem.hpp"
 #include "../systems/WinSystem.hpp"
 #include "../systems/TrollSystem.hpp"
+#include "../systems/LoadMapSystem.hpp"
+
+#include <filesystem>
 
 GameplayState::GameplayState() 
     : 
@@ -28,7 +31,13 @@ void GameplayState::init() {
     
     // Configurar jugadores y nivel
     setupPlayers();
-    setupPlatforms();
+    // setupPlatforms();
+
+    
+    std::cout << "Ruta de trabajo actual: " << std::filesystem::current_path() << std::endl;
+
+    MapData map = loadTiledMap("mapa.xml");
+    createPlatformsFromMap(registry, map);
 
     createDoor(registry, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 150, 80, 100, GREEN);
     
