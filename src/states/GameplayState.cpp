@@ -33,11 +33,7 @@ void GameplayState::init() {
     setupPlayers();
     // setupPlatforms();
 
-    
-    std::cout << "Ruta de trabajo actual: " << std::filesystem::current_path() << std::endl;
-
-    MapData map = loadTiledMap("mapa.xml");
-    createPlatformsFromMap(registry, map);
+    loadTiledMap("mapa.xml", registry);
 
     createDoor(registry, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 150, 80, 100, GREEN);
     
@@ -93,7 +89,7 @@ void GameplayState::setupPlatforms() {
         {HOLE_START, GROUND_HEIGHT},
         DARKGRAY
     ));*/ 
-    createPlatform(registry, 0.0f, GROUND_Y, HOLE_START, GROUND_HEIGHT, DARKGRAY);
+    //createPlatform(registry, 0.0f, GROUND_Y, HOLE_START, GROUND_HEIGHT, DARKGRAY);
     
     // Suelo DERECHO (desde después del agujero hasta el final)
     /* platforms.push_back(Platform(
@@ -101,7 +97,7 @@ void GameplayState::setupPlatforms() {
         {SCREEN_WIDTH - HOLE_END, GROUND_HEIGHT},
         DARKGRAY
     ));*/
-    createPlatform(registry, HOLE_END, GROUND_Y, SCREEN_WIDTH - HOLE_END, GROUND_HEIGHT, DARKGRAY);
+    //(registry, HOLE_END, GROUND_Y, SCREEN_WIDTH - HOLE_END, GROUND_HEIGHT, DARKGRAY);
     
     // Plataformas intermedias (mantener igual)
     /* 
@@ -110,10 +106,10 @@ void GameplayState::setupPlatforms() {
     platforms.push_back(Platform::createNormalPlatform(800, SCREEN_HEIGHT - 400, 200));
     platforms.push_back(Platform::createNormalPlatform(1000, SCREEN_HEIGHT - 250, 150));
     */
-    createPlatform(registry, 200, SCREEN_HEIGHT - 200, 200, 20, DARKGRAY);
+    /*createPlatform(registry, 200, SCREEN_HEIGHT - 200, 200, 20, DARKGRAY);
     createPlatform(registry, 500, SCREEN_HEIGHT - 300, 200, 20, DARKGRAY);
     createPlatform(registry, 800, SCREEN_HEIGHT - 400, 200, 20, DARKGRAY);
-    createPlatform(registry, 1000, SCREEN_HEIGHT - 250, 150, 20, DARKGRAY);
+    createPlatform(registry, 1000, SCREEN_HEIGHT - 250, 150, 20, DARKGRAY);*/
 
     // TODO: Para Hito 2, añadir:
     // - Plataformas móviles
@@ -165,7 +161,7 @@ void GameplayState::update(float deltaTime) {
 
     MovementSystem(registry, deltaTime, SCREEN_WIDTH, SCREEN_HEIGHT);
     CollisionSystem(registry);
-    logicTroll(registry);
+    TrapSystem(registry, deltaTime);
     
     if (CheckDefeat(registry)) {
         state_machine->add_state(std::make_unique<GameOverState>(false), true);

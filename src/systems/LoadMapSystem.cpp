@@ -5,7 +5,12 @@
 #include <tinyxml2.h>
 #include <raylib.h>
 #include "../entt/entt.hpp"
+
 #include "../entities/PlatformFactory.hpp"
+
+#include "../components/Trap.hpp"
+#include "../components/Velocity.hpp"
+
 #include "LoadMapSystem.hpp"
 
 using namespace tinyxml2;
@@ -19,49 +24,18 @@ const int pixel_horizontal = 30;
 const int pixel_vertical = 10;
 
 // ==== Cargar el mapa XML ====
-MapData loadTiledMap(const std::string& filename) {
-    MapData mapData;
+void loadTiledMap(const std::string& filename, entt::registry& registry) {
     XMLDocument doc;
 
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
         std::cerr << "❌ Error cargando archivo: " << filename << std::endl;
-        return mapData;
     }
 
     XMLElement* map = doc.FirstChildElement("map");
     if (!map) {
         std::cerr << "❌ No se encontró el elemento <map>" << std::endl;
-        return mapData;
     }
-
-    /*map->QueryIntAttribute("width", &mapData.width);
-    map->QueryIntAttribute("height", &mapData.height);
-    map->QueryIntAttribute("tilewidth", &mapData.tileWidth);
-    map->QueryIntAttribute("tileheight", &mapData.tileHeight);
-
-    // Calcular el factor de escala según la resolución de la pantalla
-    float scaleX = static_cast<float>(SCREEN_WIDTH) / (mapData.width * TILE_SIZE);
-    float scaleY = static_cast<float>(SCREEN_HEIGHT) / (mapData.height * TILE_SIZE);
-    float scale = std::min(scaleX, scaleY); // Escala uniforme para no distorsionar el mapa*/
-
-    // ===== Leer capas de tiles =====
-    for (XMLElement* layer = map->FirstChildElement("layer"); layer; layer = layer->NextSiblingElement("layer")) {
-        TileLayer tileLayer;
-        tileLayer.name = layer->Attribute("name") ? layer->Attribute("name") : "";
-        layer->QueryIntAttribute("width", &tileLayer.width);
-        layer->QueryIntAttribute("height", &tileLayer.height);
-
-        XMLElement* data = layer->FirstChildElement("data");
-        if (data && data->GetText()) {
-            std::stringstream ss(data->GetText());
-            std::string value;
-            while (std::getline(ss, value, ',')) {
-                if (!value.empty())
-                    tileLayer.tiles.push_back(std::stoi(value));
-            }
-        }
-        mapData.layers.push_back(tileLayer);
-    }
+    
 
     // ===== Leer grupo de objetos =====
     for (XMLElement* objectGroup = map->FirstChildElement("objectgroup");
@@ -84,53 +58,52 @@ MapData loadTiledMap(const std::string& filename) {
             o.width *= SCREEN_WIDTH / pixel_horizontal;
             o.height *= SCREEN_HEIGHT / pixel_vertical;
 
-            // Aquí, ajustamos según la escala
-            /*
-            o.x *= scale;
-            o.y *= scale;
-            o.width *= scale;
-            o.height *= scale;
-            */
-
             // Propiedades personalizadas
             XMLElement* properties = obj->FirstChildElement("properties");
             if (properties) {
+            	auto entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
+            	registry.emplace<Trap>(entity, false);
+            	
+            	std::string conditionType;
+				float conditionValue = 0.f;
+				
+				std::string actionType;
+				float actionValue = 0.f;
+				
+				float speed = 0.f;
+            	
                 for (XMLElement* prop = properties->FirstChildElement("property");
                      prop; prop = prop->NextSiblingElement("property"))
                 {
-                    ObjectProperty p;
-                    p.name = prop->Attribute("name") ? prop->Attribute("name") : "";
-                    p.value = prop->Attribute("value") ? prop->Attribute("value") : "";
-                    o.properties.push_back(p);
+                    std::string name = prop->Attribute("name");
+    				std::string value = prop->Attribute("value") ? prop->Attribute("value") : "";
+				
+    				if (name == "condition")            conditionType = value;
+    				else if (name == "condition_distance") conditionValue = stof(value);
+				
+    				else if (name == "action")          actionType = value;
+    				else if (name == "action_amount")   actionValue = stof(value);
+				
+    				else if (name == "speed")           speed = stof(value);
                 }
+                
+                if (registry.any_of<Velocity>(entity))
+    				registry.get<Velocity>(entity).vx = speed;
+				
+				// Añadir condición
+				if (conditionType == "proximity")
+    				registry.emplace<ProximityCondition>(entity, conditionValue);
+				
+				// Añadir acción
+				if (actionType == "move_horizontal")
+    				registry.emplace<MoveAction>(entity, actionValue, 0.f);
+				else if (actionType == "move_vertical")
+    				registry.emplace<MoveAction>(entity, 0.f, actionValue);
             }
-
-            mapData.objects.push_back(o);
-        }
-    }
-
-    return mapData;
-}
-
-// ==== Crear plataformas desde el mapa ====
-void createPlatformsFromMap(entt::registry& registry, const MapData& mapData) {
-    for (const auto& obj : mapData.objects) {
-        if (obj.type == "platform" || obj.type == "Platform") {
-            Color color = GRAY;
-
-            // Buscar propiedad "color" si existe
-            for (const auto& prop : obj.properties) {
-                if (prop.name == "color") {
-                    if (prop.value == "red") color = RED;
-                    else if (prop.value == "green") color = GREEN;
-                    else if (prop.value == "blue") color = BLUE;
-                }
+            else {
+                if(o.type == "Platform") createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
             }
-
-            // Crear plataforma con las nuevas coordenadas y tamaños ajustados
-            createPlatform(registry, obj.x, obj.y, obj.width, obj.height, color);
-            std::cout << "🧱 Plataforma creada en (" << obj.x << "," << obj.y - obj.height 
-                      << ") tamaño (" << obj.width << "x" << obj.height << ")\n";
         }
     }
 }
+

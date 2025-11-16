@@ -4,40 +4,44 @@
      width="30" height="20" tilewidth="32" tileheight="32"
      infinite="0" nextlayerid="4" nextobjectid="10">
 
-  <!-- Capa de tiles del fondo -->
-  <layer id="1" name="Capa de patrones 1" width="30" height="10">
-    <data encoding="csv">
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-    </data>
-  </layer>
 
   <!-- Capa de objetos con lógica -->
-  <objectgroup id="3" name="ObjetosLógicos">
+  <objectgroup id="1" name="ObjectsStatics">
 
-    <!-- Plataforma móvil -->
-    <object id="1" name="Plataforma1" type="Platform" x="0" y="9.3" width="10" height="1" /> <!--El suelo de la izquierda-->
-    <object id="1" name="Plataforma2" type="Platform" x="16" y="9.3" width="15" height="1" /> <!--El suelo de la derecha-->
+    <object id="1" name="Plataforma1" type="Platform" x="0" y="9.3" width="12" height="1" /> <!--El suelo de la izquierda-->
     <object id="1" name="Plataforma3" type="Platform" x="7" y="7" width="3" height="0.5" /> <!--PLataforma de arriba de izquierda-->
     <object id="1" name="Plataforma4" type="Platform" x="16" y="6.5" width="3" height="0.5" /> <!--Plataforma de arriba de derecha-->
 
-    <object id="1" name="Plataforma5" type="Platform" x="12" y="5" width="3" height="0.5"> <!--Plataforma del centro con logica (se mueve)-->
-      <properties>
-        <property name="movimiento" value="horizontal"/>
-        <property name="amplitud" type="int" value="50"/>
-        <property name="velocidad" type="float" value="1.5"/>
-      </properties>
-    </object>
-
   </objectgroup>
+
+  <objectgroup name="ObjectsLogics">
+
+  		<object id="1" name="Plataforma5" type="Platform" x="12" y="5" width="3" height="0.5">
+    		<properties>
+        		<property name="condition" value="proximity"/>
+        		<property name="condition_distance" type="float" value="130"/>
+		
+        		<property name="action" value="move_horizontal"/>
+        		<property name="action_amount" type="float" value="50"/>
+		
+        		<property name="speed" type="float" value="10.5"/>
+    		</properties>
+  		</object>
+  		
+  		<object id="1" name="Plataforma2" type="Platform" x="12" y="9.3" width="18" height="1" > <!--El suelo de la derecha-->
+			<properties>
+        		<property name="condition" value="proximity"/>
+        		<property name="condition_distance" type="float" value="70"/>
+		
+        		<property name="action" value="move_horizontal"/>
+        		<property name="action_amount" type="float" value="350"/>
+		
+        		<property name="speed" type="float" value="10.5"/>
+    		</properties>
+  		</object>
+	
+	</objectgroup>
+
 
 </map>
 
