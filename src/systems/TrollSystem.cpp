@@ -7,6 +7,7 @@
 #include "../components/Position.hpp"
 #include "../components/Velocity.hpp"
 #include "../components/Player.hpp"
+#include "../components/Solid.hpp"
 
 using namespace std;
 
@@ -30,7 +31,7 @@ void TrapSystem(entt::registry& registry, float dt)
     // =====================================================
     // 2) PROCESAR TODAS LAS TRAMPAS
     // =====================================================
-    auto traps = registry.view<Trap, Position>();
+    auto traps = registry.view<Trap, Position, Solid>();
 
     for (auto entity : traps)
     {
@@ -50,8 +51,12 @@ void TrapSystem(entt::registry& registry, float dt)
             // revisar distancia con cada jugador
             for (auto& p : playerPositions)
             {
-                float dx = trapPos.x - p.x;
-                float dy = trapPos.y - p.y;
+            	auto& size = registry.get<Solid>(entity);
+            	float closestX = fmaxf(trapPos.x, fminf(p.x, trapPos.x + size.width));
+            	float closestY = fmaxf(trapPos.y, fminf(p.y, trapPos.y + size.height));
+            
+                float dx = p.x - closestX;
+                float dy = p.y - closestY;
                 float dist = sqrtf(dx * dx + dy * dy);
 
                 if (dist < minDist)

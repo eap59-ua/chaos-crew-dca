@@ -21,7 +21,7 @@ struct MoveAction {
 
 struct ChangeDimensionAction {
 	float dw, dh;
-}
+};
 
 struct ChangeVelocityAction {
     float newVelocity;
