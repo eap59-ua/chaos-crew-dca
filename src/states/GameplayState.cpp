@@ -34,8 +34,6 @@ void GameplayState::init() {
     // setupPlatforms();
 
     loadTiledMap("mapa.xml", registry);
-
-    createDoor(registry, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 150, 80, 100, GREEN);
     
     // Resetear flags
     levelCompleted = false;

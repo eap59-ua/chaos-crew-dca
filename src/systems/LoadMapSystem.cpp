@@ -7,6 +7,7 @@
 #include "../entt/entt.hpp"
 
 #include "../entities/PlatformFactory.hpp"
+#include "../entities/DoorFactory.hpp"
 
 #include "../components/Trap.hpp"
 #include "../components/Velocity.hpp"
@@ -61,7 +62,9 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
             // Propiedades personalizadas
             XMLElement* properties = obj->FirstChildElement("properties");
             if (properties) {
-            	auto entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
+            	entt::entity entity = entt::null;
+
+                if(o.type == "Platform") entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
             	registry.emplace<Trap>(entity, false, false, false);
             	
             	std::string conditionType;
@@ -102,6 +105,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
             }
             else {
                 if(o.type == "Platform") createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
+                else if(o.type == "Door") createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
             }
         }
     }

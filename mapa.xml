@@ -10,6 +10,7 @@
 
     <object id="1" name="Plataforma1" type="Platform" x="0" y="9.3" width="12" height="1" /> <!--El suelo de la izquierda-->
     <object id="1" name="Plataforma3" type="Platform" x="7" y="7" width="3" height="0.5" /> <!--PLataforma de arriba de izquierda-->
+	<object id="1" name="Door" type="Door" x="27" y="7.5" width="2" height="1.5" /> 
 
   </objectgroup>
 
