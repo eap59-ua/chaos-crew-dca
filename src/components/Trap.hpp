@@ -34,5 +34,7 @@ struct SpawnAction {
 // ==========Trampa==============
 struct Trap {
     bool conditionMet = false;
+    bool actionMet = false;
+    bool finMet = false;
 };
 

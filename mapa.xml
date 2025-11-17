@@ -18,12 +18,12 @@
   		<object id="1" name="Plataforma5" type="Platform" x="12" y="5" width="3" height="0.5">
     		<properties>
         		<property name="condition" value="proximity"/>
-        		<property name="condition_distance" type="float" value="130"/>
+        		<property name="condition_distance" type="float" value="80"/>
 		
         		<property name="action" value="move_horizontal"/>
         		<property name="action_amount" type="float" value="100"/>
 		
-        		<property name="speed" type="float" value="10.5"/>
+        		<property name="speed" type="float" value="10"/>
     		</properties>
   		</object>
   		
@@ -35,7 +35,7 @@
         		<property name="action" value="move_horizontal"/>
         		<property name="action_amount" type="float" value="350"/>
 		
-        		<property name="speed" type="float" value="10.5"/>
+        		<property name="speed" type="float" value="10"/>
     		</properties>
   		</object>
   		
@@ -47,7 +47,7 @@
         		<property name="action" value="move_horizontal"/>
         		<property name="action_amount" type="float" value="-100"/>
 		
-        		<property name="speed" type="float" value="10.5"/>
+        		<property name="speed" type="float" value="20"/>
     		</properties>
   		</object>
 	

@@ -31,7 +31,7 @@ void TrapSystem(entt::registry& registry, float dt)
     // =====================================================
     // 2) PROCESAR TODAS LAS TRAMPAS
     // =====================================================
-    auto traps = registry.view<Trap, Position, Solid>();
+    auto traps = registry.view<Trap, Position, Solid, Velocity>();
 
     for (auto entity : traps)
     {
@@ -90,11 +90,18 @@ void TrapSystem(entt::registry& registry, float dt)
 
 
         // =====================================================
-        // Si NO se cumple ninguna condición → saltar acciones
+        //  Si la condición se cumple por primera vez → activar acción
         // =====================================================
-        if (!trap.conditionMet)
-            continue;
+        if (trap.conditionMet && !trap.actionMet)
+        {
+            trap.actionMet = true;
+        }
 
+        // =====================================================
+        //  Si la acción no ha empezado, no hacer nada
+        // =====================================================
+        if (!trap.actionMet)
+            continue;
 
         // =====================================================
         // D) MOVE ACTION
@@ -102,9 +109,21 @@ void TrapSystem(entt::registry& registry, float dt)
         if (registry.any_of<MoveAction>(entity))
         {
             auto& mov = registry.get<MoveAction>(entity);
+            auto& trapVel = traps.get<Velocity>(entity);
 
-            trapPos.x += mov.dx;
-            trapPos.y += mov.dy;
+            if(mov.dx < 0 && trapVel.vx > 0) trapVel.vx *= -1;
+            if(mov.dy < 0 && trapVel.vy > 0) trapVel.vy *= -1;
+
+            trapPos.x += trapVel.vx;
+            trapPos.y += trapVel.vy;
+
+            mov.dx -= trapVel.vx;
+            mov.dy -= trapVel.vy;
+
+            if(mov.dx == 0 && mov.dy == 0)
+            {
+                trap.finMet = true;
+            }
         }
 
 
@@ -128,6 +147,6 @@ void TrapSystem(entt::registry& registry, float dt)
             auto& sp = registry.get<SpawnAction>(entity);
         }
         
-        registry.remove<Trap>(entity);
+        if(trap.finMet) registry.remove<Trap>(entity);
     }
 }

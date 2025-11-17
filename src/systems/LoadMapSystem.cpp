@@ -62,7 +62,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
             XMLElement* properties = obj->FirstChildElement("properties");
             if (properties) {
             	auto entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
-            	registry.emplace<Trap>(entity, false);
+            	registry.emplace<Trap>(entity, false, false, false);
             	
             	std::string conditionType;
 				float conditionValue = 0.f;
