@@ -125,22 +125,50 @@ void TrapSystem(entt::registry& registry, float dt)
                 trap.finMet = true;
             }
         }
+        
+        // =====================================================
+        // E) CHANGE DIMENSION ACTION
+        // =====================================================
+        if (registry.any_of<ChangeDimensionAction>(entity))
+        {
+            auto& dimension = registry.get<ChangeDimensionAction>(entity);
+            auto& size = registry.get<Solid>(entity);
+            
+            float scale = 10.0;
+
+            if(dimension.dh < 0) {
+            	scale *= -1;
+            }
+            
+            //size.height -= scale / 10;
+            //trapPos.y += scale / 30;
+            size.width -= scale;
+            trapPos.x += scale / 2;
+            
+            dimension.dh -= scale;
+
+            if(dimension.dh == 0)
+            {
+                trap.finMet = true;
+            }
+        }
 
 
         // =====================================================
-        // E) CHANGE VELOCITY ACTION
+        // F) CHANGE VELOCITY ACTION
         // =====================================================
         if (registry.any_of<ChangeVelocityAction>(entity))
         {
             auto& vel = registry.get<Velocity>(entity);
             auto& act = registry.get<ChangeVelocityAction>(entity);
 
-            vel.vx = act.newVelocity;
+            vel.vx = act.newVelocityX;
+            vel.vy = act.newVelocityY;
         }
 
 
         // =====================================================
-        // F) SPAWN ACTION
+        // G) SPAWN ACTION
         // =====================================================
         if (registry.any_of<SpawnAction>(entity))
         {

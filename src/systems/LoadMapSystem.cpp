@@ -82,7 +82,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
     				std::string value = prop->Attribute("value") ? prop->Attribute("value") : "";
 				
     				if (name == "condition")            conditionType = value;
-    				else if (name == "condition_distance") conditionValue = stof(value);
+    				else if (name == "condition_value") conditionValue = stof(value);
 				
     				else if (name == "action")          actionType = value;
     				else if (name == "action_amount")   actionValue = stof(value);
@@ -102,6 +102,12 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
     				registry.emplace<MoveAction>(entity, actionValue, 0.f);
 				else if (actionType == "move_vertical")
     				registry.emplace<MoveAction>(entity, 0.f, actionValue);
+    			else if(actionType == "velocity_horizontal")
+    				registry.emplace<ChangeVelocityAction>(entity, actionValue, 0.f);
+    			else if(actionType == "velocity_vertical")
+    				registry.emplace<ChangeVelocityAction>(entity, 0.f, actionValue);
+    			else if(actionType == "dimension")
+    				registry.emplace<ChangeDimensionAction>(entity, actionValue, actionValue);
             }
             else {
                 if(o.type == "Platform") createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);

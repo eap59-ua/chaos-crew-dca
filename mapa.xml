@@ -19,7 +19,7 @@
   		<object id="1" name="Plataforma5" type="Platform" x="12" y="5" width="3" height="0.5">
     		<properties>
         		<property name="condition" value="proximity"/>
-        		<property name="condition_distance" type="float" value="80"/>
+        		<property name="condition_value" type="float" value="80"/>
 		
         		<property name="action" value="move_horizontal"/>
         		<property name="action_amount" type="float" value="100"/>
@@ -28,10 +28,10 @@
     		</properties>
   		</object>
   		
-  		<object id="1" name="Plataforma2" type="Platform" x="12" y="9.3" width="18" height="1"> <!--El suelo de la derecha-->
+  		<object id="1" name="Plataforma2" type="Platform" x="12" y="9.3" width="19" height="1"> <!--El suelo de la derecha-->
 			<properties>
         		<property name="condition" value="proximity"/>
-        		<property name="condition_distance" type="float" value="70"/>
+        		<property name="condition_value" type="float" value="70"/>
 		
         		<property name="action" value="move_horizontal"/>
         		<property name="action_amount" type="float" value="350"/>
@@ -43,7 +43,7 @@
   		<object id="1" name="Plataforma4" type="Platform" x="16" y="6.5" width="3" height="0.5"> <!--Plataforma de arriba de derecha-->
   			<properties>
         		<property name="condition" value="proximity"/>
-        		<property name="condition_distance" type="float" value="130"/>
+        		<property name="condition_value" type="float" value="130"/>
 		
         		<property name="action" value="move_horizontal"/>
         		<property name="action_amount" type="float" value="-100"/>
@@ -51,6 +51,7 @@
         		<property name="speed" type="float" value="20"/>
     		</properties>
   		</object>
+  		
 	
 	</objectgroup>
 

@@ -34,6 +34,8 @@ void renderPlatforms(entt::registry& registry) {
     	
     	sprite.rect.x = pos.x;
         sprite.rect.y = pos.y;
+        sprite.rect.height = solid.height;
+        sprite.rect.width = solid.width;
         DrawRectangleRec(sprite.rect, solid.color);
         // DrawRectangleLinesEx(sprite.rect, 2, BLACK);
 	}
