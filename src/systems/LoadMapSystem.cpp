@@ -124,7 +124,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
                 {
                     auto &vel = registry.get<Velocity>(entity);
                     vel.vx = speed;
-                    vel.vy = 0.f;
+                    vel.vy = speed;
                 }
 
                 // -------------------------
