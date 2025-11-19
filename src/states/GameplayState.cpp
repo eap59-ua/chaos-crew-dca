@@ -1,5 +1,6 @@
 #include "GameplayState.hpp"
 #include "GameOverState.hpp"  // ✅ Incluir en .cpp
+#include "PauseState.hpp"
 #include "../entities/PlayerFactory.hpp"
 #include "../entities/PlatformFactory.hpp"
 #include "../entities/DoorFactory.hpp"
@@ -116,6 +117,10 @@ void GameplayState::handleInput() {
     // Reinicio manual con ENTER (útil para debugging)
     if (IsKeyPressed(KEY_ENTER)) {
         init();
+        return;
+    }
+    if (IsKeyPressed(KEY_ESCAPE)) {
+        state_machine->add_state(std::make_unique<PauseState>(), false); //añadido par ael menu de pausa
         return;
     }
 
