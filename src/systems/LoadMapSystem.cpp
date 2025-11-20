@@ -158,9 +158,9 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
 }
 
 
-// ------------------------
-// Definición
-// ------------------------
+// --------------------------------------------------------------------------------------------------------------------------------------------
+// Definición -> estas funciones lo que hacen es introducir una funcion anonima (lambdas) en el vector de acciones y condiciones de las trampas
+// --------------------------------------------------------------------------------------------------------------------------------------------
 
 static void ProcessTrap(entt::registry& registry, entt::entity entity,
                        const std::string& conditionType, float conditionValue,
