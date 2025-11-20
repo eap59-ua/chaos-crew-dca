@@ -33,6 +33,12 @@ const int pixel_vertical = 10;
 // ------------------------
 // Prototipos de helpers
 // ------------------------
+
+static void ProcessTrap(entt::registry& registry, entt::entity entity,
+                       const std::string& conditionType, float conditionValue,
+                       const std::string& actionType, float actionValue,
+                       float speed);
+
 static void AddProximityCondition(entt::registry& registry, entt::entity e, float distance);
 static void AddTimerCondition(entt::registry& registry, entt::entity e, float delay);
 
@@ -58,12 +64,11 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
         return;
     }
     
-    // ===== Leer grupo de objetos =====
     for (XMLElement* objectGroup = map->FirstChildElement("objectgroup");
          objectGroup; objectGroup = objectGroup->NextSiblingElement("objectgroup"))
     {
         for (XMLElement* obj = objectGroup->FirstChildElement("object");
-             obj; obj = obj->NextSiblingElement("object"))
+            obj; obj = obj->NextSiblingElement("object"))
         {
             MapObject o;
             o.name = obj->Attribute("name") ? obj->Attribute("name") : "";
@@ -73,92 +78,80 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
             obj->QueryFloatAttribute("width", &o.width);
             obj->QueryFloatAttribute("height", &o.height);
 
-            // Aplicar la constante TILE_SIZE para escalar (tu escala original)
             o.x *= SCREEN_WIDTH / pixel_horizontal;
             o.y *= SCREEN_HEIGHT / pixel_vertical;
             o.width *= SCREEN_WIDTH / pixel_horizontal;
             o.height *= SCREEN_HEIGHT / pixel_vertical;
 
-            // Propiedades personalizadas
             XMLElement* properties = obj->FirstChildElement("properties");
-            if (properties) {
+            
+            if (properties)
+            {
                 entt::entity entity = entt::null;
-
                 if (o.type == "Platform")
                     entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
                 else if (o.type == "Door")
                     entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
-                else
-                    entity = entt::null; // en caso de otros tipos
 
                 if (entity == entt::null) continue;
 
-                // Emplace del nuevo componente Trap (sistema de funciones)
-                auto &trap = registry.emplace<Trap>(entity);
+                auto &trap = registry.get_or_emplace<Trap>(entity);
 
-                // Lectura de propiedades específicas
+                // Variables temporales para acumular un par condición-acción
                 std::string conditionType;
                 float conditionValue = 0.f;
-                
                 std::string actionType;
                 float actionValue = 0.f;
-                
                 float speed = 0.f;
 
+                // Cambios -> poder tener varias trampas en un componente del mapa
                 for (XMLElement* prop = properties->FirstChildElement("property");
-                     prop; prop = prop->NextSiblingElement("property"))
+                    prop; prop = prop->NextSiblingElement("property"))
                 {
                     std::string name = prop->Attribute("name");
                     std::string value = prop->Attribute("value") ? prop->Attribute("value") : "";
-                
-                    if (name == "condition")            conditionType = value;
-                    else if (name == "condition_value") conditionValue = value.empty() ? 0.f : stof(value);
-                
-                    else if (name == "action")          actionType = value;
-                    else if (name == "action_amount")   actionValue = value.empty() ? 0.f : stof(value);
-                
-                    else if (name == "speed")           speed = value.empty() ? 0.f : stof(value);
+
+                    if (name == "condition") {
+                        if (!conditionType.empty() && !actionType.empty()) {
+                            ProcessTrap(registry, entity, conditionType, conditionValue, 
+                                    actionType, actionValue, speed);
+                            // resetear vaariables
+                            conditionType.clear();
+                            actionType.clear();
+                            conditionValue = 0.f;
+                            actionValue = 0.f;
+                            speed = 0.f;
+                        }
+                        conditionType = value;
+                    }
+                    else if (name == "condition_value") 
+                        conditionValue = value.empty() ? 0.f : stof(value);
+                    else if (name == "action") 
+                        actionType = value;
+                    else if (name == "action_amount") 
+                        actionValue = value.empty() ? 0.f : stof(value);
+                    else if (name == "speed") 
+                        speed = value.empty() ? 0.f : stof(value);
                 }
-                
-                if (registry.any_of<Velocity>(entity))
-                {
-                    auto &vel = registry.get<Velocity>(entity);
-                    vel.vx = speed;
-                    vel.vy = speed;
+
+                // Procesar el último par acumulado
+                if (!conditionType.empty() && !actionType.empty()) {
+                    ProcessTrap(registry, entity, conditionType, conditionValue, 
+                            actionType, actionValue, speed);
                 }
 
-                // -------------------------
-                // ======CONDICIONES=======
-                // -------------------------
-                if (conditionType == "proximity")
-                    AddProximityCondition(registry, entity, conditionValue);
-                else if (conditionType == "timer")
-                    AddTimerCondition(registry, entity, conditionValue);
-
-                // -------------------------
-                // =======ACCIONES=========
-                // -------------------------
-                if (actionType == "move_horizontal")
-                    AddMoveHorizontalAction(registry, entity, actionValue);
-                else if (actionType == "move_vertical")
-                    AddMoveVerticalAction(registry, entity, actionValue);
-                else if (actionType == "velocity_horizontal")
-                    AddVelocityHorizontalAction(registry, entity, actionValue);
-                else if (actionType == "velocity_vertical")
-                    AddVelocityVerticalAction(registry, entity, actionValue);
-                else if (actionType == "dimension")
-                    AddChangeDimensionAction(registry, entity, actionValue);
-
-                // Si no se definieron ni condiciones ni acciones, borramos el Trap
-                if (trap.conditions.empty() && trap.actions.empty())
-                {
+                // Si no hay trampas válidas, eliminar componente
+                if (trap.conditions.empty() && trap.actions.empty()) {
                     registry.remove<Trap>(entity);
                 }
-            } 
-            else {
-                // No properties -> crear platform/door normales
-                if(o.type == "Platform") createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
-                else if(o.type == "Door") createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
+            }
+            else 
+            {
+                // Sin propiedades -> crear entidad normal
+                if (o.type == "Platform") 
+                    createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
+                else if (o.type == "Door") 
+                    createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
             }
         }
     }
@@ -168,6 +161,38 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
 // ------------------------
 // Definición
 // ------------------------
+
+static void ProcessTrap(entt::registry& registry, entt::entity entity,
+                       const std::string& conditionType, float conditionValue,
+                       const std::string& actionType, float actionValue,
+                       float speed)
+{
+    // Setear velocidad si existe
+    if (registry.any_of<Velocity>(entity) && speed != 0.f)
+    {
+        auto &vel = registry.get<Velocity>(entity);
+        vel.vx = speed;
+        vel.vy = speed;
+    }
+
+    // Añadir condición
+    if (conditionType == "proximity")
+        AddProximityCondition(registry, entity, conditionValue);
+    else if (conditionType == "timer")
+        AddTimerCondition(registry, entity, conditionValue);
+
+    // Añadir acción
+    if (actionType == "move_horizontal")
+        AddMoveHorizontalAction(registry, entity, actionValue);
+    else if (actionType == "move_vertical")
+        AddMoveVerticalAction(registry, entity, actionValue);
+    else if (actionType == "velocity_horizontal")
+        AddVelocityHorizontalAction(registry, entity, actionValue);
+    else if (actionType == "velocity_vertical")
+        AddVelocityVerticalAction(registry, entity, actionValue);
+    else if (actionType == "dimension")
+        AddChangeDimensionAction(registry, entity, actionValue);
+}
 
 static void AddProximityCondition(entt::registry& registry, entt::entity e, float distance)
 {

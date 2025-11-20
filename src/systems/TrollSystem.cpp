@@ -5,47 +5,65 @@
 
 #include "../entt/entt.hpp"
 #include <vector>
+#include <algorithm> // for std::min, std::all_of
 
 void TrapSystem(entt::registry& registry, float dt)
 {
-    // Vista de traps (solo Trap es obligatorio)
     auto view = registry.view<Trap>();
 
     for (auto entity : view)
     {
         auto &trap = view.get<Trap>(entity);
 
-        // Si ya terminó -> eliminar componente Trap
-        if (trap.finished) {
-            if (registry.any_of<Trap>(entity))
-                registry.remove<Trap>(entity);
-            continue;
-        }
+        // Inicializar buffers si están vacíos
+        if (trap.triggeredPerCondition.size() != trap.conditions.size())
+            trap.triggeredPerCondition.assign(trap.conditions.size(), false);
 
-        // 1) Si no está activada, evaluar condiciones
-        if (!trap.triggered)
+        if (trap.finishedPerAction.size() != trap.actions.size())
+            trap.finishedPerAction.assign(trap.actions.size(), false);
+
+        // Evaluar condiciones por índice
+        for (size_t i = 0; i < trap.conditions.size(); ++i)
         {
-            for (auto &cond : trap.conditions)
-            {
-                // Si alguna condición devuelve true -> activamos la trampa
-                if (cond(dt)) {
-                    trap.triggered = true;
-                    break;
-                }
-            }
+            // Si ya se activó esa condición, saltar
+            if (trap.triggeredPerCondition[i])
+                continue;
 
-            if (!trap.triggered)
-                continue; // aún no activada, siguiente trampa
+            // Si ahora se cumple → marcar
+            if (trap.conditions[i](dt))
+                trap.triggeredPerCondition[i] = true;
         }
 
-        // 2) Ejecutar acciones
+        // Ejecutar acciones correspondientes
+        for (size_t i = 0; i < trap.actions.size(); ++i)
+        {
+            // Si la condición[i] nunca se cumplió -> saltar
+            if (!trap.triggeredPerCondition[i])
+                continue;
+
+            // Si la acción[i] ya terminó -> saltar
+            if (trap.finishedPerAction[i])
+                continue;
+
+            // Ejecutar acción
+            bool done = trap.actions[i](dt);
+            if (done)
+                trap.finishedPerAction[i] = true;
+        }
+
+        // terminaron todas?
         bool allDone = true;
-        for (auto &action : trap.actions)
+        for (bool fin : trap.finishedPerAction)
         {
-            bool done = action(dt);
-            if (!done) allDone = false;
+            if (!fin) {
+                allDone = false;
+                break;
+            }
         }
 
-        trap.finished = allDone;
+        // borrar el componente tramp
+        if (allDone)
+            registry.remove<Trap>(entity);
     }
 }
+
