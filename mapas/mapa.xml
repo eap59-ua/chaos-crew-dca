@@ -14,7 +14,7 @@
 
   </objectgroup>
 
-  <objectgroup name="ObjectsLogics">
+  <objectgroup name="ObjectsTraps">
 
   		<object id="1" name="Plataforma5" type="Platform" x="12" y="5" width="3" height="0.5">
     		<properties>

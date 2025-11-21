@@ -10,6 +10,7 @@
 #include "../systems/WinSystem.hpp"
 #include "../systems/TrollSystem.hpp"
 #include "../systems/LoadMapSystem.hpp"
+#include "../systems/PatronSystem.hpp"
 
 #include <filesystem>
 
@@ -33,7 +34,7 @@ void GameplayState::init() {
     setupPlayers();
     // setupPlatforms();
 
-    loadTiledMap("mapa.xml", registry);
+    loadTiledMap("mapas/mapa2.xml", registry);
     
     // Resetear flags
     levelCompleted = false;
@@ -160,6 +161,7 @@ void GameplayState::update(float deltaTime) {
     MovementSystem(registry, deltaTime, SCREEN_WIDTH, SCREEN_HEIGHT);
     CollisionSystem(registry);
     TrapSystem(registry, deltaTime);
+    PatronSystem(registry, deltaTime);
     
     if (CheckDefeat(registry)) {
         state_machine->add_state(std::make_unique<GameOverState>(false), true);

@@ -14,6 +14,7 @@
 #include "../components/Velocity.hpp"
 #include "../components/Solid.hpp"
 #include "../components/Player.hpp"
+#include "../components/Patron.hpp"
 
 #include "LoadMapSystem.hpp"
 
@@ -31,7 +32,7 @@ const int pixel_horizontal = 30;
 const int pixel_vertical = 10;
 
 // ------------------------
-// Prototipos de helpers
+// Prototipos
 // ------------------------
 
 static void ProcessTrap(entt::registry& registry, entt::entity entity,
@@ -48,6 +49,10 @@ static void AddVelocityHorizontalAction(entt::registry& registry, entt::entity e
 static void AddVelocityVerticalAction(entt::registry& registry, entt::entity e, float newVy);
 static void AddChangeDimensionAction(entt::registry& registry, entt::entity e, float amount);
 // static void AddSpawnAction(entt::registry& registry, entt::entity e, const std::string& enemyType);
+
+
+static void AddPatronLoopHorizontal(entt::registry& registry, entt::entity e, float amount);
+static void AddPatronLoopVertical(entt::registry& registry, entt::entity e, float amount);
 
 // ==== Cargar el mapa XML ====
 void loadTiledMap(const std::string& filename, entt::registry& registry) {
@@ -67,6 +72,8 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
     for (XMLElement* objectGroup = map->FirstChildElement("objectgroup");
          objectGroup; objectGroup = objectGroup->NextSiblingElement("objectgroup"))
     {
+        const string groupName = objectGroup->Attribute("name");
+
         for (XMLElement* obj = objectGroup->FirstChildElement("object");
             obj; obj = obj->NextSiblingElement("object"))
         {
@@ -85,7 +92,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
 
             XMLElement* properties = obj->FirstChildElement("properties");
             
-            if (properties)
+            if (properties && groupName == "ObjectsTraps")
             {
                 entt::entity entity = entt::null;
                 if (o.type == "Platform")
@@ -113,8 +120,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
 
                     if (name == "condition") {
                         if (!conditionType.empty() && !actionType.empty()) {
-                            ProcessTrap(registry, entity, conditionType, conditionValue, 
-                                    actionType, actionValue, speed);
+                            ProcessTrap(registry, entity, conditionType, conditionValue, actionType, actionValue, speed);
                             // resetear vaariables
                             conditionType.clear();
                             actionType.clear();
@@ -145,6 +151,42 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
                     registry.remove<Trap>(entity);
                 }
             }
+            else if (properties && groupName == "ObjectsLogic")
+            {
+                entt::entity entity = entt::null;
+
+                if (o.type == "Platform")
+                    entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
+                else if (o.type == "Door")
+                    entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
+
+                if (entity == entt::null) continue;
+
+                // Leer propiedades
+                for (XMLElement* prop = properties->FirstChildElement("property");
+                    prop; prop = prop->NextSiblingElement("property"))
+                {
+                    std::string name = prop->Attribute("name");
+                    std::string value = prop->Attribute("value") ? prop->Attribute("value") : "";
+
+                    // Velocidad inicial
+                    if (name == "speed")
+                    {
+                        float v = stof(value);
+                        auto &vel = registry.get_or_emplace<Velocity>(entity);
+                        vel.vx = v;
+                        vel.vy = v;
+                    }
+                    else if (name == "bucle_horizontal")
+                    {
+                        AddPatronLoopHorizontal(registry, entity, stof(value));
+                    }
+                    else if (name == "bucle_vertical")
+                    {
+                        AddPatronLoopVertical(registry, entity, stof(value));
+                    }
+                }
+            }
             else 
             {
                 // Sin propiedades -> crear entidad normal
@@ -161,6 +203,8 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
 // --------------------------------------------------------------------------------------------------------------------------------------------
 // Definición -> estas funciones lo que hacen es introducir una funcion anonima (lambdas) en el vector de acciones y condiciones de las trampas
 // --------------------------------------------------------------------------------------------------------------------------------------------
+
+//======================FUNCIONES RELACIONADAS CON LAS TRAMPAS============================
 
 static void ProcessTrap(entt::registry& registry, entt::entity entity,
                        const std::string& conditionType, float conditionValue,
@@ -194,6 +238,7 @@ static void ProcessTrap(entt::registry& registry, entt::entity entity,
         AddChangeDimensionAction(registry, entity, actionValue);
 }
 
+//---------------------------------CONDICIONES--------------------------------------------
 static void AddProximityCondition(entt::registry& registry, entt::entity e, float distance)
 {
     auto &trap = registry.get<Trap>(e);
@@ -244,6 +289,7 @@ static void AddTimerCondition(entt::registry& registry, entt::entity e, float de
     );
 }
 
+//---------------------------------ACCIONES--------------------------------------------
 static void AddMoveHorizontalAction(entt::registry& registry, entt::entity e, float amount)
 {
     auto &trap = registry.get<Trap>(e);
@@ -329,8 +375,7 @@ static void AddChangeDimensionAction(entt::registry& registry, entt::entity e, f
             auto &size = registry.get<Solid>(e);
             auto &pos  = registry.get<Position>(e);
 
-            // Ajuste por frame (suavizado)
-            float step = 10.0f * dt * 60.0f; // scaled to fps
+            float step = 10.0f;
             if (amount < 0) step *= -1.0f;
 
             size.width -= step;
@@ -338,14 +383,7 @@ static void AddChangeDimensionAction(entt::registry& registry, entt::entity e, f
 
             amount -= step;
 
-            // Condiciones de término robustas
-            if ((amount >= 0 && amount <= 0.0f) || (amount < 0 && amount >= 0.0f))
-                return true;
-
-            if (size.width <= 0.0f) return true;
-
-            if ((amount >= 0 && amount <= 0.f) || (amount <= 0 && amount >= 0.f))
-                return true;
+            if(amount == 0.0f) return true;
 
             return false;
         }
@@ -365,3 +403,94 @@ static void AddChangeDimensionAction(entt::registry& registry, entt::entity e, f
     );
 }
 */
+
+
+//====================FUNCIONES RELACIONADAS CON LAS LÓGICA DE BUCLES============================
+
+// -----------------------------------------
+// Movimiento en bucle horizontal
+// -----------------------------------------
+static void AddPatronLoopHorizontal(entt::registry& registry, entt::entity e, float amount)
+{
+    auto &p = registry.get_or_emplace<Patron>(e);
+
+    p.actions.push_back(
+        [e, amount, traveled = 0.0f, forward = true, &registry](float dt) mutable
+        {
+            if (!registry.any_of<Velocity>(e) || !registry.any_of<Position>(e))
+                return;
+
+            auto &vel = registry.get<Velocity>(e);
+            auto &pos = registry.get<Position>(e);
+
+            if (forward)
+            {
+                pos.x += vel.vx * dt;
+                traveled += std::abs(vel.vx * dt);
+
+                if (traveled >= amount)
+                {
+                    vel.vx *= -1;
+                    forward = false;
+                    traveled = 0;
+                }
+            }
+            else
+            {
+                pos.x += vel.vx * dt;
+                traveled += std::abs(vel.vx * dt);
+
+                if (traveled >= amount)
+                {
+                    vel.vx *= -1;
+                    forward = true;
+                    traveled = 0;
+                }
+            }
+        }
+    );
+}
+
+// -----------------------------------------
+// Movimiento en bucle vertical
+// -----------------------------------------
+static void AddPatronLoopVertical(entt::registry& registry, entt::entity e, float amount)
+{
+    auto &p = registry.get_or_emplace<Patron>(e);
+
+    p.actions.push_back(
+        [e, amount, traveled = 0.0f, forward = true, &registry](float dt) mutable
+        {
+            if (!registry.any_of<Velocity>(e) || !registry.any_of<Position>(e))
+                return;
+
+            auto &vel = registry.get<Velocity>(e);
+            auto &pos = registry.get<Position>(e);
+
+            if (forward)
+            {
+                pos.y += vel.vy * dt;
+                traveled += std::abs(vel.vy * dt);
+
+                if (traveled >= amount)
+                {
+                    vel.vy *= -1;
+                    forward = false;
+                    traveled = 0;
+                }
+            }
+            else
+            {
+                pos.y += vel.vy * dt;
+                traveled += std::abs(vel.vy * dt);
+
+                if (traveled >= amount)
+                {
+                    vel.vy *= -1;
+                    forward = true;
+                    traveled = 0;
+                }
+            }
+        }
+    );
+}

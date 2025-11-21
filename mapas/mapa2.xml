@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.1"
+     orientation="orthogonal" renderorder="right-down"
+     width="30" height="20" tilewidth="32" tileheight="32"
+     infinite="0" nextlayerid="4" nextobjectid="10">
+
+
+  <!-- Capa de objetos con lógica -->
+  <objectgroup id="1" name="ObjectsStatics">
+
+	<object id="1" name="Door" type="Door" x="27" y="7.5" width="2" height="1.5" /> 
+
+  </objectgroup>
+
+  <objectgroup name="ObjectsTraps">
+
+        <object id="1" name="Plataforma2" type="Platform" x="12" y="9.3" width="19" height="1"> <!--El suelo de la derecha-->
+			<properties>
+				<!--Primera trampa-->
+        		<property name="condition" value="proximity"/>
+        		<property name="condition_value" type="float" value="70"/>
+		
+        		<property name="action" value="move_horizontal"/>
+        		<property name="action_amount" type="float" value="120"/>
+		
+        		<property name="speed" type="float" value="10"/>
+
+				<!--Segunda trampa-->
+        		<property name="condition" value="timer"/>
+        		<property name="condition_value" type="float" value="3"/>
+		
+        		<property name="action" value="move_horizontal"/>
+        		<property name="action_amount" type="float" value="120"/>
+		
+        		<property name="speed" type="float" value="10"/>
+    		</properties>
+  		</object>
+
+		<object id="1" name="Plataforma1" type="Platform" x="0" y="9.3" width="12" height="1" > <!--El suelo de la izquierda-->
+			<properties>
+				<property name="condition" value="timer"/>
+        		<property name="condition_value" type="float" value="3"/>
+		
+        		<property name="action" value="move_horizontal"/>
+        		<property name="action_amount" type="float" value="-120"/>
+		
+        		<property name="speed" type="float" value="10"/>
+			</properties>
+		</object>
+	
+	</objectgroup>
+
+	<objectgroup name="ObjectsLogic">
+
+        <object id="1" name="Plataforma3" type="Platform" x="12" y="5" width="3" height="0.5"> <!--El suelo de la derecha-->
+			<properties>
+				<property name="bucle_vertical" value="170"/>
+				<property name="speed" value="200"/>
+			</properties>
+  		</object>
+	
+	</objectgroup>
+
+
+</map>
+
+<!--
+PARA INCLUIR LA LIBRERÍA DE LECTURA DE FICHEROS XML
+git clone https://github.com/leethomason/tinyxml2.git
+cd tinyxml2
+cmake .
+make
+-->
