@@ -1,2 +1,0 @@
-mapas/mapa1.xml
-mapas/mapa.xml
