@@ -58,10 +58,6 @@ TARGET := $(BIN_DIR)/game
 # Raylib y dependencias del sistema
 LIBS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
-# Si tienes librerías adicionales en vendor/lib
-ifneq ($(wildcard $(LIB_DIR)/*),)
-    LDFLAGS += -L$(LIB_DIR)
-endif
 
 # ============================================================================
 # Regla por defecto
@@ -84,20 +80,18 @@ success:
 	@echo ""
 
 # ============================================================================
-# Compilación del ejecutable
-# ============================================================================
-$(TARGET): $(OBJECTS)
-	@echo "$(BLUE)🔗 Linkeando ejecutable...$(NC)"
-	@mkdir -p $(BIN_DIR)
-	@$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) $(LIBS)
-
-# ============================================================================
-# Compilación de archivos objeto (con dependencias automáticas)
+# Compilación del ejecutable y  linkeado
 # ============================================================================
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo "$(YELLOW)Compilando$(NC) $<"
 	@mkdir -p $(dir $@)
 	@$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(INC_DIRS) -MMD -MP -c $< -o $@
+
+$(TARGET): $(OBJECTS)
+	@echo "$(BLUE)🔗 Linkeando ejecutable...$(NC)"
+	@mkdir -p $(BIN_DIR)
+	@$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) $(LIBS)
+
 
 # Incluir archivos de dependencias
 -include $(DEPS)
@@ -115,15 +109,6 @@ clean-cache:
 	@ccache -C
 	@ccache -z
 	@echo "$(GREEN)✅ Caché limpiada y estadísticas reseteadas$(NC)"
-
-# ============================================================================
-# Compilación en modo debug
-# ============================================================================
-debug: OPTFLAGS := $(DBGFLAGS)
-debug: CXXFLAGS += -DDEBUG
-debug: clean
-	@echo "$(YELLOW)🐛 Compilando en modo DEBUG...$(NC)"
-	@$(MAKE) --no-print-directory all
 
 # ============================================================================
 # Ejecutar el juego
@@ -150,25 +135,6 @@ info:
 	@echo ""
 
 # ============================================================================
-# Verificar estructura de directorios
-# ============================================================================
-check-dirs:
-	@echo "$(BLUE)📂 Verificando estructura de directorios...$(NC)"
-	@for dir in $(SRC_SUBDIRS); do \
-		if [ -d $(SRC_DIR)/$$dir ]; then \
-			echo "  $(GREEN)✅$(NC) $(SRC_DIR)/$$dir"; \
-		else \
-			echo "  $(RED)❌$(NC) $(SRC_DIR)/$$dir (no existe)"; \
-		fi \
-	done
-	@if [ -d $(SRC_DIR)/components ]; then \
-		echo "  $(GREEN)✅$(NC) $(SRC_DIR)/components (headers)"; \
-	fi
-	@if [ -d $(SRC_DIR)/entt ]; then \
-		echo "  $(GREEN)✅$(NC) $(SRC_DIR)/entt (librería header-only)"; \
-	fi
-
-# ============================================================================
 # Listar archivos fuente detectados
 # ============================================================================
 list-sources:
@@ -178,21 +144,6 @@ list-sources:
 	done
 	@echo ""
 	@echo "$(YELLOW)Total: $(words $(SOURCES)) archivos$(NC)"
-
-# ============================================================================
-# Dependencias de desarrollo (opcional)
-# ============================================================================
-dev-deps:
-	@echo "$(BLUE)📦 Instalando dependencias de desarrollo...$(NC)"
-	@command -v ccache >/dev/null 2>&1 || { \
-		echo "$(YELLOW)Instalando ccache...$(NC)"; \
-		sudo apt update && sudo apt install -y ccache; \
-	}
-	@command -v raylib >/dev/null 2>&1 || { \
-		echo "$(YELLOW)Raylib no detectada. Instalación manual requerida.$(NC)"; \
-		echo "Ver: https://github.com/raysan5/raylib"; \
-	}
-	@echo "$(GREEN)✅ Verificación de dependencias completada$(NC)"
 
 # ============================================================================
 # Instalación del juego (copia a /usr/local/bin)
