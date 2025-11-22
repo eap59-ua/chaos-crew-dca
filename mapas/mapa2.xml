@@ -52,7 +52,7 @@
 
 	<objectgroup name="ObjectsLogic">
 
-        <object id="1" name="Plataforma3" type="Platform" x="12" y="5" width="3" height="0.5"> <!--El suelo de la derecha-->
+        <object id="1" name="Plataforma3" type="Platform" x="9" y="5" width="3" height="0.5"> <!--El suelo de la derecha-->
 			<properties>
 				<property name="bucle_vertical" value="170"/>
 				<property name="speed" value="200"/>
