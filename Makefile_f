@@ -130,7 +130,7 @@ info:
 	@echo "$(YELLOW)Librerías:$(NC)      Raylib + EnTT (header-only)"
 	@echo "$(CYAN)═══════════════════════════════════════════════$(NC)"
 	@echo ""
-	@echo "$(BLUE)📊 Estadísticas ccache:$(NC)"
+	@echo "$(BLUE) Estadísticas ccache:$(NC)"
 	@ccache -s | grep -E "(cache (hit|miss)|files in cache|cache size)" || echo "  ccache no disponible"
 	@echo ""
 
@@ -138,7 +138,7 @@ info:
 # Listar archivos fuente detectados
 # ============================================================================
 list-sources:
-	@echo "$(BLUE)📄 Archivos fuente detectados:$(NC)"
+	@echo "$(BLUE) Archivos fuente detectados:$(NC)"
 	@for src in $(SOURCES); do \
 		echo "  - $$src"; \
 	done
@@ -149,44 +149,17 @@ list-sources:
 # Instalación del juego (copia a /usr/local/bin)
 # ============================================================================
 install: all
-	@echo "$(BLUE)📦 Instalando Chaos Crew...$(NC)"
+	@echo "$(BLUE) Instalando Chaos Crew...$(NC)"
 	@sudo install -d /usr/local/bin
 	@sudo install -m 755 $(TARGET) /usr/local/bin/chaos-crew
-	@echo "$(GREEN)✅ Chaos Crew instalado en /usr/local/bin/chaos-crew$(NC)"
+	@echo "$(GREEN) Chaos Crew instalado en /usr/local/bin/chaos-crew$(NC)"
 	@echo "$(CYAN)Ejecutar con: chaos-crew$(NC)"
 
 uninstall:
-	@echo "$(RED)🗑️  Desinstalando Chaos Crew...$(NC)"
+	@echo "$(RED)  Desinstalando Chaos Crew...$(NC)"
 	@sudo rm -f /usr/local/bin/chaos-crew
-	@echo "$(GREEN)✅ Chaos Crew desinstalado$(NC)"
+	@echo "$(GREEN) Chaos Crew desinstalado$(NC)"
 
-
-
-
-
-
-
-# ============================================================================
-# Testing (preparado para futura integración)
-# ============================================================================
-test:
-	@echo "$(YELLOW)⚠️  Suite de tests aún no implementada$(NC)"
-	@echo "$(CYAN)TODO: Integrar GoogleTest o Catch2$(NC)"
-
-# ============================================================================
-# Benchmark de compilación
-# ============================================================================
-benchmark:
-	@echo "$(BLUE)⏱️  Benchmark de compilación...$(NC)"
-	@echo ""
-	@echo "$(YELLOW)Compilación secuencial:$(NC)"
-	@make clean > /dev/null 2>&1
-	@time make -j1 > /dev/null 2>&1
-	@echo ""
-	@echo "$(YELLOW)Compilación paralela (-j4):$(NC)"
-	@make clean > /dev/null 2>&1
-	@time make -j4 > /dev/null 2>&1
-	@echo ""
 
 # ============================================================================
 # Ayuda
