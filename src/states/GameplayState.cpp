@@ -15,12 +15,13 @@
 
 #include <filesystem>
 
-GameplayState::GameplayState() 
+GameplayState::GameplayState(std::string mapPath) 
     : 
       levelCompleted(false)
     , isGameOver(false)
     , isExitVisible(true)
     , isExitMoved(false)
+    , selectedMapPath(std::move(mapPath)) //move hace que no se copie el string, sino que se transfiera su propiedad
 {
 }
 
@@ -35,7 +36,7 @@ void GameplayState::init() {
     setupPlayers();
     // setupPlatforms();
 
-    loadTiledMap("mapas/mapa2.xml", registry);
+    loadTiledMap(selectedMapPath, registry);
     
     // Resetear flags
     levelCompleted = false;
@@ -169,12 +170,12 @@ void GameplayState::update(float deltaTime) {
     PatronSystem(registry, deltaTime);
     
     if (CheckDefeat(registry)) {
-        state_machine->add_state(std::make_unique<GameOverState>(false), true);
+        state_machine->add_state(std::make_unique<GameOverState>(false, selectedMapPath), true);
         return;
     }
     
     if (CheckVictory(registry)) {
-        state_machine->add_state(std::make_unique<GameOverState>(true), true);
+        state_machine->add_state(std::make_unique<GameOverState>(true, selectedMapPath), true);
         return;
     }
 }
