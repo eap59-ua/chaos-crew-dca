@@ -1,4 +1,4 @@
 #pragma once
 #include "../entt/entt.hpp"
 
-void logicTroll(entt::registry& registry);
+void TrapSystem(entt::registry& registry, float dt);

@@ -10,6 +10,10 @@
 #include "../systems/CollisionSystem.hpp"
 #include "../systems/WinSystem.hpp"
 #include "../systems/TrollSystem.hpp"
+#include "../systems/LoadMapSystem.hpp"
+#include "../systems/PatronSystem.hpp"
+
+#include <filesystem>
 
 GameplayState::GameplayState() 
     : 
@@ -29,9 +33,9 @@ void GameplayState::init() {
     
     // Configurar jugadores y nivel
     setupPlayers();
-    setupPlatforms();
+    // setupPlatforms();
 
-    createDoor(registry, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 150, 80, 100, GREEN);
+    loadTiledMap("mapas/mapa2.xml", registry);
     
     // Resetear flags
     levelCompleted = false;
@@ -85,7 +89,7 @@ void GameplayState::setupPlatforms() {
         {HOLE_START, GROUND_HEIGHT},
         DARKGRAY
     ));*/ 
-    createPlatform(registry, 0.0f, GROUND_Y, HOLE_START, GROUND_HEIGHT, DARKGRAY);
+    //createPlatform(registry, 0.0f, GROUND_Y, HOLE_START, GROUND_HEIGHT, DARKGRAY);
     
     // Suelo DERECHO (desde después del agujero hasta el final)
     /* platforms.push_back(Platform(
@@ -93,7 +97,7 @@ void GameplayState::setupPlatforms() {
         {SCREEN_WIDTH - HOLE_END, GROUND_HEIGHT},
         DARKGRAY
     ));*/
-    createPlatform(registry, HOLE_END, GROUND_Y, SCREEN_WIDTH - HOLE_END, GROUND_HEIGHT, DARKGRAY);
+    //(registry, HOLE_END, GROUND_Y, SCREEN_WIDTH - HOLE_END, GROUND_HEIGHT, DARKGRAY);
     
     // Plataformas intermedias (mantener igual)
     /* 
@@ -102,10 +106,10 @@ void GameplayState::setupPlatforms() {
     platforms.push_back(Platform::createNormalPlatform(800, SCREEN_HEIGHT - 400, 200));
     platforms.push_back(Platform::createNormalPlatform(1000, SCREEN_HEIGHT - 250, 150));
     */
-    createPlatform(registry, 200, SCREEN_HEIGHT - 200, 200, 20, DARKGRAY);
+    /*createPlatform(registry, 200, SCREEN_HEIGHT - 200, 200, 20, DARKGRAY);
     createPlatform(registry, 500, SCREEN_HEIGHT - 300, 200, 20, DARKGRAY);
     createPlatform(registry, 800, SCREEN_HEIGHT - 400, 200, 20, DARKGRAY);
-    createPlatform(registry, 1000, SCREEN_HEIGHT - 250, 150, 20, DARKGRAY);
+    createPlatform(registry, 1000, SCREEN_HEIGHT - 250, 150, 20, DARKGRAY);*/
 
     // TODO: Para Hito 2, añadir:
     // - Plataformas móviles
@@ -161,7 +165,8 @@ void GameplayState::update(float deltaTime) {
 
     MovementSystem(registry, deltaTime, SCREEN_WIDTH, SCREEN_HEIGHT);
     CollisionSystem(registry);
-    logicTroll(registry);
+    TrapSystem(registry, deltaTime);
+    PatronSystem(registry, deltaTime);
     
     if (CheckDefeat(registry)) {
         state_machine->add_state(std::make_unique<GameOverState>(false), true);
