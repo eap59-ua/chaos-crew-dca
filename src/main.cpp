@@ -8,9 +8,12 @@ int main() {
     const int SCREEN_WIDTH = 1280;
     const int SCREEN_HEIGHT = 720;
 
-    
+
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Chaos Crew - Hito 1 Alpha");
     SetExitKey(KEY_NULL); //quitamos que con esc se salga del juego, para añadirlo en la pantalla de pausa.
+
+    InitAudioDevice();
+    SetMasterVolume(0.5f);
 
     SetTargetFPS(60);
     
@@ -38,6 +41,7 @@ int main() {
         currentState->render();
     }
     
+    CloseAudioDevice();
     // Cleanup
     CloseWindow();
     

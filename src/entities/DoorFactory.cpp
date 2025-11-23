@@ -19,7 +19,7 @@ entt::entity createDoor(entt::registry& registry, float x, float y, float width,
     registry.emplace<Door>(doorEntity);
 
     // Añadir componente Sprite para renderizado
-    registry.emplace<Sprite>(doorEntity, Rectangle{ x, y, width, height });
+   // registry.emplace<Sprite>(doorEntity, Rectangle{ x, y, width, height });
     
     return doorEntity;
 }

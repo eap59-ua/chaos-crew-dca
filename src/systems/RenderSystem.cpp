@@ -9,64 +9,115 @@
 #include "../components/Solid.hpp"
 #include "RenderSystem.hpp"
 
+// Renderizado de JUGADORES (Usa Sprite y Texturas)
 void renderPlayers(entt::registry& registry) {
-    auto players = registry.view<Player, Position, Solid, Sprite>();
+    auto view = registry.view<Position, Sprite>();
     
-    for (auto playerEntity : players) {
-    	auto &pos = players.get<Position>(playerEntity);
-    	auto &solid = players.get<Solid>(playerEntity);
-    	auto &sprite = players.get<Sprite>(playerEntity);
-    	
-    	sprite.rect.x = pos.x;
-        sprite.rect.y = pos.y;
-        sprite.rect.height = solid.height;
-        sprite.rect.width = solid.width;
-        DrawRectangleRec(sprite.rect, solid.color);
-        DrawRectangleLinesEx(sprite.rect, 2, BLACK);
-	}
+    for (auto entity : view) {
+        auto &pos = view.get<Position>(entity);
+        auto &sprite = view.get<Sprite>(entity);
+
+        // 1. SOURCE: Primer frame de la animación
+        Rectangle sourceRec = { 
+            0.0f, 
+            0.0f, 
+            sprite.flipX ? -sprite.frameWidth : sprite.frameWidth, 
+            sprite.frameHeight 
+        };
+
+        // 2. DEST: Posición en pantalla con offset aplicado
+        Rectangle destRec = {
+            pos.x - sprite.offset.x,
+            pos.y - sprite.offset.y,
+            sprite.frameWidth * sprite.scale, 
+            sprite.frameHeight * sprite.scale 
+        };
+
+        DrawTexturePro(sprite.texture, sourceRec, destRec, {0,0}, 0.0f, WHITE);
+    }
 }
 
-void renderPlatforms(entt::registry& registry) {
-    auto platforms = registry.view<Platform, Position, Solid, Sprite>();
+// Renderizado de PLATAFORMAS (Usa Solid y Rectángulos simples)
+void renderPlatforms(entt::registry& registry, Texture2D terrainTex) {
+    auto platforms = registry.view<Platform, Position, Solid>();
     
+    // Definimos qué tile usar. En "Terrain (32x32).png":
+    // X=32, Y=0 suele ser un bloque de césped genérico muy útil.
+    const float TILE_SIZE = 32.0f;
+    Rectangle sourceRect = { 32.0f, 0.0f, TILE_SIZE, TILE_SIZE }; 
+
     for (auto platformEntity : platforms) {
-    	auto &pos = platforms.get<Position>(platformEntity);
-    	auto &solid = platforms.get<Solid>(platformEntity);
-    	auto &sprite = platforms.get<Sprite>(platformEntity);
-    	
-    	sprite.rect.x = pos.x;
-        sprite.rect.y = pos.y;
-        sprite.rect.height = solid.height;
-        sprite.rect.width = solid.width;
-        DrawRectangleRec(sprite.rect, solid.color);
-        // DrawRectangleLinesEx(sprite.rect, 2, BLACK);
-	}
+        auto &pos = platforms.get<Position>(platformEntity);
+        auto &solid = platforms.get<Solid>(platformEntity);
+        
+        // Calculamos cuántos tiles caben en la plataforma
+        int tilesX = (int)(solid.width / TILE_SIZE);
+        int tilesY = (int)(solid.height / TILE_SIZE);
+
+        // Bucles anidados para rellenar el área
+        for (int y = 0; y < tilesY; ++y) {
+            for (int x = 0; x < tilesX; ++x) {
+                Vector2 drawPos = {
+                    pos.x + (x * TILE_SIZE),
+                    pos.y + (y * TILE_SIZE)
+                };
+                
+                // Dibujamos el trozo de textura
+                DrawTextureRec(terrainTex, sourceRect, drawPos, WHITE);
+            }
+        }
+    }
 }
 
-void renderDoors(entt::registry& registry) {
-    auto door = registry.view<Door, Position, Solid, Sprite>();
+// Renderizado de PUERTAS (Usa Solid y Rectángulos simples)
+void renderDoors(entt::registry& registry, Texture2D doorTex) {
+    auto doors = registry.view<Door, Position, Solid>();
     
-    for (auto doorEntity : door) {
-    	auto &pos = door.get<Position>(doorEntity);
-    	auto &solid = door.get<Solid>(doorEntity);
-    	auto &sprite = door.get<Sprite>(doorEntity);
-    	
-    	sprite.rect.x = pos.x;
-        sprite.rect.y = pos.y;
-        DrawRectangleRec(sprite.rect, solid.color);
-        DrawRectangleLinesEx(sprite.rect, 2, BLACK);
+    // La puerta de Pixel Adventure 1 mide 32x48 por frame.
+    // Usamos el primer frame (puerta cerrada).
+    const float doorVisualWidth = 48.0f;
+    const float doorVisualHeight = 79.0f;
+    Rectangle sourceRect = { 0.0f, 0.0f, doorVisualWidth, doorVisualHeight };
+
+    for (auto doorEntity : doors) {
+        auto &pos = doors.get<Position>(doorEntity);
+        auto &solid = doors.get<Solid>(doorEntity);
+
+        // Rectángulo de destino en pantalla con el tamaño visual real
+        Rectangle destRect = {
+            pos.x,
+            pos.y,
+            doorVisualWidth,
+            doorVisualHeight
+        };
+
+        // ALINEACIÓN CLAVE:
+        // Calculamos un offset para que la BASE de la puerta visual (48px de alto)
+        // coincida exactamente con la BASE del hitbox físico (solid.height).
+        // Esto permite que el hitbox físico sea más pequeño (ej: 32x32) y la puerta se dibuje alineada.
+        Vector2 originOffset = { 
+            0.0f, 
+            doorVisualHeight - solid.height 
+        };
+        
+        // Dibujamos usando el offset
+        DrawTexturePro(doorTex, sourceRect, destRect, originOffset, 0.0f, WHITE);
+
+        // --- OPCIONAL: Si quieres mantener el texto "EXIT" encima ---
+        /*
         const char* text = "EXIT";
-        int textWidth = MeasureText(text, 30);
+        int textWidth = MeasureText(text, 20);
         DrawText(text,
-                sprite.rect.x + (sprite.rect.width - textWidth) / 2,
-                sprite.rect.y + (sprite.rect.height - 30) / 2,
-                30,
+                (int)(pos.x + (doorVisualWidth - textWidth) / 2),
+                (int)(pos.y - 25), // Dibujarlo 25px por encima de la puerta
+                20,
                 WHITE);
-	}
+        */
+    }
 }
 
-void renderScene(entt::registry& registry) {
-    renderPlatforms(registry);
-    renderPlayers(registry);
-    renderDoors(registry);
+void renderScene(entt::registry& registry, Texture2D terrainTex, Texture2D doorTex) {
+    renderPlatforms(registry, terrainTex);
+    renderDoors(registry, doorTex); // Pasamos la textura de la puerta
+    renderPlayers(registry); 
 }

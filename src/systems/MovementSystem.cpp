@@ -13,23 +13,23 @@ static constexpr float GRAVITY = 900.0f;     // gravedad (px/s^2)
 static constexpr float JUMP_FORCE = -600.0f;  // fuerza de salto (negativa hacia arriba)
 static constexpr float MAX_FALL_SPEED = 1200.0f; // velocidad máxima de caída (px/s)
 
-void MovementSystem(entt::registry& registry, float deltaTime, int SCREEN_WIDTH, int SCREEN_HEIGHT) {
+void MovementSystem(entt::registry& registry, float deltaTime, int SCREEN_WIDTH, int SCREEN_HEIGHT, Sound jumpSound) {
     auto players = registry.view<Player, Velocity, Position, Solid>();
     
     for (auto playerEntity : players) {
-    	auto &position = players.get<Position>(playerEntity);
-    	auto &solid = players.get<Solid>(playerEntity);
-    	auto &velocity = players.get<Velocity>(playerEntity);
-    	auto &player = players.get<Player>(playerEntity);
-    	
-    	// Dirección de entrada: -1 = izquierda, +1 = derecha
+        auto &position = players.get<Position>(playerEntity);
+        auto &solid = players.get<Solid>(playerEntity);
+        auto &velocity = players.get<Velocity>(playerEntity);
+        auto &player = players.get<Player>(playerEntity);
+        
+        // Dirección de entrada: -1 = izquierda, +1 = derecha
         float dir = (player.right ? 1.0f : 0.0f) - (player.left ? 1.0f : 0.0f);
 
-        // Movimiento horizontal inmediato (mejor respuesta)
+        // Movimiento horizontal
         float control = player.onGround ? 1.0f : AIR_CONTROL;
         position.x += dir * H_SPEED * control * deltaTime;
 
-        // Limitar posición horizontal dentro de la pantalla
+        // Limitar posición horizontal
         if (position.x < 0) {
             position.x = 0;
             velocity.vx = 0;
@@ -38,19 +38,18 @@ void MovementSystem(entt::registry& registry, float deltaTime, int SCREEN_WIDTH,
             velocity.vx = 0;
         }
 
-        // Aplicar gravedad si no está en suelo
-        if (!player.onGround) {
-            velocity.vy += GRAVITY * deltaTime;
-            if (velocity.vy > MAX_FALL_SPEED) velocity.vy = MAX_FALL_SPEED;
-        } else {
-            // asegurar que no acumule velocidad positiva al estar en suelo
-            if (velocity.vy > 0.0f) velocity.vy = 0.0f;
-        }
+        // --- CORRECCIÓN AQUÍ ---
+        // Aplicar gravedad SIEMPRE. No importa si está en el suelo.
+        // Esto asegura que siempre haya una pequeña fuerza hacia abajo para mantener 
+        // el contacto con el suelo en el sistema de colisiones.
+        velocity.vy += GRAVITY * deltaTime;
+        if (velocity.vy > MAX_FALL_SPEED) velocity.vy = MAX_FALL_SPEED;
 
         // Salto: sólo si onGround y el flag jump está activo
         if (player.jump && player.onGround) {
             velocity.vy = JUMP_FORCE;
             player.onGround = false;
+            PlaySound(jumpSound);
         }
 
         // Aplicar velocidad vertical
@@ -63,7 +62,7 @@ void MovementSystem(entt::registry& registry, float deltaTime, int SCREEN_WIDTH,
         } else if (position.y + solid.height > SCREEN_HEIGHT) {
             position.y = SCREEN_HEIGHT - solid.height;
             velocity.vy = 0;
-            player.onGround = true; // Considerar el suelo de la pantalla como superficie
+            player.onGround = true; 
         }
-	}
+    }
 }
