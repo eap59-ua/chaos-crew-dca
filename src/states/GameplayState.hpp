@@ -13,13 +13,8 @@ class GameOverState;
 
 class GameplayState : public GameState {
 public:
-<<<<<<< HEAD
-    GameplayState();
-    ~GameplayState() override;
-=======
     explicit GameplayState(std::string mapPath);
-    ~GameplayState() override = default;
->>>>>>> 6e421cbc1c404ae96ce7520e3903813e930bdc9e
+    ~GameplayState();
 
     void init() override;
     void handleInput() override;

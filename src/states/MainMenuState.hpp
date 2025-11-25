@@ -21,18 +21,7 @@ public:
     void resume() override {}
 private:
     Music menuMusic;
-    public:
-        MainMenuState() = default;
-        ~MainMenuState() override = default;
-
-        void init() override;
-        void handleInput() override;
-        void update(float) override {}
-        void render() override;
-        void pause() override {}
-        void resume() override {}
-
-    private:
+    
         vector<string>maps;
         int selected = 0;
         vector<bool>unlocked;

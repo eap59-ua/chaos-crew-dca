@@ -10,6 +10,7 @@ static constexpr int SCREEN_H = 720;
 
 void MainMenuState::init(){
     rebuildData();
+    PlayMusicStream(menuMusic);
 }
 
 void MainMenuState::rebuildData(){
@@ -39,9 +40,6 @@ MainMenuState::~MainMenuState() {
     UnloadMusicStream(menuMusic);
 }
 
-void MainMenuState::init() {
-    PlayMusicStream(menuMusic);
-}
 
 void MainMenuState::update(float dt) {
     UpdateMusicStream(menuMusic);
