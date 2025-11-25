@@ -18,6 +18,7 @@
 
 #include <filesystem>
 
+<<<<<<< HEAD
 GameplayState::GameplayState() 
     : levelCompleted(false)
     , isGameOver(false)
@@ -27,6 +28,15 @@ GameplayState::GameplayState()
     , finishTimer(0.0f)
     , isFinishing(false)
     , won(false)
+=======
+GameplayState::GameplayState(std::string mapPath) 
+    : 
+      levelCompleted(false)
+    , isGameOver(false)
+    , isExitVisible(true)
+    , isExitMoved(false)
+    , selectedMapPath(std::move(mapPath)) //move hace que no se copie el string, sino que se transfiera su propiedad
+>>>>>>> 6e421cbc1c404ae96ce7520e3903813e930bdc9e
 {
     // Inicializamos las estructuras a 0 para seguridad
     p1Anims = { {0}, {0}, {0} };
@@ -76,6 +86,7 @@ void GameplayState::init() {
     p1Anims.run  = LoadTexture("assets/images/VirtualGuy/Run (32x32).png");
     p1Anims.jump = LoadTexture("assets/images/VirtualGuy/Jump (32x32).png");
 
+<<<<<<< HEAD
     // --- JUGADOR 2 (Pink Man) ---
     p2Anims.idle = LoadTexture("assets/images/PinkMan/Idle (32x32).png");
     p2Anims.run  = LoadTexture("assets/images/PinkMan/Run (32x32).png");
@@ -98,6 +109,9 @@ void GameplayState::init() {
     // 3. Configurar escena
     setupPlayers();
     loadTiledMap("mapas/mapa2.xml", registry);
+=======
+    loadTiledMap(selectedMapPath, registry);
+>>>>>>> 6e421cbc1c404ae96ce7520e3903813e930bdc9e
     
     // Resetear flags
     levelCompleted = false;
@@ -167,21 +181,29 @@ void GameplayState::update(float deltaTime) {
     
     // 4. Condiciones de Fin de Juego
     if (CheckDefeat(registry)) {
+<<<<<<< HEAD
         PlaySound(loseSfx); // Reproducir sonido
         
         // Iniciar cuenta atrás en lugar de salir ya
         isFinishing = true;
         won = false;
         finishTimer = 0.0f;
+=======
+        state_machine->add_state(std::make_unique<GameOverState>(false, selectedMapPath), true);
+>>>>>>> 6e421cbc1c404ae96ce7520e3903813e930bdc9e
         return;
     }
     
     if (CheckVictory(registry)) {
+<<<<<<< HEAD
         PlaySound(winSfx); // Reproducir sonido
         
         isFinishing = true;
         won = true;
         finishTimer = 0.0f;
+=======
+        state_machine->add_state(std::make_unique<GameOverState>(true, selectedMapPath), true);
+>>>>>>> 6e421cbc1c404ae96ce7520e3903813e930bdc9e
         return;
     }
 }

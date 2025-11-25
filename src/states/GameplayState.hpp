@@ -13,8 +13,13 @@ class GameOverState;
 
 class GameplayState : public GameState {
 public:
+<<<<<<< HEAD
     GameplayState();
     ~GameplayState() override;
+=======
+    explicit GameplayState(std::string mapPath);
+    ~GameplayState() override = default;
+>>>>>>> 6e421cbc1c404ae96ce7520e3903813e930bdc9e
 
     void init() override;
     void handleInput() override;
@@ -22,6 +27,8 @@ public:
     void render() override;
     void pause() override {}
     void resume() override {}
+
+    std::string getMapPath() const { return selectedMapPath; }
 
 private:
     entt::registry registry;
@@ -54,6 +61,8 @@ private:
     
     static constexpr int SCREEN_WIDTH = 1280;
     static constexpr int SCREEN_HEIGHT = 720;
+
+    std::string selectedMapPath;
     
     void setupPlayers();
     void setupPlatforms();

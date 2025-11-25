@@ -21,10 +21,16 @@ void PauseState::handleInput() {
                 break;
             
             // ✔ 2. REINICIAR NIVEL
-            case 1:
-                state_machine->remove_state(false); // cierra el PauseState
-                state_machine->add_state(std::make_unique<GameplayState>(), true);
+            case 1:{
+
+            
+                auto oldGameplay  = dynamic_cast<GameplayState*>( state_machine->getCurrentState().get() );
+                std::string map = oldGameplay ? oldGameplay->getMapPath() : "mapas/mapa.xml"; //si no se puede, cargar un mapa por defecto
+
+                state_machine->remove_state(false);
+                state_machine->add_state(std::make_unique<GameplayState>(map), true);
                 break;
+            }
 
             // ✔ 3. SALIR DEL JUEGO
             case 2:
