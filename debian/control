@@ -1,0 +1,21 @@
+Source: chaos-crew-dca
+Section: games
+Priority: optional
+Maintainer: Chaos Crew Team <agv114-ua@alu.ua.es>
+Rules-Requires-Root: no
+Build-Depends:
+ debhelper-compat (= 13), g++, libgl1-mesa-dev, libx11-dev
+Standards-Version: 4.6.2
+Homepage: <insert the upstream URL, if relevant>
+#Vcs-Browser: https://salsa.debian.org/debian/chaos-crew-dca
+#Vcs-Git: https://salsa.debian.org/debian/chaos-crew-dca.git
+
+Package: chaos-crew-dca
+Architecture: any
+Multi-Arch: foreign
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+Description: Chaos Crew - Cooperative 2D Platformer
+ A cooperative 2D platformer game developed with C++ and Raylib.
+ Players must work together to overcome challenges and reach the end.
