@@ -1,0 +1,1 @@
+Hemos decidido que la mejor opción era empaquetar nuestro software con .deb 
