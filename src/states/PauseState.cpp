@@ -24,8 +24,7 @@ void PauseState::handleInput() {
             case 1:{
 
             
-                auto oldGameplay  = dynamic_cast<GameplayState*>( state_machine->getCurrentState().get() );
-                std::string map = oldGameplay ? oldGameplay->getMapPath() : "mapas/mapa.xml"; //si no se puede, cargar un mapa por defecto
+                std::string map = this->mapPath;
 
                 state_machine->remove_state(false);
                 state_machine->add_state(std::make_unique<GameplayState>(map), true);

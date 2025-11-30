@@ -1,1 +1,2 @@
+mapas/mapa2.xml
 mapas/mapa1.xml

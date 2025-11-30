@@ -131,7 +131,7 @@ void GameplayState::handleInput() {
         return;
     }
     if (IsKeyPressed(KEY_ESCAPE)) {
-        state_machine->add_state(std::make_unique<PauseState>(), false);
+        state_machine->add_state(std::make_unique<PauseState>(selectedMapPath), false);
         return;
     }
 
