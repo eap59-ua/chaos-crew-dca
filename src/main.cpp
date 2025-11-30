@@ -21,7 +21,7 @@ int main() {
     StateMachine stateMachine;
     float deltaTime = 0.0f;
     
-    // Cargar estado inicial (GameplayState)
+    // Cargar estado inicial (MainMenu)
     stateMachine.add_state(std::make_unique<MainMenuState>(), false);
     stateMachine.handle_state_changes(deltaTime);
     

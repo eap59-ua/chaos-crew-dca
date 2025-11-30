@@ -1,4 +1,5 @@
 #include <raylib.h>
+#include <iostream>
 #include "../entt/entt.hpp"
 #include "../components/Player.hpp"
 #include "../components/Platform.hpp"
@@ -7,6 +8,8 @@
 #include "../components/Sprite.hpp"
 #include "../components/Velocity.hpp"
 #include "../components/Solid.hpp"
+#include "../components/Trap.hpp"
+
 #include "RenderSystem.hpp"
 
 // Renderizado de JUGADORES (Usa Sprite y Texturas)
@@ -69,6 +72,35 @@ void renderPlatforms(entt::registry& registry, Texture2D terrainTex) {
     }
 }
 
+// Renderizado de TRAMPAS (Spike = triángulo rojo, Wheel = círculo rojo)
+void renderTraps(entt::registry& registry) {
+    
+    auto traps = registry.view<Trap, Position, Solid>(); // Solo entidades con Trap, Position y Solid
+    int nTraps = 0;
+    for (auto _ : traps) nTraps++;
+    std::cout << "[RenderTraps] Cantidad de trampas: " << nTraps << std::endl;
+
+
+    for (auto trapsEntity : traps) {
+        auto &pos = traps.get<Position>(trapsEntity);
+        auto &solid   = traps.get<Solid>(trapsEntity);
+
+        // Si la trampa es casi cuadrada → la consideramos "Wheel"
+        if (fabs(solid.width - solid.height) < 1.0f) {
+            float radius = solid.width / 2.0f;
+            DrawCircle(pos.x + radius, pos.y + radius, radius, RED);
+        }
+        else {
+            // Trampa Spike → triángulo rojo
+            Vector2 p1 = { pos.x,             pos.y + solid.height };
+            Vector2 p2 = { pos.x + solid.width/2, pos.y };
+            Vector2 p3 = { pos.x + solid.width,   pos.y + solid.height };
+            DrawTriangle(p1, p2, p3, RED);
+        }
+    }
+}
+
+
 // Renderizado de PUERTAS (Usa Solid y Rectángulos simples)
 void renderDoors(entt::registry& registry, Texture2D doorTex) {
     auto doors = registry.view<Door, Position, Solid>();
@@ -117,7 +149,11 @@ void renderDoors(entt::registry& registry, Texture2D doorTex) {
 }
 
 void renderScene(entt::registry& registry, Texture2D terrainTex, Texture2D doorTex) {
+    std::cout << "[RenderScene] registry=" << &registry << std::endl;
+
     renderPlatforms(registry, terrainTex);
     renderDoors(registry, doorTex); // Pasamos la textura de la puerta
+    
     renderPlayers(registry); 
+    renderTraps(registry);
 }
