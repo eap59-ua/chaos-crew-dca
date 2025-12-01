@@ -8,7 +8,7 @@
 #include "../components/Sprite.hpp"
 #include "../components/Velocity.hpp"
 #include "../components/Solid.hpp"
-#include "../components/Trap.hpp"
+#include "../components/Obstacle.hpp"
 
 #include "RenderSystem.hpp"
 
@@ -75,10 +75,7 @@ void renderPlatforms(entt::registry& registry, Texture2D terrainTex) {
 // Renderizado de TRAMPAS (Spike = triángulo rojo, Wheel = círculo rojo)
 void renderTraps(entt::registry& registry) {
     
-    auto traps = registry.view<Trap, Position, Solid>(); // Solo entidades con Trap, Position y Solid
-    int nTraps = 0;
-    for (auto _ : traps) nTraps++;
-    std::cout << "[RenderTraps] Cantidad de trampas: " << nTraps << std::endl;
+    auto traps = registry.view<Obstacle, Position, Solid>(); // Solo entidades con Trap, Position y Solid
 
 
     for (auto trapsEntity : traps) {
@@ -92,9 +89,14 @@ void renderTraps(entt::registry& registry) {
         }
         else {
             // Trampa Spike → triángulo rojo
-            Vector2 p1 = { pos.x,             pos.y + solid.height };
-            Vector2 p2 = { pos.x + solid.width/2, pos.y };
-            Vector2 p3 = { pos.x + solid.width,   pos.y + solid.height };
+            float lado = solid.width;                       // el tamaño real del triángulo
+            float h = (sqrtf(3) / 2.0f) * lado;             // altura de un triángulo equilátero
+
+            // pos = centro del triángulo
+            Vector2 p1 = { pos.x, pos.y - (2.0f/3.0f) * h }; // vértice superior
+            Vector2 p2 = { pos.x - lado/2.0f, pos.y + (1.0f/3.0f) * h }; // inferior izquierda
+            Vector2 p3 = { pos.x + lado/2.0f, pos.y + (1.0f/3.0f) * h }; // inferior derecha
+
             DrawTriangle(p1, p2, p3, RED);
         }
     }

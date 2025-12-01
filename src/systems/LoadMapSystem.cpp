@@ -104,11 +104,8 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
                     entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
                 else if(o.type == "Spike")
                     entity = createSpike(registry, o.x, o.y, o.width, o.height, RED);
-                else if(o.type == "Wheel"){
-                    std::cout << "Creando wheel en: " << o.x << "," << o.y 
-                    << " size=" << o.width << "x" << o.height << '\n';
+                else if(o.type == "Wheel")
                     entity = createWheel(registry, o.x, o.y, o.width / 2.0f, RED);
-                }
                 
                 if (entity == entt::null) continue;
 
@@ -172,6 +169,10 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
                     entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
                 else if (o.type == "Door")
                     entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
+                else if(o.type == "Spike")
+                    entity = createSpike(registry, o.x, o.y, o.width, o.height, RED);
+                else if(o.type == "Wheel")
+                    entity = createWheel(registry, o.x, o.y, o.width / 2.0f, RED);
 
                 if (entity == entt::null) continue;
 
@@ -207,6 +208,10 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
                     createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
                 else if (o.type == "Door") 
                     createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
+                else if(o.type == "Spike")
+                    createSpike(registry, o.x, o.y, o.width, o.height, RED);
+                else if(o.type == "Wheel")
+                    createWheel(registry, o.x, o.y, o.width / 2.0f, RED);
             }
         }
     }
