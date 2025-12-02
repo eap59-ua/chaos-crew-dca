@@ -1,8 +1,14 @@
-name: Build DEB Package
+name: Build DEB CHAOS CREW Package
 
 on:
   release:
     types: [created]
+
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build-deb:
