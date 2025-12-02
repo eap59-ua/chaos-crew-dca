@@ -50,8 +50,12 @@ bool CheckDefeat(entt::registry& registry){
     auto players = registry.view<Player, Position, Solid>();
     
     for (auto playerEntity : players) {
+        auto &player = players.get<Player>(playerEntity);
         auto &pPos = players.get<Position>(playerEntity);
         auto &solid = players.get<Solid>(playerEntity);
+
+        //Obstaculos mortales
+        if(player.isDead) return true;
         
         // Caída al vacío
         if(pPos.y >= 720 - solid.height) return true;

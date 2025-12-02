@@ -195,7 +195,6 @@ void GameplayState::checkDefeatCondition() {}
 void GameplayState::handleTrollMechanic() {}
 
 void GameplayState::render() {
-    std::cout << "[GameplayState render] registry=" << this << std::endl;
 
     BeginDrawing();
     

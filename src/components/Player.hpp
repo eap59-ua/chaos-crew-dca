@@ -5,4 +5,5 @@ struct Player {
     bool right = false;
     bool jump = false;
     bool onGround = false;
+    bool isDead = false;
 };

@@ -157,7 +157,6 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
                 //comprobar el tamaño del registro de trampas
                 int numTraps = 0;
                 for (auto _ : registry.view<Trap>()) numTraps++;
-                std::cout << "[LoadMap] Número de trampas en el registro: " << numTraps << std::endl;
                 
             }
             else if (properties && groupName == "ObjectsLogic")

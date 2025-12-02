@@ -75,28 +75,42 @@ void renderPlatforms(entt::registry& registry, Texture2D terrainTex) {
 // Renderizado de TRAMPAS (Spike = triángulo rojo, Wheel = círculo rojo)
 void renderTraps(entt::registry& registry) {
     
-    auto traps = registry.view<Obstacle, Position, Solid>(); // Solo entidades con Trap, Position y Solid
-
+    auto traps = registry.view<Obstacle, Position, Solid>(); 
 
     for (auto trapsEntity : traps) {
         auto &pos = traps.get<Position>(trapsEntity);
-        auto &solid   = traps.get<Solid>(trapsEntity);
+        auto &solid = traps.get<Solid>(trapsEntity);
+
+        // Dibujar hitbox para depuración (Esto es correcto, esquina superior izq)
+        /* DrawRectangleLines(
+                (int)pos.x,
+                (int)pos.y,
+                (int)solid.width,
+                (int)solid.height,
+                GREEN
+            );
+        */
 
         // Si la trampa es casi cuadrada → la consideramos "Wheel"
         if (fabs(solid.width - solid.height) < 1.0f) {
             float radius = solid.width / 2.0f;
-            DrawCircle(pos.x + radius, pos.y + radius, radius, RED);
+            // Ajustamos el círculo para que el centro sea pos.x + radio
+            DrawCircle((int)(pos.x + radius), (int)(pos.y + radius), radius, RED);
         }
         else {
-            // Trampa Spike → triángulo rojo
-            float lado = solid.width;                       // el tamaño real del triángulo
-            float h = (sqrtf(3) / 2.0f) * lado;             // altura de un triángulo equilátero
 
-            // pos = centro del triángulo
-            Vector2 p1 = { pos.x, pos.y - (2.0f/3.0f) * h }; // vértice superior
-            Vector2 p2 = { pos.x - lado/2.0f, pos.y + (1.0f/3.0f) * h }; // inferior izquierda
-            Vector2 p3 = { pos.x + lado/2.0f, pos.y + (1.0f/3.0f) * h }; // inferior derecha
+            // Ajustar la trampa 
 
+            // Vértice 1: Arriba al centro
+            Vector2 p1 = { pos.x + (solid.width / 2.0f), pos.y }; 
+
+            // Vértice 2: Abajo a la izquierda
+            Vector2 p2 = { pos.x, pos.y + solid.height }; 
+
+            // Vértice 3: Abajo a la derecha
+            Vector2 p3 = { pos.x + solid.width, pos.y + solid.height }; 
+
+            // Nota: El orden de los puntos (antihorario) es importante para que se dibuje la cara frontal
             DrawTriangle(p1, p2, p3, RED);
         }
     }
@@ -151,7 +165,6 @@ void renderDoors(entt::registry& registry, Texture2D doorTex) {
 }
 
 void renderScene(entt::registry& registry, Texture2D terrainTex, Texture2D doorTex) {
-    std::cout << "[RenderScene] registry=" << &registry << std::endl;
 
     renderPlatforms(registry, terrainTex);
     renderDoors(registry, doorTex); // Pasamos la textura de la puerta
