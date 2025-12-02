@@ -17,10 +17,7 @@ A partir de -j4 encontramos la mayor mejora de diferencia de tiempo entre t-j3 =
 | 10         | 6.398      | 4.209                           | 0.895                              | 42.1 %               |
 | 11         | 5.898      | 4.566                           | 1.085                              | 41.5 %               |
 
-Breve resumen:
-- Mejor speedup absoluto: 4.707 con -j9.
-- Mejor eficiencia: 70.1% con -j4.
-- Regresiones relativas (S_rel < 1): -j8 y -j10.
+
 
 3.- 
 31,362s
@@ -28,12 +25,6 @@ Breve resumen:
 
 4.-
 al principio comete en todos los intentos fallos porque no tiene referencias en la caché está vacía hasta que ya se va llenando
-34,716
-
-2º intento sin limpiar correctamente cache
-29,184
-32,865
-
-3ºintento más bueno 
 29,171
+Pero en el segundo tiempo nos
 31,503
