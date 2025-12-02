@@ -7,55 +7,72 @@
 #include <cmath>
 
 void AnimationSystem(entt::registry& registry, float dt) {
-    auto view = registry.view<Sprite, Velocity, Player, PlayerAnimations>();
+    
+    // ---------------------------------------------------------
+    // 1. LÓGICA ESPECÍFICA DEL JUGADOR (DECIDIR TEXTURA)
+    // ---------------------------------------------------------
+    // Esta parte se queda igual, solo quitamos el contador de tiempo al final.
+    auto viewPlayers = registry.view<Sprite, Velocity, Player, PlayerAnimations>();
 
-    for (auto entity : view) {
-        auto &sprite = view.get<Sprite>(entity);
-        auto &vel = view.get<Velocity>(entity);
-        auto &player = view.get<Player>(entity);
-        auto &anims = view.get<PlayerAnimations>(entity);
+    for (auto entity : viewPlayers) {
+        auto &sprite = viewPlayers.get<Sprite>(entity);
+        auto &vel = viewPlayers.get<Velocity>(entity);
+        auto &player = viewPlayers.get<Player>(entity);
+        auto &anims = viewPlayers.get<PlayerAnimations>(entity);
 
-        // 1. LÓGICA DE CAMBIO DE ESTADO (Cambiar Textura)
         Texture2D targetTexture = anims.idle;
-        int targetFrames = 11; // Ajusta esto según tus imágenes (Pixel Adventure Idle suele ser 11 frames)
+        int targetFrames = 11; 
 
         // ¿Hacia dónde mira?
         if (player.left) sprite.flipX = true;
         if (player.right) sprite.flipX = false;
 
+        // Máquina de estados visual
         if (!player.onGround) {
-            // ESTÁ EN EL AIRE (Salto)
             targetTexture = anims.jump;
-            targetFrames = 1; // El salto suele ser 1 frame o pocos
+            targetFrames = 1; 
         } 
-        else if (std::abs(vel.vx) > 10.0f) { // Usamos un umbral pequeño
-            // ESTÁ CORRIENDO
+        else if (std::abs(vel.vx) > 10.0f) { 
             targetTexture = anims.run;
-            targetFrames = 12; // Pixel Adventure Run suele ser 12 frames
+            targetFrames = 12; 
         }
         else {
-            // ESTÁ QUIETO (Idle)
             targetTexture = anims.idle;
             targetFrames = 11;
         }
 
-        // Si la textura cambia, reseteamos la animación
+        // Si cambia la acción, reseteamos el sprite
         if (sprite.texture.id != targetTexture.id) {
             sprite.texture = targetTexture;
             sprite.totalFrames = targetFrames;
             sprite.currentFrame = 0;
             sprite.timer = 0;
         }
+    }
 
-        // 2. AVANCE DE FRAMES (Loop de animación)
-        sprite.timer += dt;
-        if (sprite.timer >= sprite.frameTime) {
-            sprite.timer = 0.0f;
-            sprite.currentFrame++;
+    // ---------------------------------------------------------
+    // 2. LÓGICA GENÉRICA DE AVANCE (JUGADORES + TRAMPAS)
+    // ---------------------------------------------------------
+    // Aquí iteramos sobre TODOS los sprites (incluyendo Wheel y Spikes).
+    auto viewAllSprites = registry.view<Sprite>();
+
+    for (auto entity : viewAllSprites) {
+        auto &sprite = viewAllSprites.get<Sprite>(entity);
+
+        // Solo procesamos si tiene animación (totalFrames > 1)
+        // Esto hace que la rueda gire, pero los pinchos fijos no consuman CPU.
+        if (sprite.totalFrames > 1) {
+            sprite.timer += dt;
             
-            // Si llegamos al final, volvemos al principio (Loop)
-            if (sprite.currentFrame >= sprite.totalFrames) {
-                sprite.currentFrame = 0;
+            // Usamos frameSpeed (o frameTime según como lo llamaste en el struct)
+            if (sprite.timer >= sprite.frameTime) { 
+                sprite.timer = 0.0f;
+                sprite.currentFrame++;
+                
+                // Loop infinito
+                if (sprite.currentFrame >= sprite.totalFrames) {
+                    sprite.currentFrame = 0;
+                }
             }
         }
     }

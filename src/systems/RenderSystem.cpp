@@ -74,44 +74,28 @@ void renderPlatforms(entt::registry& registry, Texture2D terrainTex) {
 
 // Renderizado de TRAMPAS (Spike = triángulo rojo, Wheel = círculo rojo)
 void renderTraps(entt::registry& registry) {
-    
-    auto traps = registry.view<Obstacle, Position, Solid>(); 
+    auto traps = registry.view<Obstacle, Position, Solid>();
 
-    for (auto trapsEntity : traps) {
-        auto &pos = traps.get<Position>(trapsEntity);
-        auto &solid = traps.get<Solid>(trapsEntity);
+    for (auto entity : traps) {
+        auto &pos = traps.get<Position>(entity);
+        auto &solid = traps.get<Solid>(entity);
 
-        // Dibujar hitbox para depuración (Esto es correcto, esquina superior izq)
-        /* DrawRectangleLines(
-                (int)pos.x,
-                (int)pos.y,
-                (int)solid.width,
-                (int)solid.height,
-                GREEN
-            );
-        */
+        if (registry.any_of<Sprite>(entity)) {
+            auto &sprite = registry.get<Sprite>(entity);
+            float sourceX = (sprite.totalFrames > 1) ? (sprite.currentFrame * sprite.frameWidth) : 0.0f; //evitar repetición
+            Rectangle sourceRec = { sourceX, 0.0f, sprite.frameWidth, sprite.frameHeight };
 
-        // Si la trampa es casi cuadrada → la consideramos "Wheel"
-        if (fabs(solid.width - solid.height) < 1.0f) {
-            float radius = solid.width / 2.0f;
-            // Ajustamos el círculo para que el centro sea pos.x + radio
-            DrawCircle((int)(pos.x + radius), (int)(pos.y + radius), radius, RED);
-        }
-        else {
+            // CÁLCULO DE CENTRADO
+            float destX = pos.x + (solid.width - (sprite.frameWidth * sprite.scale)) / 2.0f;
+            float destY = pos.y + (solid.height - (sprite.frameHeight * sprite.scale)); // Base alineada
 
-            // Ajustar la trampa 
+            // Si es la Rueda (animada), la centramos también verticalmente
+            if (sprite.totalFrames > 1) {
+                destY = pos.y + (solid.height - (sprite.frameHeight * sprite.scale)) / 2.0f;
+            }
 
-            // Vértice 1: Arriba al centro
-            Vector2 p1 = { pos.x + (solid.width / 2.0f), pos.y }; 
-
-            // Vértice 2: Abajo a la izquierda
-            Vector2 p2 = { pos.x, pos.y + solid.height }; 
-
-            // Vértice 3: Abajo a la derecha
-            Vector2 p3 = { pos.x + solid.width, pos.y + solid.height }; 
-
-            // Nota: El orden de los puntos (antihorario) es importante para que se dibuje la cara frontal
-            DrawTriangle(p1, p2, p3, RED);
+            Rectangle destRec = { destX, destY, sprite.frameWidth * sprite.scale, sprite.frameHeight * sprite.scale };
+            DrawTexturePro(sprite.texture, sourceRec, destRec, {0,0}, 0.0f, WHITE);
         }
     }
 }

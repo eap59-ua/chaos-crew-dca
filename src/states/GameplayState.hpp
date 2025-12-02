@@ -37,6 +37,9 @@ private:
     Texture2D terrainTexture;
     Texture2D doorTexture;
 
+    Texture2D trapSpikeTexture;
+    Texture2D trapWheelTexture;
+
     // --- RECURSOS DE AUDIO ---
     Music bgMusic;
     Sound jumpSfx;

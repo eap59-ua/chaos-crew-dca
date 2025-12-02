@@ -10,11 +10,10 @@
     <object id="1" name="Suelo" type="Platform" x="0" y="9" width="32" height="1" />
     <object id="2" name="Door" type="Door" x="27" y="7.5" width="2" height="1.5" />
 
-    <object id="3" name="Pincho1" type="Spike" x="6"  y="8.3" width="0.8" height="0.7" />
+    <object id="3" name="Pincho1" type="Spike" x="6"  y="7" width="0.8" height="0.7" />
     
     <object id="6" name="Pincho4" type="Spike" x="14" y="8.3" width="0.8" height="0.7" />
-    <object id="7" name="Pincho5" type="Spike" x="15.4" y="8.3" width="0.8" height="0.7" />
-    <object id="8" name="Pincho6" type="Spike" x="14.7" y="8.3" width="0.8" height="0.7" />
+    
 
   </objectgroup>
 

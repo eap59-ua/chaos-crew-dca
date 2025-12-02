@@ -58,7 +58,7 @@ static void AddPatronLoopHorizontal(entt::registry& registry, entt::entity e, fl
 static void AddPatronLoopVertical(entt::registry& registry, entt::entity e, float amount);
 
 // ==== Cargar el mapa XML ====
-void loadTiledMap(const std::string& filename, entt::registry& registry) {
+void loadTiledMap(const std::string& filename, entt::registry& registry, Texture2D spikeTex, Texture2D wheelTex) {
     XMLDocument doc;
 
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
@@ -103,9 +103,9 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
                 else if (o.type == "Door")
                     entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
                 else if(o.type == "Spike")
-                    entity = createSpike(registry, o.x, o.y, o.width, o.height, RED);
+                    entity = createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
                 else if(o.type == "Wheel")
-                    entity = createWheel(registry, o.x, o.y, o.width / 2.0f, RED);
+                    entity = createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
                 
                 if (entity == entt::null) continue;
 
@@ -169,9 +169,9 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
                 else if (o.type == "Door")
                     entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
                 else if(o.type == "Spike")
-                    entity = createSpike(registry, o.x, o.y, o.width, o.height, RED);
+                    entity = createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
                 else if(o.type == "Wheel")
-                    entity = createWheel(registry, o.x, o.y, o.width / 2.0f, RED);
+                    entity = createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
 
                 if (entity == entt::null) continue;
 
@@ -208,9 +208,9 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
                 else if (o.type == "Door") 
                     createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
                 else if(o.type == "Spike")
-                    createSpike(registry, o.x, o.y, o.width, o.height, RED);
+                    createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
                 else if(o.type == "Wheel")
-                    createWheel(registry, o.x, o.y, o.width / 2.0f, RED);
+                    createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
             }
         }
     }

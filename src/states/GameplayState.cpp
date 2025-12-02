@@ -59,6 +59,10 @@ GameplayState::~GameplayState() {
     if (terrainTexture.id != 0) UnloadTexture(terrainTexture);
     if (doorTexture.id != 0) UnloadTexture(doorTexture);
 
+    // Trampas
+    if (trapSpikeTexture.id != 0) UnloadTexture(trapSpikeTexture);
+    if (trapWheelTexture.id != 0) UnloadTexture(trapWheelTexture);
+
     // Audio
     if (bgMusic.stream.buffer != nullptr) UnloadMusicStream(bgMusic);
     if (jumpSfx.stream.buffer != nullptr) UnloadSound(jumpSfx);
@@ -87,6 +91,14 @@ void GameplayState::init() {
     terrainTexture = LoadTexture("assets/images/Terrain/Terrain (32x32).png");
     doorTexture = LoadTexture("assets/images/Door.png"); // Asegúrate que la ruta sea correcta
 
+    // --- TRAMPAS ---
+    trapSpikeTexture = LoadTexture("assets/images/Spikes/Idle.png");
+    trapWheelTexture = LoadTexture("assets/images/Spike Head/Blink (54x52).png");
+
+    SetTextureWrap(trapSpikeTexture, TEXTURE_WRAP_CLAMP); // Evitar repetición
+    SetTextureFilter(trapSpikeTexture, TEXTURE_FILTER_POINT); // Pixel art nítido
+    SetTextureFilter(trapWheelTexture, TEXTURE_FILTER_POINT); // Pixel art nítido
+
     // --- AUDIO ---
     bgMusic = LoadMusicStream("assets/sounds/Theme.wav");
     jumpSfx = LoadSound("assets/sounds/Jump.wav");
@@ -98,7 +110,7 @@ void GameplayState::init() {
 
     // 3. Configurar escena
     setupPlayers();
-    loadTiledMap(selectedMapPath, registry);
+    loadTiledMap(selectedMapPath, registry, trapSpikeTexture, trapWheelTexture);
     
     // Resetear flags
     levelCompleted = false;
