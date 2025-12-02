@@ -1,6 +1,6 @@
-mapas/mapa4.xml
-mapas/mapa2.xml
-mapas/mapa0.xml
-mapas/mapa1.xml
-mapas/mapa3.xml
 mapas/mapa5.xml
+mapas/mapa3.xml
+mapas/mapa1.xml
+mapas/mapa0.xml
+mapas/mapa2.xml
+mapas/mapa4.xml

@@ -80,6 +80,16 @@ void renderTraps(entt::registry& registry) {
         auto &pos = traps.get<Position>(entity);
         auto &solid = traps.get<Solid>(entity);
 
+        // --- DEBUG: DIBUJAR HITBOX ---
+        // Esto dibujará un contorno verde alrededor del área real de daño
+        DrawRectangleLines(
+            (int)pos.x, 
+            (int)pos.y, 
+            (int)solid.width, 
+            (int)solid.height, 
+            GREEN
+        );
+
         if (registry.any_of<Sprite>(entity)) {
             auto &sprite = registry.get<Sprite>(entity);
             float sourceX = (sprite.totalFrames > 1) ? (sprite.currentFrame * sprite.frameWidth) : 0.0f; //evitar repetición

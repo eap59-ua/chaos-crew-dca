@@ -102,12 +102,19 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
                 else if (o.type == "Door")
                     entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
-                else if(o.type == "Spike")
+                else if(o.type == "Spike"){
                     entity = createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
+                    std::cout<<"LLAMANDO CREATESPYKE"<<std::endl;
+                }
+                    
+                    
                 else if(o.type == "Wheel")
                     entity = createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
                 
-                if (entity == entt::null) continue;
+                if (entity == entt::null){
+                    throw std::runtime_error("Tipo de objeto desconocido en ObjectsTraps: " + o.type);
+                }
+               
 
                 auto &trap = registry.get_or_emplace<Trap>(entity);
 
@@ -207,8 +214,11 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
                 else if (o.type == "Door") 
                     createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
-                else if(o.type == "Spike")
+                else if(o.type == "Spike"){
                     createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
+                    cout<<"LLAMANDO CREATESPYKE"<<endl;
+                }
+                    
                 else if(o.type == "Wheel")
                     createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
             }
