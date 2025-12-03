@@ -9,24 +9,54 @@
 
 #include <raylib.h>
 
-entt::entity createPlayer(entt::registry& registry, float x, float y, Color color, KeyboardKey LEFT, KeyboardKey RIGHT, KeyboardKey JUMP) {
+// CAMBIO: Ahora recibimos 'PlayerAnimations anims' en lugar de una sola textura
+entt::entity createPlayer(entt::registry& registry, float x, float y, PlayerAnimations anims, KeyboardKey LEFT, KeyboardKey RIGHT, KeyboardKey JUMP) {
     entt::entity player = registry.create();
     
     // Componente de posición
     registry.emplace<Position>(player, x, y);
     
     // Componente de velocidad
-    registry.emplace<Velocity>(player, 20.0f, 1.0f);
+    registry.emplace<Velocity>(player, 0.0f, 0.0f);
     
-    // Componente de jugador con teclas
+    // Componente de jugador
     registry.emplace<Player>(player, false, false, false, false);
     
-    // Componente sólido para colisiones
-    registry.emplace<Solid>(player, 32.0f, 48.0f, color); // Ancho y alto del jugador
+    // 1. Definimos el tamaño físico (Hitbox)
+    // El hitbox es más pequeño que el sprite para que sea más justo
+    float hitboxWidth = 36.0f;  
+    float hitboxHeight = 50.0f;
 
-    // Inicializar sprite
-    registry.emplace<Sprite>(player, Rectangle{x, y, 32.0f, 48.0f});
+    registry.emplace<Solid>(player, hitboxWidth, hitboxHeight, WHITE);
 
+    // --- NUEVO: Guardar todas las animaciones en la entidad ---
+    // Esto permite que el AnimationSystem cambie entre Idle, Run y Jump
+    registry.emplace<PlayerAnimations>(player, anims);
+
+    // 2. Configuración del Sprite Inicial
+    float spriteSize = 32.0f; // Tamaño del tile original (32x32)
+    float scale = 2.0f;       // Escala visual
+    
+    // Calculamos el offset para centrar la imagen sobre el hitbox
+    Vector2 visualOffset;
+    visualOffset.x = (spriteSize * scale - hitboxWidth) / 2.0f; 
+    visualOffset.y = (spriteSize * scale - hitboxHeight);       
+    
+    // Crear el componente Sprite
+    // Empezamos usando la animación IDLE por defecto
+    registry.emplace<Sprite>(player, 
+                             anims.idle,    // Textura inicial (Idle)
+                             visualOffset,  
+                             spriteSize,    // frameWidth
+                             spriteSize,    // frameHeight
+                             scale,         // escala
+                             false,         // flipX
+                             11,            // totalFrames (Idle tiene 11 frames)
+                             0,             // currentFrame (empieza en 0)
+                             0.05f,         // frameTime (velocidad de animación)
+                             0.0f           // timer interno
+                             );
+    
     // Configurar controles
     registry.emplace<Mandos>(player, LEFT, RIGHT, JUMP);
     

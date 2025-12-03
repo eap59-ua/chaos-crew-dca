@@ -1,36 +1,69 @@
-#include "../components/Door.hpp"
-#include "../components/Platform.hpp"
-#include "../components/Player.hpp"
+#include "TrollSystem.hpp"
+#include "../components/Trap.hpp"
 #include "../components/Position.hpp"
 #include "../components/Solid.hpp"
-#include "../components/Sprite.hpp"
-#include "../components/Velocity.hpp"
-#include "../components/Mandos.hpp"
 
-#include "../components/Trap.hpp"
 #include "../entt/entt.hpp"
+#include <vector>
+#include <algorithm> // for std::min, std::all_of
 
-void logicTroll(entt::registry& registry) {
-    auto door = registry.view<Door, Position>();
-    auto players = registry.view<Player, Position>();
+void TrapSystem(entt::registry& registry, float dt)
+{
+    auto view = registry.view<Trap>();
 
-    int condYes = 0;
-    int payersCount = 0;
+    for (auto entity : view)
+    {
+        auto &trap = view.get<Trap>(entity);
 
-    for(auto playerEntity : players) {
-        auto posPlayer = players.get<Position>(playerEntity);
-        for(auto doorEntity : door) {
-            auto posDoor = door.get<Position>(doorEntity);
+        // Inicializar buffers si están vacíos
+        if (trap.triggeredPerCondition.size() != trap.conditions.size())
+            trap.triggeredPerCondition.assign(trap.conditions.size(), false);
 
-            if(posDoor.x - 50 < posPlayer.x) condYes++;
+        if (trap.finishedPerAction.size() != trap.actions.size())
+            trap.finishedPerAction.assign(trap.actions.size(), false);
+
+        // Evaluar condiciones por índice
+        for (size_t i = 0; i < trap.conditions.size(); ++i)
+        {
+            // Si ya se activó esa condición, saltar
+            if (trap.triggeredPerCondition[i])
+                continue;
+
+            // Si ahora se cumple → marcar
+            if (trap.conditions[i](dt))
+                trap.triggeredPerCondition[i] = true;
         }
-        payersCount++;
-    }
 
-    if(condYes == payersCount) {
-        for (auto doorEntity : door) {
-            auto& posDoor = door.get<Position>(doorEntity);
-            posDoor.x = 40; // Mueve la puerta 10 unidades hacia la derecha
+        // Ejecutar acciones correspondientes
+        for (size_t i = 0; i < trap.actions.size(); ++i)
+        {
+            // Si la condición[i] nunca se cumplió -> saltar
+            if (!trap.triggeredPerCondition[i])
+                continue;
+
+            // Si la acción[i] ya terminó -> saltar
+            if (trap.finishedPerAction[i])
+                continue;
+
+            // Ejecutar acción
+            bool done = trap.actions[i](dt);
+            if (done)
+                trap.finishedPerAction[i] = true;
         }
+
+        // terminaron todas?
+        bool allDone = true;
+        for (bool fin : trap.finishedPerAction)
+        {
+            if (!fin) {
+                allDone = false;
+                break;
+            }
+        }
+
+        // borrar el componente tramp
+        if (allDone)
+            registry.remove<Trap>(entity);
     }
 }
+

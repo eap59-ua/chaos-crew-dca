@@ -3,21 +3,18 @@
 
 #include "../core/GameState.hpp"
 #include "../core/StateMachine.hpp"
-// #include "../entities/Player.hpp"
-// #include "../entities/Platform.hpp"
-// #include "../physics/Physics.hpp"
 #include <vector>
 #include <raylib.h>
 #include "../entt/entt.hpp"
+// IMPORTANTE: Incluir el componente de animaciones
+#include "../components/PlayerAnimations.hpp"
 
-
-// Forward declaration para evitar dependencia circular
 class GameOverState;
 
 class GameplayState : public GameState {
 public:
-    GameplayState();
-    ~GameplayState() override = default;
+    explicit GameplayState(std::string mapPath);
+    ~GameplayState();
 
     void init() override;
     void handleInput() override;
@@ -26,33 +23,50 @@ public:
     void pause() override {}
     void resume() override {}
 
+    std::string getMapPath() const { return selectedMapPath; }
+
 private:
     entt::registry registry;
-    // Entidades del juego
-    //std::vector<Player> players;
-    //std::vector<Platform> platforms;
     
-    // Motor de físicas
-    // PhysicsEngine physicsEngine;
+    // Estructuras para guardar las 3 animaciones de cada jugador
+    PlayerAnimations p1Anims;
+    PlayerAnimations p2Anims;
+
+    // --- RECURSOS GRÁFICOS ---
+    Texture2D backgroundTexture;
+    Texture2D terrainTexture;
+    Texture2D doorTexture;
+
+    Texture2D trapSpikeTexture;
+    Texture2D trapWheelTexture;
+
+    // --- RECURSOS DE AUDIO ---
+    Music bgMusic;
+    Sound jumpSfx;
+    Sound winSfx;
+    Sound loseSfx;
     
-    // Estado del nivel
+    // --- VARIABLES DE ESTADO ---
     bool levelCompleted;
     bool isGameOver;
-    
-    // Nivel troll (Hito 1) - mantener la funcionalidad original
     bool isExitVisible;
     bool isExitMoved;
+
+    // --- NUEVO: Lógica de espera para terminar nivel ---
+    float finishTimer;      // Cronómetro
+    bool isFinishing;       // ¿Estamos esperando para salir?
+    bool won;               // ¿Ganamos o perdimos?
     
-    // Constantes de pantalla
     static constexpr int SCREEN_WIDTH = 1280;
     static constexpr int SCREEN_HEIGHT = 720;
+
+    std::string selectedMapPath;
     
-    // Métodos auxiliares
     void setupPlayers();
     void setupPlatforms();
     void checkVictoryCondition();
     void checkDefeatCondition();
-    void handleTrollMechanic();  // Para el nivel troll del Hito 1
+    void handleTrollMechanic();
 };
 
 #endif // GAMEPLAYSTATE_HPP

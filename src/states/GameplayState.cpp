@@ -1,5 +1,6 @@
 #include "GameplayState.hpp"
-#include "GameOverState.hpp"  // ✅ Incluir en .cpp
+#include "GameOverState.hpp"
+#include "PauseState.hpp"
 #include "../entities/PlayerFactory.hpp"
 #include "../entities/PlatformFactory.hpp"
 #include "../entities/DoorFactory.hpp"
@@ -9,249 +10,236 @@
 #include "../systems/CollisionSystem.hpp"
 #include "../systems/WinSystem.hpp"
 #include "../systems/TrollSystem.hpp"
+#include "../systems/LoadMapSystem.hpp"
+#include "../systems/PatronSystem.hpp"
 
-GameplayState::GameplayState() 
-    : 
-      levelCompleted(false)
+// Incluimos el Sistema de Animación
+#include "../systems/AnimationSystem.hpp"
+
+#include <filesystem>
+GameplayState::GameplayState(std::string mapPath) 
+
+    : levelCompleted(false)
     , isGameOver(false)
     , isExitVisible(true)
     , isExitMoved(false)
+    // --- INICIALIZACIÓN DE VARIABLES DE TIMER ---
+    , finishTimer(0.0f)
+    , isFinishing(false)
+    , won(false)
+    , selectedMapPath(std::move(mapPath)) //move hace que no se copie el string, sino que se transfiera su propiedad
 {
+    // Inicializamos las estructuras a 0 para seguridad
+    p1Anims = { {0}, {0}, {0} };
+    p2Anims = { {0}, {0}, {0} };
+    backgroundTexture = {0};
+    terrainTexture = {0};
+    doorTexture = {0};
+    bgMusic = {0};
+    jumpSfx = {0};
+    winSfx = {0};
+    loseSfx = {0};
+}
+
+GameplayState::~GameplayState() {
+    // --- LIMPIEZA DE RECURSOS ---
+    
+    // Jugador 1
+    if (p1Anims.idle.id != 0) UnloadTexture(p1Anims.idle);
+    if (p1Anims.run.id != 0)  UnloadTexture(p1Anims.run);
+    if (p1Anims.jump.id != 0) UnloadTexture(p1Anims.jump);
+    
+    // Jugador 2
+    if (p2Anims.idle.id != 0) UnloadTexture(p2Anims.idle);
+    if (p2Anims.run.id != 0)  UnloadTexture(p2Anims.run);
+    if (p2Anims.jump.id != 0) UnloadTexture(p2Anims.jump);
+
+    // Entorno
+    if (backgroundTexture.id != 0) UnloadTexture(backgroundTexture);
+    if (terrainTexture.id != 0) UnloadTexture(terrainTexture);
+    if (doorTexture.id != 0) UnloadTexture(doorTexture);
+
+    // Trampas
+    if (trapSpikeTexture.id != 0) UnloadTexture(trapSpikeTexture);
+    if (trapWheelTexture.id != 0) UnloadTexture(trapWheelTexture);
+
+    // Audio
+    if (bgMusic.stream.buffer != nullptr) UnloadMusicStream(bgMusic);
+    if (jumpSfx.stream.buffer != nullptr) UnloadSound(jumpSfx);
+    if (winSfx.stream.buffer != nullptr)  UnloadSound(winSfx);
+    if (loseSfx.stream.buffer != nullptr) UnloadSound(loseSfx);
 }
 
 void GameplayState::init() {
-    // Limpiar estado anterior
-    // - players.clear();
-    // - platforms.clear();
-
+    // 1. Limpiar registro anterior
     registry.clear();
     
-    // Configurar jugadores y nivel
-    setupPlayers();
-    setupPlatforms();
+    // 2. CARGAR RECURSOS
+    
+    // --- JUGADOR 1 (Virtual Guy) ---
+    p1Anims.idle = LoadTexture("assets/images/VirtualGuy/Idle (32x32).png");
+    p1Anims.run  = LoadTexture("assets/images/VirtualGuy/Run (32x32).png");
+    p1Anims.jump = LoadTexture("assets/images/VirtualGuy/Jump (32x32).png");
 
-    createDoor(registry, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 150, 80, 100, GREEN);
+    // --- JUGADOR 2 (Pink Man) ---
+    p2Anims.idle = LoadTexture("assets/images/PinkMan/Idle (32x32).png");
+    p2Anims.run  = LoadTexture("assets/images/PinkMan/Run (32x32).png");
+    p2Anims.jump = LoadTexture("assets/images/PinkMan/Jump (32x32).png");
+    
+    // --- ENTORNO ---
+    backgroundTexture = LoadTexture("assets/images/Background/Brown.png"); 
+    terrainTexture = LoadTexture("assets/images/Terrain/Terrain (32x32).png");
+    doorTexture = LoadTexture("assets/images/Door.png"); // Asegúrate que la ruta sea correcta
+
+    // --- TRAMPAS ---
+    trapSpikeTexture = LoadTexture("assets/images/Spikes/Idle.png");
+    trapWheelTexture = LoadTexture("assets/images/Spike Head/Blink (54x52).png");
+
+    SetTextureWrap(trapSpikeTexture, TEXTURE_WRAP_CLAMP); // Evitar repetición
+    SetTextureFilter(trapSpikeTexture, TEXTURE_FILTER_POINT); // Pixel art nítido
+    SetTextureFilter(trapWheelTexture, TEXTURE_FILTER_POINT); // Pixel art nítido
+
+    // --- AUDIO ---
+    bgMusic = LoadMusicStream("assets/sounds/Theme.wav");
+    jumpSfx = LoadSound("assets/sounds/Jump.wav");
+    winSfx = LoadSound("assets/sounds/Win.wav");
+    loseSfx = LoadSound("assets/sounds/Lose.wav");
+
+    SetMusicVolume(bgMusic, 0.5f); 
+    PlayMusicStream(bgMusic);
+
+    // 3. Configurar escena
+    setupPlayers();
+    loadTiledMap(selectedMapPath, registry, trapSpikeTexture, trapWheelTexture);
     
     // Resetear flags
     levelCompleted = false;
     isGameOver = false;
     isExitVisible = true;
     isExitMoved = false;
-    // exitZone.reset();
     
-    // Posicionar zona de salida al final del nivel
-    // exitZone.rect.x = SCREEN_WIDTH - 100;
-    // exitZone.rect.y = SCREEN_HEIGHT - 150;
+    // Resetear timer
+    isFinishing = false;
+    finishTimer = 0.0f;
 }
 
 void GameplayState::setupPlayers() {
-    // Crear jugador 1 (Azul - WASD)
-    /*
-    Player p1 = createPlayer1({100, SCREEN_HEIGHT - 200});
-    players.push_back(p1);
-    */
-    createPlayer(registry, 100, SCREEN_HEIGHT - 200, BLUE, KEY_LEFT, KEY_RIGHT, KEY_UP);
-    
-    // Crear jugador 2 (Rojo - Flechas)
-    /*
-    Player p2 = createPlayer2({150, SCREEN_HEIGHT - 200});
-    players.push_back(p2);
-    */
-    createPlayer(registry, 150, SCREEN_HEIGHT - 200, RED, KEY_A, KEY_D, KEY_W);
-    
-    // TODO: Para Hito 2, añadir soporte para 3-5 jugadores
-    // Player p3 = createPlayer3({200, SCREEN_HEIGHT - 200});
-    // players.push_back(p3);
+    // P1: Animaciones Virtual Guy
+    createPlayer(registry, 100, SCREEN_HEIGHT - 200, p1Anims, KEY_LEFT, KEY_RIGHT, KEY_UP);
+    // P2: Animaciones Pink Man
+    createPlayer(registry, 150, SCREEN_HEIGHT - 200, p2Anims, KEY_A, KEY_D, KEY_W);
 }
 
 void GameplayState::setupPlatforms() {
-    // ❌ ANTES: Suelo completo (sin agujeros)
-    // platforms.push_back(Platform::createGround(SCREEN_WIDTH));
-    
-    // ✅ AHORA: Suelo dividido con agujero en el centro
-    
-    // Definir dimensiones del agujero
-    const float HOLE_START = 500.0f;   // Inicio del agujero
-    const float HOLE_WIDTH = 300.0f;   // Ancho del agujero
-    const float HOLE_END = HOLE_START + HOLE_WIDTH;  // 800.0f
-    
-    const float GROUND_Y = SCREEN_HEIGHT - 50.0f;  // 670.0f
-    const float GROUND_HEIGHT = 50.0f;
-    
-    // Suelo IZQUIERDO (desde inicio hasta el agujero)
-    /* platforms.push_back(Platform(
-        {0.0f, GROUND_Y},
-        {HOLE_START, GROUND_HEIGHT},
-        DARKGRAY
-    ));*/ 
-    createPlatform(registry, 0.0f, GROUND_Y, HOLE_START, GROUND_HEIGHT, DARKGRAY);
-    
-    // Suelo DERECHO (desde después del agujero hasta el final)
-    /* platforms.push_back(Platform(
-        {HOLE_END, GROUND_Y},
-        {SCREEN_WIDTH - HOLE_END, GROUND_HEIGHT},
-        DARKGRAY
-    ));*/
-    createPlatform(registry, HOLE_END, GROUND_Y, SCREEN_WIDTH - HOLE_END, GROUND_HEIGHT, DARKGRAY);
-    
-    // Plataformas intermedias (mantener igual)
-    /* 
-    platforms.push_back(Platform::createNormalPlatform(200, SCREEN_HEIGHT - 200, 200));
-    platforms.push_back(Platform::createNormalPlatform(500, SCREEN_HEIGHT - 300, 200));
-    platforms.push_back(Platform::createNormalPlatform(800, SCREEN_HEIGHT - 400, 200));
-    platforms.push_back(Platform::createNormalPlatform(1000, SCREEN_HEIGHT - 250, 150));
-    */
-    createPlatform(registry, 200, SCREEN_HEIGHT - 200, 200, 20, DARKGRAY);
-    createPlatform(registry, 500, SCREEN_HEIGHT - 300, 200, 20, DARKGRAY);
-    createPlatform(registry, 800, SCREEN_HEIGHT - 400, 200, 20, DARKGRAY);
-    createPlatform(registry, 1000, SCREEN_HEIGHT - 250, 150, 20, DARKGRAY);
-
-    // TODO: Para Hito 2, añadir:
-    // - Plataformas móviles
-    // - Plataformas que desaparecen
-    // - Trampas dinámicas
+    // Vacío (se carga desde XML)
 }
 
 void GameplayState::handleInput() {
-    // Reinicio manual con ENTER (útil para debugging)
+    // Si estamos terminando (esperando sonido), bloqueamos el input
+    if (isFinishing) return;
+
     if (IsKeyPressed(KEY_ENTER)) {
         init();
         return;
     }
+    if (IsKeyPressed(KEY_ESCAPE)) {
+        state_machine->add_state(std::make_unique<PauseState>(selectedMapPath), false);
+        return;
+    }
 
     InputSystem(registry);
-    
-    // Procesar input de cada jugador
-    /*for (auto& player : players) {
-        player.handleInput();
-    }*/
 }
 
 void GameplayState::update(float deltaTime) {
-    // Actualizar físicas de todos los jugadores
-    /*physicsEngine.updateAllPlayers(players, deltaTime);
-    
-    
-    // Procesar colisiones con plataformas
-    physicsEngine.processAllCollisions(players, platforms);
-    
-    // Verificar condiciones de victoria/derrota
-    checkDefeatCondition();
-    if (isGameOver) {
-        state_machine->add_state(std::make_unique<GameOverState>(false), true);
-        return;
-    }
-    
-    // Mecánica del nivel troll (Hito 1)
-    handleTrollMechanic();
-    
-    // Verificar victoria
-    checkVictoryCondition();
-    if (levelCompleted) {
-        state_machine->add_state(std::make_unique<GameOverState>(true), true);
-        return;
-    }*/
-    
-    
+    // Siempre actualizamos la música para que no se corte el loop
+    UpdateMusicStream(bgMusic);
 
-    MovementSystem(registry, deltaTime, SCREEN_WIDTH, SCREEN_HEIGHT);
+    // --- LÓGICA DE ESPERA PARA SONIDOS ---
+    if (isFinishing) {
+        finishTimer += deltaTime;
+        
+        // Esperamos 2.0 segundos (ajusta este valor si el sonido es más largo/corto)
+        if (finishTimer >= 2.0f) {
+            state_machine->add_state(std::make_unique<GameOverState>(won, selectedMapPath), true);
+        }
+        // IMPORTANTE: Return aquí para NO procesar movimiento ni colisiones mientras esperamos
+        return; 
+    }
+    // -------------------------------------
+
+    // 1. Movimiento y Físicas
+    MovementSystem(registry, deltaTime, SCREEN_WIDTH, SCREEN_HEIGHT, jumpSfx);
     CollisionSystem(registry);
-    logicTroll(registry);
     
+    // 2. Animación
+    AnimationSystem(registry, deltaTime);
+
+    // 3. Lógica del Nivel
+    TrapSystem(registry, deltaTime);
+    PatronSystem(registry, deltaTime);
+    
+    // 4. Condiciones de Fin de Juego
     if (CheckDefeat(registry)) {
-        state_machine->add_state(std::make_unique<GameOverState>(false), true);
+        PlaySound(loseSfx); // Reproducir sonido
+        
+        // Iniciar cuenta atrás en lugar de salir ya
+        isFinishing = true;
+        won = false;
+        finishTimer = 0.0f;
+        state_machine->add_state(std::make_unique<GameOverState>(false, selectedMapPath), true);
         return;
     }
     
     if (CheckVictory(registry)) {
-        state_machine->add_state(std::make_unique<GameOverState>(true), true);
+        PlaySound(winSfx); // Reproducir sonido
+        
+        isFinishing = true;
+        won = true;
+        finishTimer = 0.0f;
+        state_machine->add_state(std::make_unique<GameOverState>(true, selectedMapPath), true);
         return;
     }
 }
 
-void GameplayState::checkVictoryCondition() {
-    /*if (players.size() < 2) return;  // Necesitamos al menos 2 jugadores
-    
-    // Verificar si cada jugador está en la zona de salida
-    exitZone.player1Inside = physicsEngine.checkExitCollision(players[0], exitZone);
-    exitZone.player2Inside = physicsEngine.checkExitCollision(players[1], exitZone);
-    
-    // Victoria: AMBOS jugadores deben estar en la salida Y el nivel troll debe estar completo
-    if (isExitMoved && exitZone.bothPlayersInside()) {
-        levelCompleted = true;
-    }*/
-}
-
-void GameplayState::checkDefeatCondition() {
-    // Derrota: si CUALQUIER jugador ha muerto o cayó por el agujero
-    /*for (auto& player : players) {
-        // Comprobar si cayó fuera de la pantalla (DESPUÉS de las colisiones)
-        if (player.position.y > SCREEN_HEIGHT + 100.0f) {
-            player.isAlive = false;
-        }
-        
-        // Si el jugador está muerto, Game Over
-        if (!player.isAlive) {
-            isGameOver = true;
-            return;
-        }
-    }*/
-}
-
-void GameplayState::handleTrollMechanic() {
-    // Nivel troll del Hito 1: la salida se mueve cuando ambos jugadores se acercan
-    /*if (isExitMoved || players.size() < 2) return;
-    
-    // Verificar si ambos jugadores están cerca de la salida
-    bool player1Near = players[0].position.x > (exitZone.rect.x - 50);
-    bool player2Near = players[1].position.x > (exitZone.rect.x - 50);
-    
-    if (player1Near && player2Near) {
-        // ¡Sorpresa! La salida se mueve al principio del nivel
-        exitZone.rect.x = 20;
-        exitZone.rect.y = SCREEN_HEIGHT - 150;
-        
-        isExitMoved = true;
-        isExitVisible = true;
-        
-        // Resetear los flags de jugadores dentro
-        exitZone.reset();
-    }*/
-}
+// Métodos vacíos mantenidos por compatibilidad
+void GameplayState::checkVictoryCondition() {}
+void GameplayState::checkDefeatCondition() {}
+void GameplayState::handleTrollMechanic() {}
 
 void GameplayState::render() {
+
     BeginDrawing();
-    ClearBackground(RAYWHITE);
     
-    // Renderizar plataformas
-    /*for (const auto& platform : platforms) {
-        platform.render();
-    }*/
-    renderPlayers(registry);
-    renderPlatforms(registry);
-    
-    // Renderizar zona de salida (si es visible)
-    if (isExitVisible) {
-        renderDoors(registry);
+    // Fondo
+    if (backgroundTexture.id != 0) {
+        DrawTexturePro(backgroundTexture,
+                       Rectangle{0, 0, (float)backgroundTexture.width, (float)backgroundTexture.height},
+                       Rectangle{0, 0, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT},
+                       Vector2{0, 0}, 0.0f, WHITE);
+    } else {
+        ClearBackground(RAYWHITE);
     }
     
-    // Renderizar jugadores
-    /*for (const auto& player : players) {
-        player.render();
-    }*/
+    // Escena (Plataformas, Puertas, Jugadores)
+    renderScene(registry, terrainTexture, doorTexture);
     
-    // HUD superior
+    // HUD
     DrawRectangle(0, 0, SCREEN_WIDTH, 100, Fade(BLACK, 0.7f));
     DrawText("CHAOS CREW - Hito 1 Alpha", 20, 10, 30, YELLOW);
-    DrawText("P1: A/D move, W jump | P2: Arrows move, UP jump", 20, 45, 20, GRAY);
+    DrawText("P1: Arrows | P2: WASD", 20, 45, 20, GRAY);
     DrawText("COOPERATIVE: Both must reach EXIT!", 20, 70, 18, GREEN);
     
-    // Indicador de FPS (útil para debugging)
     DrawText(TextFormat("FPS: %d", GetFPS()), SCREEN_WIDTH - 100, 10, 20, LIME);
     
-    // Indicador si la salida se ha movido (nivel troll)
     if (isExitMoved) {
         DrawText("The exit moved! Go back!", SCREEN_WIDTH/2 - 150, 120, 25, RED);
+    }
+
+    // Mensaje opcional mientras se espera el sonido final
+    if (isFinishing) {
+        const char* msg = won ? "VICTORY!" : "DEFEAT!";
+        Color color = won ? GREEN : RED;
+        DrawText(msg, SCREEN_WIDTH/2 - MeasureText(msg, 60)/2, SCREEN_HEIGHT/2, 60, color);
     }
     
     EndDrawing();

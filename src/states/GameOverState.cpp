@@ -1,15 +1,29 @@
 #include "GameOverState.hpp"
 #include "GameplayState.hpp"  // ✅ Incluir en .cpp, no en .hpp
+#include "../utils/MapProgress.hpp"
+#include "MainMenuState.hpp"
 
 constexpr int SCREEN_WIDTH = 1280;
 constexpr int SCREEN_HEIGHT = 720;
 
-GameOverState::GameOverState(bool victory)
-    : levelCompleted(victory) {}
+GameOverState::GameOverState(bool victory, std::string map)
+    : levelCompleted(victory), mapPath(std::move(map)) {}
 
 void GameOverState::handleInput() {
+
     if (IsKeyPressed(KEY_ENTER)) {
-        state_machine->add_state(std::make_unique<GameplayState>(), true);
+
+        auto prevGameplay = dynamic_cast<GameplayState*>( state_machine->getCurrentState().get() );
+        std::string map = prevGameplay ? prevGameplay->getMapPath() : mapPath;
+
+        // 👉 Si ganas, guardar progreso ANTES de volver al menú
+        if (levelCompleted) {
+            MapProgress::MarkCompleted(map);   // <--- AÑADE ESTA LÍNEA
+            state_machine->add_state(std::make_unique<MainMenuState>(), true);
+        }
+        else {
+            state_machine->add_state(std::make_unique<GameplayState>(map), true);
+        }
     }
 }
 
@@ -19,14 +33,11 @@ void GameOverState::render() {
 
     if (levelCompleted) {
         DrawText("LEVEL COMPLETE!", SCREEN_WIDTH/2 - MeasureText("LEVEL COMPLETE!", 60)/2, SCREEN_HEIGHT/2 - 100, 60, GREEN);
-        DrawText("Great teamwork!", SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 - 20, 30, WHITE);
+        DrawText("Press ENTER to return to MENU", SCREEN_WIDTH/2 - 250, SCREEN_HEIGHT/2 + 40, 25, GRAY);
     } else {
         DrawText("GAME OVER", SCREEN_WIDTH/2 - MeasureText("GAME OVER", 60)/2, SCREEN_HEIGHT/2 - 100, 60, RED);
-        DrawText("One player fell!", SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 - 20, 30, WHITE);
+        DrawText("Press ENTER to retry", SCREEN_WIDTH/2 - 160, SCREEN_HEIGHT/2 + 40, 25, GRAY);
     }
 
-    DrawText("Press ENTER to retry", SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 + 50, 25, GRAY);
-    DrawText("Chaos Crew - DCA UA 2025", SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT - 50, 20, DARKGRAY);
-    
     EndDrawing();
 }

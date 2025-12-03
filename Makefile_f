@@ -1,0 +1,198 @@
+# ============================================================================
+# Makefile para Chaos Crew - Arquitectura ECS
+# ============================================================================
+# Equipo: 5 integrantes
+# Asignatura: Desarrollo Colaborativo de Aplicaciones (DCA)
+# Universidad de Alicante - 2025
+# ============================================================================
+
+.PHONY: all clean info clean-cache dev-deps install uninstall dist run debug help
+
+#
+RED    := \033[0;31m
+GREEN  := \033[0;32m
+YELLOW := \033[1;33m
+BLUE   := \033[0;34m
+CYAN   := \033[0;36m
+NC     := \033[0m # No Color
+
+
+CXX      := g++
+CXXFLAGS := -std=c++17 -Wall -Wextra -Wpedantic
+OPTFLAGS := -O3
+DBGFLAGS := -g -O0
+
+
+SRC_DIR    := src
+OBJ_DIR    := obj
+BIN_DIR    := bin
+LIB_DIR    := vendor/lib
+INCLUDE    := vendor/include
+
+SRC_SUBDIRS := core entities states systems
+
+# Directorios de includes adicionales
+INC_DIRS := -I$(SRC_DIR) \
+            -I$(SRC_DIR)/components \
+            -I$(SRC_DIR)/entt \
+            -I$(INCLUDE)
+
+# ============================================================================
+# Detección automática de archivos fuente
+# ============================================================================
+# Encontrar todos los .cpp en los subdirectorios especificados
+SOURCES := $(foreach dir,$(SRC_SUBDIRS),$(wildcard $(SRC_DIR)/$(dir)/*.cpp))
+# Añadir main.cpp si existe en raíz de src/
+SOURCES += $(wildcard $(SRC_DIR)/main.cpp)
+
+# Generar nombres de objetos manteniendo estructura de directorios
+OBJECTS := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SOURCES))
+
+# Archivos de dependencias automáticas
+DEPS := $(OBJECTS:.o=.d)
+
+# Nombre del ejecutable
+TARGET := $(BIN_DIR)/game
+
+
+# Raylib y dependencias del sistema
+LIBS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+
+
+# ============================================================================
+# Regla por defecto
+# ============================================================================
+all: banner $(TARGET) success
+
+# ============================================================================
+# Banner informativo
+# ============================================================================
+banner:
+	@echo "$(CYAN)╔════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║$(NC)  $(GREEN)Compilando Chaos Crew (ECS)$(NC)       $(CYAN)║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════╝$(NC)"
+
+success:
+	@echo ""
+	@echo "$(GREEN)✅ Compilación exitosa!$(NC)"
+	@echo "$(YELLOW)📁 Ejecutable: $(TARGET)$(NC)"
+	@echo "$(CYAN)▶️  Ejecutar con: make run$(NC)"
+	@echo ""
+
+# ============================================================================
+# Compilación del ejecutable y  linkeado
+# ============================================================================
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@echo "$(YELLOW)Compilando$(NC) $<"
+	@mkdir -p $(dir $@)
+	@$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(INC_DIRS) -MMD -MP -c $< -o $@
+
+$(TARGET): $(OBJECTS)
+	@echo "$(BLUE)🔗 Linkeando ejecutable...$(NC)"
+	@mkdir -p $(BIN_DIR)
+	@$(CXX) $(OBJECTS) -o $@ $(LDFLAGS) $(LIBS)
+
+
+# Incluir archivos de dependencias
+-include $(DEPS)
+
+# ============================================================================
+# Reglas de limpieza
+# ============================================================================
+clean:
+	@echo "$(RED)🧹 Limpiando archivos de compilación...$(NC)"
+	@rm -rf $(OBJ_DIR) $(BIN_DIR)
+	@echo "$(GREEN)✅ Limpieza completada$(NC)"
+
+clean-cache:
+	@echo "$(RED)🧹 Limpiando caché de ccache...$(NC)"
+	@ccache -C
+	@ccache -z
+	@echo "$(GREEN)✅ Caché limpiada y estadísticas reseteadas$(NC)"
+
+# ============================================================================
+# Ejecutar el juego
+# ============================================================================
+run: all
+	@echo "$(GREEN)🎮 Ejecutando Chaos Crew...$(NC)"
+	@echo ""
+	@./$(TARGET)
+
+# ============================================================================
+# Información del proyecto
+# ============================================================================
+info:
+	@echo "$(YELLOW)Compilador:$(NC)     $(CXX)"
+	@echo "$(YELLOW)Flags:$(NC)          $(CXXFLAGS) $(OPTFLAGS)"
+	@echo "$(YELLOW)Archivos .cpp:$(NC)  $(words $(SOURCES))"
+	@echo "$(YELLOW)Subdirectorios:$(NC) $(SRC_SUBDIRS)"
+	@echo "$(YELLOW)Ejecutable:$(NC)     $(TARGET)"
+	@echo "$(YELLOW)Librerías:$(NC)      Raylib + EnTT (header-only)"
+	@echo "$(CYAN)═══════════════════════════════════════════════$(NC)"
+	@echo ""
+	@echo "$(BLUE) Estadísticas ccache:$(NC)"
+	@ccache -s | grep -E "(cache (hit|miss)|files in cache|cache size)" || echo "  ccache no disponible"
+	@echo ""
+
+# ============================================================================
+# Listar archivos fuente detectados
+# ============================================================================
+list-sources:
+	@echo "$(BLUE) Archivos fuente detectados:$(NC)"
+	@for src in $(SOURCES); do \
+		echo "  - $$src"; \
+	done
+	@echo ""
+	@echo "$(YELLOW)Total: $(words $(SOURCES)) archivos$(NC)"
+
+# ============================================================================
+# Instalación del juego (copia a /usr/local/bin)
+# ============================================================================
+install: all
+	@echo "$(BLUE) Instalando Chaos Crew...$(NC)"
+	@sudo install -d /usr/local/bin
+	@sudo install -m 755 $(TARGET) /usr/local/bin/chaos-crew
+	@echo "$(GREEN) Chaos Crew instalado en /usr/local/bin/chaos-crew$(NC)"
+	@echo "$(CYAN)Ejecutar con: chaos-crew$(NC)"
+
+uninstall:
+	@echo "$(RED)  Desinstalando Chaos Crew...$(NC)"
+	@sudo rm -f /usr/local/bin/chaos-crew
+	@echo "$(GREEN) Chaos Crew desinstalado$(NC)"
+
+
+# ============================================================================
+# Ayuda
+# ============================================================================
+help:
+	@echo "$(CYAN)╔════════════════════════════════════════════════════════╗$(NC)"
+	@echo "$(CYAN)║$(NC)     $(GREEN)Makefile de Chaos Crew - Comandos Disponibles$(NC)    $(CYAN)║$(NC)"
+	@echo "$(CYAN)╚════════════════════════════════════════════════════════╝$(NC)"
+	@echo ""
+	@echo "$(YELLOW)📦 Compilación:$(NC)"
+	@echo "  make              - Compila el proyecto (optimizado)"
+	@echo "  make -j4          - Compila en paralelo (4 threads)"
+	@echo "  make debug        - Compila en modo debug"
+	@echo "  make clean        - Limpia archivos de compilación"
+	@echo "  make clean-cache  - Limpia caché de ccache"
+	@echo ""
+	@echo "$(YELLOW)🎮 Ejecución:$(NC)"
+	@echo "  make run          - Compila y ejecuta el juego"
+	@echo ""
+	@echo "$(YELLOW)ℹ️  Información:$(NC)"
+	@echo "  make info         - Muestra información del proyecto"
+	@echo "  make check-dirs   - Verifica estructura de directorios"
+	@echo "  make list-sources - Lista archivos fuente detectados"
+	@echo "  make help         - Muestra esta ayuda"
+	@echo ""
+	@echo "$(YELLOW)🛠️  Utilidades:$(NC)"
+	@echo "  make dev-deps     - Instala dependencias de desarrollo"
+	@echo "  make install      - Instala el juego en el sistema"
+	
+
+# ============================================================================
+# Información adicional
+# ============================================================================
+.DEFAULT_GOAL := all
+
+
