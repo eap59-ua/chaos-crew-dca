@@ -68,7 +68,7 @@ void CollisionSystem(entt::registry& registry) {
             }
         }
 
-        // ============================
+       // ============================
         // 2. COLISIONES CON TRAMPAS
         // ============================
 
@@ -89,52 +89,55 @@ void CollisionSystem(entt::registry& registry) {
 
             if (CheckCollisionRecs(playerRect, trapRect)) {
 
-                // ¿Es rueda? (ancho ≈ alto)
+                // ¿Es rueda? (ancho ≈ alto) - Mantiene tu lógica original
                 bool isWheel = fabs(oSolid.width - oSolid.height) < 1.0f;
 
                 if (isWheel) {
-                    // MUERE EN CUALQUIER CONTACTO
                     player.isDead = true;
                     continue;
                 }
 
                 // ============================
-                //          ES PINCHO
+                //       LÓGICA DE PINCHOS
                 // ============================
 
-                bool comingFromAbove = (pos.y + solid.height) <= (oPos.y + 5.0f);
-
-                // SI VIENE DESDE ARRIBA → MUERE
-                if (comingFromAbove) {
-                    player.isDead = true;
-                }
-
-                // SI NO → COLISIÓN SÓLIDA (bloquear)
-                // calculamos igual que plataformas
-                float overlapTop = (oPos.y + oSolid.height) - pos.y;
+                // 1. Calculamos los solapamientos (igual que en plataformas)
+                float overlapTop    = (oPos.y + oSolid.height) - pos.y;
                 float overlapBottom = (pos.y + solid.height) - oPos.y;
-                float overlapLeft = (oPos.x + oSolid.width) - pos.x;
-                float overlapRight = (pos.x + solid.width) - oPos.x;
+                float overlapLeft   = (oPos.x + oSolid.width) - pos.x;
+                float overlapRight  = (pos.x + solid.width) - oPos.x;
 
+                // 2. Encontrar la penetración más pequeña (nos dice la dirección del choque)
                 float minOverlap = fminf(fminf(overlapTop, overlapBottom),
-                                        fminf(overlapLeft, overlapRight)); // mínima penetración: dirección de la colisión
+                                         fminf(overlapLeft, overlapRight));
 
+                // CASO 1: COLISIÓN DESDE ARRIBA (MUERTE)
+                // Si la penetración menor es por abajo (el jugador toca el techo del pincho) 
+                // Y el jugador está cayendo (velocidad positiva)
                 if (minOverlap == overlapBottom && vel.vy >= 0) {
-                    pos.y = oPos.y - solid.height;
+                    player.isDead = true;
+                    
+                    // Opcional: Corregir posición para que quede visualmente "clavado" encima 
+                    // y no atravesando el pincho mientras espera el game over.
+                    pos.y = oPos.y - solid.height; 
                     vel.vy = 0;
-                    player.onGround = true;
                 }
-                else if (minOverlap == overlapTop && vel.vy <= 0) {
-                    pos.y = oPos.y + oSolid.height;
-                    vel.vy = 0;
-                }
-                else if (minOverlap == overlapLeft && vel.vx <= 0) {
-                    pos.x = oPos.x + oSolid.width;
-                    vel.vx = 0;
-                }
-                else if (minOverlap == overlapRight && vel.vx >= 0) {
-                    pos.x = oPos.x - solid.width;
-                    vel.vx = 0;
+                
+                // CASO 2: COLISIÓN POR LADOS O DEBAJO (SÓLIDO)
+                // Si no muere, actúa como una caja sólida (pared)
+                else {
+                     if (minOverlap == overlapTop && vel.vy <= 0) { // Golpe desde abajo
+                        pos.y = oPos.y + oSolid.height;
+                        vel.vy = 0;
+                    }
+                    else if (minOverlap == overlapLeft && vel.vx <= 0) { // Golpe por la derecha
+                        pos.x = oPos.x + oSolid.width;
+                        vel.vx = 0;
+                    }
+                    else if (minOverlap == overlapRight && vel.vx >= 0) { // Golpe por la izquierda
+                        pos.x = oPos.x - solid.width;
+                        vel.vx = 0;
+                    }
                 }
             }
         }

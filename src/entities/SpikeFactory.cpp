@@ -10,11 +10,11 @@ entt::entity createSpike(entt::registry& registry,
 {
     auto e = registry.create();
     registry.emplace<Position>(e, x, y);
-    registry.emplace<Solid>(e, width, height);
+    registry.emplace<Solid>(e, width - 10.0f, height - 10.0f); // reducir hitbox un poco
     registry.emplace<Velocity>(e, 0.0f, 0.0f);
     registry.emplace<Obstacle>(e);  // Las trampas ya funcionan con TrapSystem
 
-    float singleSpikeWidth = texture.width/2.0f; // Ancho de un pincho individual
+    float singleSpikeWidth = texture.width; // Ancho de un pincho individual
     float scale = width / singleSpikeWidth;
 
     //Si la textura no cargó bien (width=0), evitamos dividir por cero.

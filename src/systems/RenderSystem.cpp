@@ -14,7 +14,7 @@
 
 // Renderizado de JUGADORES (Usa Sprite y Texturas)
 void renderPlayers(entt::registry& registry) {
-    auto view = registry.view<Position, Sprite>();
+    auto view = registry.view<Player, Position, Sprite>();
     
     for (auto entity : view) {
         auto &pos = view.get<Position>(entity);
