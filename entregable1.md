@@ -9,16 +9,16 @@ No hemos encontrado fallos
 
 
 | -j (hilos) | Tiempo (s) | Speedup T_ref / Tn              | Eficiencia E = S / N |
-|-----------:|-----------:|--------------------------------:|-----------------------------------:|---------------------:|
-| 1          | 26.932     | 1.000                           | 100%              |
-| 2          | 16.416     | 1.641                           | 82%               |
+|-----------:|-----------:|--------------------------------:|-----------------------------------:|
+| 1          | 26.932     | 1.000                           | 100%               |
+| 2          | 16.416     | 1.641                           | 82%                |
 | 3          | 9.603      | 2.804                           | 93 %               |
 | 4          | 8.023      | 3.357                           | 84 %               |
 | 5          | 7.083      | 3.803                           | 76 %               |
 | 6          | 6.458      | 4.171                           | 70 %               |
 | 7          | 7.463      | 3.609                           | 52 %               |
 | 8          | 5.722      | 4.707                           | 59 %               |
-| 9         | 6.398      | 4.209                            | 47 %               |
+| 9          | 6.398      | 4.209                           | 47 %               |
 | 10         | 5.898      | 4.566                           | 46 %               |
 
 3.-Aplicad ccache en la compilación del proyecto y compara el tiempo de ejecución de la compilación con y sin esta herramienta.
@@ -46,7 +46,7 @@ Local storage:
   Hits:               0 /  15 ( 0.00%)
   Misses:            15 /  15 (100.0%)
 
-  En la primera compilación, casi todos los archivos .cpp generan cache miss ya que la caché estaba vacía ccache compila cada archivo normalmente pero almacena los resultados en la caché, ocupando 50 MiB] de espacio.
+  En la primera compilación, casi todos los archivos .cpp generan cache miss ya que la caché estaba vacía ccache compila cada archivo normalmente pero almacena los resultados en la caché, ocupando 50 MiB] de espacio 0,01% de 5.0 MiB.
 
 Segunda compilación 0,286s
 Cacheable calls:     30 /  32 (93.75%)
