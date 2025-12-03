@@ -22,12 +22,40 @@ No hemos encontrado fallos
 | 10         | 5.898      | 4.566                           | 46 %               |
 
 3.-Aplicad ccache en la compilación del proyecto y compara el tiempo de ejecución de la compilación con y sin esta herramienta.
+Realizamos una comparativa de los tiempos de compilación con y sin ccache utilizando -j4 para paralelización
+    sin ccache : 13,726s
+    con ccache primera compilación : 14,200s
+    con ccache segunda compilación : 0,850s
 
-31,362s
-32,161
+    ccache proporciona una muy buena ganancia de [16.15x] en recompilaciones cuando los archivos no han cambiado. En la primera compilación, el overhead de ccache es mínimo ([~3%]), añadiendo solo [0.474s] al tiempo total debido al cálculo de hashes y almacenamiento en caché.
+    En la segunda compilación, al reutilizar los objetos ya compilados y cacheados, el tiempo se reduce drásticamente de 13.726s a 0.850s.
+    ccache es altamente efectivo para acelerar recompilaciones durante el desarrollo, especialmente cuando se cambian solo algunos archivos del proyecto. 
+
 
 4.-Borrad las estadísticas de ccache y limpiadla. Después, ejecutad dos veces la compilación con esta herramienta y analizad las estadísticas que proporciona la herramienta.
+    1ªcompilación 14,200S
+  Cacheable calls:     16 /  16 (100.0%)
+  Hits:               0
+    Direct:           0
+    Preprocessed:     0
+  Misses:            16
+Uncacheable calls:    0 /  16 (  0.0%)
+Local storage:
+  Cache size (MiB): [85.4] / 5120
 
-Al principio comete en todos los intentos fallos porque no tiene referencias en la caché está vacía hasta que ya se va llenando y el tiempo era de 29,171s
-Pero en el segundo tiempo nos
-31,503
+  En la primera compilación, todos los 16 archivos .cpp generan cache miss ya que la caché estaba vacía ccache compila cada archivo normalmente pero almacena los resultados en la caché, ocupando 85.4 MiB] de espacio.
+
+Segunda compilación 0,850s
+Cacheable calls:     32 /  32 (100.0%)
+  Hits:              16
+    Direct:          16
+    Preprocessed:     0
+  Misses:            16
+  Hit rate:        50.0%
+Uncacheable calls:    0 /  32 (  0.0%)
+Local storage:
+  Cache size (MiB): [85.4] / 5120
+
+  En la segunda compilación, todos los 16 archivos se reutilizan directamente de la caché (16 cache hits), evitando por completo la recompilación.
+  ccache funciona almacenando el resultado de compilaciones previas y reutilizándolos cuando detecta que el código fuente y sus dependencias no han cambiado. 
+    
