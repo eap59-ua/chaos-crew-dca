@@ -25,65 +25,73 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # ============================================================================
+# Incluir FetchContent desde el inicio
+# ============================================================================
+include(FetchContent)
+
+# ============================================================================
 # Opciones de compilación
 # ============================================================================
-# Flags de compilación según el compilador y plataforma
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(-Wall -Wextra -Wpedantic)
-
-    # Optimización para Release
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
-
-    # Debug con información completa
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
 elseif(MSVC)
     add_compile_options(/W4)
-
-    # Optimización para Release en MSVC
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2")
 endif()
 
 # ============================================================================
 # Buscar dependencias: Raylib
 # ============================================================================
-# Buscar Raylib usando find_package
-# Primero intenta encontrar Raylib instalado en el sistema
 find_package(raylib 5.0 QUIET)
 
 if(NOT raylib_FOUND)
-    message(STATUS "Raylib no encontrado en el sistema, buscando en vendor/")
-
-    # Si no se encuentra, usar la versión local en vendor/
-    set(RAYLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/vendor/include")
-    set(RAYLIB_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/vendor/lib")
-
-    if(EXISTS "${RAYLIB_INCLUDE_DIR}/raylib.h")
-        message(STATUS "Usando Raylib local en vendor/")
-
-        # Crear target importado para Raylib local
+    message(STATUS "Raylib no encontrado en el sistema")
+    
+    # Determinar la ruta de la librería según la plataforma
+    if(WIN32)
+        set(RAYLIB_LIB_FILE "${CMAKE_SOURCE_DIR}/vendor/lib/libraylib.a")
+    else()
+        set(RAYLIB_LIB_FILE "${CMAKE_SOURCE_DIR}/vendor/lib/libraylib.a")
+    endif()
+    
+    # Verificar si existe el archivo de librería (.a)
+    if(EXISTS "${RAYLIB_LIB_FILE}" AND EXISTS "${CMAKE_SOURCE_DIR}/vendor/include/raylib.h")
+        message(STATUS "Usando Raylib local desde vendor/")
+        
         add_library(raylib STATIC IMPORTED)
         set_target_properties(raylib PROPERTIES
-            IMPORTED_LOCATION "${RAYLIB_LIBRARY_DIR}/libraylib.a"
-            INTERFACE_INCLUDE_DIRECTORIES "${RAYLIB_INCLUDE_DIR}"
+            IMPORTED_LOCATION "${RAYLIB_LIB_FILE}"
+            INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/vendor/include"
         )
-
-        # Definir dependencias de sistema para Raylib según la plataforma
+        
         if(UNIX AND NOT APPLE)
-            # Linux
-            target_link_libraries(raylib INTERFACE
-                GL m pthread dl rt X11
-            )
+            target_link_libraries(raylib INTERFACE GL m pthread dl rt X11)
         elseif(WIN32)
-            # Windows
-            target_link_libraries(raylib INTERFACE
-                winmm gdi32 opengl32
-            )
+            target_link_libraries(raylib INTERFACE winmm gdi32 opengl32)
         endif()
     else()
-        message(FATAL_ERROR "Raylib no encontrado. Instálalo o colócalo en vendor/")
+        message(STATUS "Raylib no encontrado en vendor/, descargando desde GitHub...")
+        
+        FetchContent_Declare(
+            raylib
+            GIT_REPOSITORY https://github.com/raysan5/raylib.git
+            GIT_TAG 5.5
+            GIT_SHALLOW TRUE
+        )
+        
+        # Política de compatibilidad para versiones antiguas de CMake en raylib
+        set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+        
+        set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+        set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
+        
+        FetchContent_MakeAvailable(raylib)
+        message(STATUS "Raylib descargado y configurado exitosamente")
     endif()
 else()
-    message(STATUS "Raylib encontrado: ${raylib_VERSION}")
+    message(STATUS "Raylib encontrado en el sistema: ${raylib_VERSION}")
 endif()
 
 # ============================================================================
@@ -92,50 +100,44 @@ endif()
 find_package(tinyxml2 QUIET)
 
 if(NOT tinyxml2_FOUND)
-    message(STATUS "TinyXML2 no encontrado en el sistema, buscando en vendor/")
-
-    # Si no se encuentra, usar la versión local en vendor/
-    set(TINYXML2_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/vendor/include")
-    set(TINYXML2_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/vendor/lib")
-
-    if(EXISTS "${TINYXML2_INCLUDE_DIR}/tinyxml2.h")
-        message(STATUS "Usando TinyXML2 local en vendor/")
-
-        # Crear target importado para TinyXML2 local
-        add_library(tinyxml2 STATIC IMPORTED)
+    message(STATUS "TinyXML2 no encontrado en el sistema")
+    
+    set(TINYXML2_LIB_FILE "${CMAKE_SOURCE_DIR}/vendor/lib/libtinyxml2.a")
+    
+    # Verificar si existe el archivo de librería (.a)
+    if(EXISTS "${TINYXML2_LIB_FILE}" AND EXISTS "${CMAKE_SOURCE_DIR}/vendor/include/tinyxml2.h")
+        message(STATUS "Usando TinyXML2 local desde vendor/")
         
-        # Ajustar el nombre de la librería según la plataforma
-        if(WIN32)
-            set_target_properties(tinyxml2 PROPERTIES
-                IMPORTED_LOCATION "${TINYXML2_LIBRARY_DIR}/libtinyxml2.a"
-                INTERFACE_INCLUDE_DIRECTORIES "${TINYXML2_INCLUDE_DIR}"
-            )
-        else()
-            set_target_properties(tinyxml2 PROPERTIES
-                IMPORTED_LOCATION "${TINYXML2_LIBRARY_DIR}/libtinyxml2.a"
-                INTERFACE_INCLUDE_DIRECTORIES "${TINYXML2_INCLUDE_DIR}"
-            )
-        endif()
+        add_library(tinyxml2 STATIC IMPORTED)
+        set_target_properties(tinyxml2 PROPERTIES
+            IMPORTED_LOCATION "${TINYXML2_LIB_FILE}"
+            INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/vendor/include"
+        )
     else()
-        message(FATAL_ERROR "TinyXML2 no encontrado. Instálalo o colócalo en vendor/")
+        message(STATUS "TinyXML2 no encontrado en vendor/, descargando desde GitHub...")
+        
+        FetchContent_Declare(
+            tinyxml2
+            GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
+            GIT_TAG 9.0.0
+            GIT_SHALLOW TRUE
+        )
+        
+        FetchContent_MakeAvailable(tinyxml2)
+        message(STATUS "TinyXML2 descargado y configurado exitosamente")
     endif()
 else()
-    message(STATUS "TinyXML2 encontrado: ${tinyxml2_VERSION}")
+    message(STATUS "TinyXML2 encontrado en el sistema: ${tinyxml2_VERSION}")
 endif()
 
 # ============================================================================
 # Recopilación de archivos fuente
 # ============================================================================
-# Buscar recursivamente todos los archivos .cpp en src/
-file(GLOB_RECURSE SOURCES
-    "${CMAKE_SOURCE_DIR}/src/*.cpp"
-)
+file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
-# Mostrar información sobre los archivos encontrados
 list(LENGTH SOURCES SOURCE_COUNT)
 message(STATUS "Archivos fuente encontrados: ${SOURCE_COUNT}")
 
-# Verificar que se encontraron archivos fuente
 if(NOT SOURCES)
     message(FATAL_ERROR "No se encontraron archivos .cpp en src/")
 endif()
@@ -143,12 +145,9 @@ endif()
 # ============================================================================
 # Gestión de Assets
 # ============================================================================
-# Copiar assets durante la configuración de CMake
 if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
     message(STATUS "Copiando assets/ al directorio de build...")
-    file(COPY "${CMAKE_SOURCE_DIR}/assets"
-        DESTINATION "${CMAKE_BINARY_DIR}"
-    )
+    file(COPY "${CMAKE_SOURCE_DIR}/assets" DESTINATION "${CMAKE_BINARY_DIR}")
 endif()
 
 # ============================================================================
@@ -159,7 +158,6 @@ add_executable(chaos-crew ${SOURCES})
 # ============================================================================
 # Directorios de inclusión
 # ============================================================================
-# Añadir src/ y sus subdirectorios al include path
 target_include_directories(chaos-crew PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/src/components
@@ -173,26 +171,21 @@ target_include_directories(chaos-crew PRIVATE
 # ============================================================================
 # Enlazado de librerías
 # ============================================================================
-# Enlazar con Raylib
-target_link_libraries(chaos-crew PRIVATE raylib)
-target_link_libraries(chaos-crew PRIVATE tinyxml2)
+target_link_libraries(chaos-crew PRIVATE raylib tinyxml2)
 
 # ============================================================================
 # Configuración de salida
 # ============================================================================
-# Directorio de salida para el ejecutable
 set_target_properties(chaos-crew PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-# Copiar el ejecutable a bin/ en la raíz del proyecto (opcional)
 add_custom_command(TARGET chaos-crew POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/bin"
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:chaos-crew> "${CMAKE_SOURCE_DIR}/bin/"
     COMMENT "Copiando ejecutable a bin/"
 )
 
-# Copiar assets durante POST_BUILD (para tenerlos actualizados)
 if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
     add_custom_command(TARGET chaos-crew POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -221,27 +214,23 @@ message(STATUS "")
 # ============================================================================
 # Reglas de instalación
 # ============================================================================
-# Incluir soporte para GNUInstallDirs (define CMAKE_INSTALL_BINDIR, etc.)
 include(GNUInstallDirs)
 
-# Instalar el ejecutable en bin/
 install(TARGETS chaos-crew
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     COMPONENT Runtime
 )
 
-# Instalar assets en share/chaos-crew/assets/
 if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets"
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/chaos-crew
         COMPONENT Assets
-        PATTERN "*.md" EXCLUDE        # Excluir archivos markdown si existen
-        PATTERN ".git*" EXCLUDE        # Excluir archivos git
+        PATTERN "*.md" EXCLUDE
+        PATTERN ".git*" EXCLUDE
     )
     message(STATUS "Assets se instalarán en: ${CMAKE_INSTALL_DATAROOTDIR}/chaos-crew/assets")
 endif()
 
-# Instalar documentación (opcional)
 if(EXISTS "${CMAKE_SOURCE_DIR}/README.md")
     install(FILES "${CMAKE_SOURCE_DIR}/README.md"
         DESTINATION ${CMAKE_INSTALL_DOCDIR}
