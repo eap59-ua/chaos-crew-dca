@@ -16,6 +16,8 @@
 // Incluimos el Sistema de Animación
 #include "../systems/AnimationSystem.hpp"
 
+#include "../core/ResourceManager.h"
+
 #include <filesystem>
 GameplayState::GameplayState(std::string mapPath) 
 
@@ -43,25 +45,8 @@ GameplayState::GameplayState(std::string mapPath)
 
 GameplayState::~GameplayState() {
     // --- LIMPIEZA DE RECURSOS ---
-    
-    // Jugador 1
-    if (p1Anims.idle.id != 0) UnloadTexture(p1Anims.idle);
-    if (p1Anims.run.id != 0)  UnloadTexture(p1Anims.run);
-    if (p1Anims.jump.id != 0) UnloadTexture(p1Anims.jump);
-    
-    // Jugador 2
-    if (p2Anims.idle.id != 0) UnloadTexture(p2Anims.idle);
-    if (p2Anims.run.id != 0)  UnloadTexture(p2Anims.run);
-    if (p2Anims.jump.id != 0) UnloadTexture(p2Anims.jump);
-
-    // Entorno
-    if (backgroundTexture.id != 0) UnloadTexture(backgroundTexture);
-    if (terrainTexture.id != 0) UnloadTexture(terrainTexture);
-    if (doorTexture.id != 0) UnloadTexture(doorTexture);
-
-    // Trampas
-    if (trapSpikeTexture.id != 0) UnloadTexture(trapSpikeTexture);
-    if (trapWheelTexture.id != 0) UnloadTexture(trapWheelTexture);
+    // Las texturas son gestionadas automáticamente por ResourceManager
+    // Solo limpiamos el audio aquí
 
     // Audio
     if (bgMusic.stream.buffer != nullptr) UnloadMusicStream(bgMusic);
@@ -77,23 +62,23 @@ void GameplayState::init() {
     // 2. CARGAR RECURSOS
     
     // --- JUGADOR 1 (Virtual Guy) ---
-    p1Anims.idle = LoadTexture("assets/images/VirtualGuy/Idle (32x32).png");
-    p1Anims.run  = LoadTexture("assets/images/VirtualGuy/Run (32x32).png");
-    p1Anims.jump = LoadTexture("assets/images/VirtualGuy/Jump (32x32).png");
+    p1Anims.idle = ResourceManager::GetInstance().GetTexture("assets/images/VirtualGuy/Idle (32x32).png");
+    p1Anims.run  = ResourceManager::GetInstance().GetTexture("assets/images/VirtualGuy/Run (32x32).png");
+    p1Anims.jump = ResourceManager::GetInstance().GetTexture("assets/images/VirtualGuy/Jump (32x32).png");
 
     // --- JUGADOR 2 (Pink Man) ---
-    p2Anims.idle = LoadTexture("assets/images/PinkMan/Idle (32x32).png");
-    p2Anims.run  = LoadTexture("assets/images/PinkMan/Run (32x32).png");
-    p2Anims.jump = LoadTexture("assets/images/PinkMan/Jump (32x32).png");
+    p2Anims.idle = ResourceManager::GetInstance().GetTexture("assets/images/PinkMan/Idle (32x32).png");
+    p2Anims.run  = ResourceManager::GetInstance().GetTexture("assets/images/PinkMan/Run (32x32).png");
+    p2Anims.jump = ResourceManager::GetInstance().GetTexture("assets/images/PinkMan/Jump (32x32).png");
     
     // --- ENTORNO ---
-    backgroundTexture = LoadTexture("assets/images/Background/Brown.png"); 
-    terrainTexture = LoadTexture("assets/images/Terrain/Terrain (32x32).png");
-    doorTexture = LoadTexture("assets/images/Door.png"); // Asegúrate que la ruta sea correcta
+    backgroundTexture = ResourceManager::GetInstance().GetTexture("assets/images/Background/Brown.png");
+    terrainTexture = ResourceManager::GetInstance().GetTexture("assets/images/Terrain/Terrain (32x32).png");
+    doorTexture = ResourceManager::GetInstance().GetTexture("assets/images/Door.png"); // Asegúrate que la ruta sea correcta
 
     // --- TRAMPAS ---
-    trapSpikeTexture = LoadTexture("assets/images/Spikes/Idle.png");
-    trapWheelTexture = LoadTexture("assets/images/Spike Head/Blink (54x52).png");
+    trapSpikeTexture = ResourceManager::GetInstance().GetTexture("assets/images/Spikes/Idle.png");
+    trapWheelTexture = ResourceManager::GetInstance().GetTexture("assets/images/Spike Head/Blink (54x52).png");
 
     SetTextureWrap(trapSpikeTexture, TEXTURE_WRAP_CLAMP); // Evitar repetición
     SetTextureFilter(trapSpikeTexture, TEXTURE_FILTER_POINT); // Pixel art nítido

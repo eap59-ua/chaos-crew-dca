@@ -1,4 +1,5 @@
 #include "core/StateMachine.hpp"
+#include "core/ResourceManager.h"
 #include "states/GameplayState.hpp"
 #include "states/MainMenuState.hpp"
 #include <raylib.h>
@@ -42,8 +43,11 @@ int main() {
     }
     
     CloseAudioDevice();
-    // Cleanup
+
+    // Cleanup recursos
+    ResourceManager::GetInstance().UnloadAll();
+
     CloseWindow();
-    
+
     return 0;
 }
