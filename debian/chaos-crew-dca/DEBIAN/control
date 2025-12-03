@@ -1,0 +1,13 @@
+Package: chaos-crew-dca
+Version: 0.1.0-1
+Architecture: amd64
+Maintainer: Chaos Crew Team <agv114-ua@alu.ua.es>
+Installed-Size: 1188
+Depends: libc6 (>= 2.38), libgcc-s1 (>= 3.0), libstdc++6 (>= 13.1)
+Section: games
+Priority: optional
+Multi-Arch: foreign
+Homepage: <insert the upstream URL, if relevant>
+Description: Chaos Crew - Cooperative 2D Platformer
+ A cooperative 2D platformer game developed with C++ and Raylib.
+ Players must work together to overcome challenges and reach the end.
