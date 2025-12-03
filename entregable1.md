@@ -46,7 +46,7 @@ Local storage:
   Hits:               0 /  15 ( 0.00%)
   Misses:            15 /  15 (100.0%)
 
-  En la primera compilación, casi todos los archivos .cpp generan cache miss ya que la caché estaba vacía ccache compila cada archivo normalmente pero almacena los resultados en la caché, ocupando 50 MiB] de espacio.
+  En la primera compilación, casi todos los archivos .cpp generan cache miss ya que la caché estaba vacía ccache compila cada archivo normalmente pero almacena los resultados en la caché, ocupando 50 MiB] de espacio 0,01% de 5.0 MiB
 
 Segunda compilación 0,286s
 Cacheable calls:     30 /  32 (93.75%)
