@@ -1,0 +1,170 @@
+# ============================================================================
+# GitHub Actions Workflow - Release Build
+# ============================================================================
+# Este workflow se ejecuta automáticamente cuando se crea un release
+# Genera paquetes para Linux (.deb) y Windows (.zip)
+# ============================================================================
+
+name: Build and Package Release
+
+# Trigger: Se ejecuta cuando se crea un release
+on:
+  release:
+    types: [created]
+
+# Permite ejecutar manualmente desde la interfaz de GitHub
+  workflow_dispatch:
+
+jobs:
+  # ============================================================================
+  # Job 1: Build para Linux
+  # ============================================================================
+  build-linux:
+    name: Build Linux Package (.deb)
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout del código
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # 2. Instalar dependencias del sistema
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libraylib-dev cmake build-essential
+
+      # 3. Verificar versiones instaladas
+      - name: Verify installations
+        run: |
+          cmake --version
+          gcc --version
+
+      # 4. Configurar proyecto con CMake
+      - name: Configure CMake
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+
+      # 5. Compilar el proyecto
+      - name: Build project
+        run: |
+          cd build
+          cmake --build . --config Release
+
+      # 6. Generar paquete distribuible (tar.gz)
+      - name: Create distribution package
+        run: |
+          cd build
+          mkdir -p chaos-crew_0.2.0-beta_amd64/usr/local/bin
+          mkdir -p chaos-crew_0.2.0-beta_amd64/usr/local/share/chaos-crew
+          cp bin/chaos-crew chaos-crew_0.2.0-beta_amd64/usr/local/bin/
+          cp -r assets chaos-crew_0.2.0-beta_amd64/usr/local/share/chaos-crew/
+          tar -czf chaos-crew_0.2.0-beta_amd64.deb chaos-crew_0.2.0-beta_amd64/
+
+      # 7. Listar archivos generados
+      - name: List generated files
+        run: |
+          ls -lh build/*.deb
+
+      # 8. Subir artefacto .deb
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-crew-linux-deb
+          path: build/*.deb
+          if-no-files-found: error
+
+      # 9. Adjuntar .deb al release (si fue triggered por release)
+      - name: Attach .deb to release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: build/chaos-crew_0.2.0-beta_amd64.deb
+          asset_name: chaos-crew_0.2.0-beta_amd64.deb
+          asset_content_type: application/vnd.debian.binary-package
+
+  # ============================================================================
+  # Job 2: Build para Windows
+  # ============================================================================
+  build-windows:
+    name: Build Windows Package (.zip)
+    runs-on: windows-latest
+
+    steps:
+      # 1. Checkout del código
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # 2. Instalar vcpkg (gestor de paquetes para C++)
+      - name: Setup vcpkg
+        uses: microsoft/setup-vcpkg@v1
+        with:
+          vcpkg-download-mode: binary
+
+      # 3. Instalar Raylib con vcpkg
+      - name: Install Raylib via vcpkg
+        run: |
+          vcpkg install raylib:x64-windows
+          vcpkg integrate install
+
+      # 4. Verificar instalación de CMake
+      - name: Verify CMake installation
+        run: cmake --version
+
+      # 5. Configurar proyecto con CMake
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
+
+      # 6. Compilar el proyecto
+      - name: Build project
+        run: |
+          cd build
+          cmake --build . --config Release
+
+      # 7. Generar paquete .zip distribuible
+      - name: Create .zip package
+        shell: powershell
+        run: |
+          cd build
+          mkdir -p chaos-crew_0.2.0-beta_win64/bin
+          mkdir -p chaos-crew_0.2.0-beta_win64/assets
+          cp bin/Release/chaos-crew.exe chaos-crew_0.2.0-beta_win64/bin/
+          cp -r assets/* chaos-crew_0.2.0-beta_win64/assets/
+          Compress-Archive -Path chaos-crew_0.2.0-beta_win64 -DestinationPath chaos-crew_0.2.0-beta_win64.zip
+
+      # 8. Listar archivos generados
+      - name: List generated files
+        run: |
+          dir build\*.zip
+
+      # 9. Subir artefacto .zip
+      - name: Upload .zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-crew-windows-zip
+          path: build/*.zip
+          if-no-files-found: error
+
+      # 10. Adjuntar .zip al release (si fue triggered por release)
+      - name: Attach .zip to release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: build/chaos-crew_0.2.0-beta_win64.zip
+          asset_name: chaos-crew_0.2.0-beta_win64.zip
+          asset_content_type: application/zip
