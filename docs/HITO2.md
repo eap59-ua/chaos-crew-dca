@@ -21,10 +21,9 @@
 ### Características implementadas:
 - ✅ Configuración automática de dependencias
 - ✅ Detección de plataforma (Linux/Windows)
-- ✅ Gestión automática de archivos fuente
+- ✅ Gestión automático de archivos fuente
 - ✅ Copia automática de assets
-- ✅ Generación de paquetes con CPack (.deb y .zip)
-- ✅ Integración con GitHub Actions para builds automáticos
+- ✅ Integración con GitHub Actions para builds y empaquetado automático
 
 ---
 
@@ -47,10 +46,10 @@
    - Recopilación automática de archivos fuente con `GLOB_RECURSE`
    - Configuración declarativa y legible
 
-4. **Herramientas integradas**
-   - **CPack**: Generación automática de instaladores (.deb, .zip, .msi)
+4. **Herramientas integradas y soporte CI/CD**
    - **CTest**: Framework de testing integrado (para futuros tests)
    - **GNUInstallDirs**: Instalación compatible con estándares FHS de Linux
+   - **GitHub Actions**: Integración nativa para builds automáticos y empaquetado
 
 5. **Adopción en la industria**
    - Usado por proyectos grandes: LLVM, Qt, KDE, OpenCV
@@ -181,61 +180,11 @@ cmake --build . --config Release
 
 ---
 
-## 6. Generación de Paquetes
+## 6. GitHub Actions - CI/CD y Generación de Paquetes
 
-CMake integra **CPack** para generar instaladores multiplataforma.
+Los paquetes de distribución (.deb y .zip) se generan automáticamente mediante **GitHub Actions** al crear un release, no en el `CMakeLists.txt`.
 
-### 6.1. Linux: Generar paquete .deb
-
-```bash
-cd build
-cpack -G DEB
-
-# Esto genera: chaos-crew_0.2.0-beta_amd64.deb
-```
-
-**Instalar el .deb:**
-```bash
-sudo dpkg -i chaos-crew_0.2.0-beta_amd64.deb
-# Desinstalar
-sudo apt remove chaos-crew
-```
-
-**Contenido del paquete:**
-- Ejecutable: `/usr/local/bin/chaos-crew`
-- Assets: `/usr/local/share/chaos-crew/assets/`
-- Documentación: `/usr/local/share/doc/chaos-crew/README.md`
-
-### 6.2. Windows: Generar paquete .zip
-
-```powershell
-cd build
-cpack -C Release -G ZIP
-
-# Esto genera: chaos-crew_0.2.0-beta_win64.zip
-```
-
-El ZIP contiene:
-- `bin/chaos-crew.exe`
-- `assets/` (sprites, sonidos, mapas)
-- `README.md`
-
-### 6.3. Otros generadores disponibles
-
-```bash
-# Listar generadores disponibles
-cpack --help
-
-# Generar múltiples formatos a la vez
-cpack -G "DEB;TGZ"  # Linux
-cpack -G "ZIP;NSIS" # Windows (NSIS requiere instalación)
-```
-
----
-
-## 7. GitHub Actions - CI/CD
-
-### 7.1. Workflow de Release Automático
+### 6.1. Workflow de Release Automático
 
 Ubicación: `.github/workflows/release.yml`
 
@@ -249,7 +198,7 @@ Ubicación: `.github/workflows/release.yml`
 1. Instala dependencias: `libraylib-dev`, `cmake`, `build-essential`
 2. Configura proyecto: `cmake .. -DCMAKE_BUILD_TYPE=Release`
 3. Compila: `cmake --build .`
-4. Genera paquete: `cpack -G DEB`
+4. Genera paquete .deb: Usando herramientas nativas de Linux
 5. **Sube artefacto**: `chaos-crew_0.2.0-beta_amd64.deb`
 6. **Adjunta al release**: Automáticamente añade el .deb al release
 
@@ -257,11 +206,11 @@ Ubicación: `.github/workflows/release.yml`
 1. Instala Raylib con **vcpkg**: `vcpkg install raylib:x64-windows`
 2. Configura proyecto con toolchain de vcpkg
 3. Compila en modo Release
-4. Genera paquete: `cpack -C Release -G ZIP`
+4. Genera paquete .zip: Comprimiendo los binarios y assets
 5. **Sube artefacto**: `chaos-crew_0.2.0-beta_win64.zip`
 6. **Adjunta al release**: Automáticamente añade el .zip al release
 
-### 7.2. Cómo crear un release
+### 6.2. Cómo crear un release
 
 ```bash
 # Desde GitHub Web UI:
@@ -274,9 +223,9 @@ Ubicación: `.github/workflows/release.yml`
 # El workflow se ejecuta automáticamente y adjunta los paquetes
 ```
 
-### 7.3. Descargar artefactos manualmente
+### 6.3. Descargar artefactos manualmente
 
-Si ejecutas el workflow manualmente (sin release):
+Si ejecutas el workflow manualmente (sin crear un release):
 1. Ir a **Actions** en GitHub
 2. Seleccionar el workflow run
 3. Descargar:
@@ -389,8 +338,7 @@ chaos-crew-dca/
 ├── vendor/                          # Librerías locales (Raylib)
 ├── build/                           # Directorio de build (no en git)
 │   ├── bin/chaos-crew              # Ejecutable compilado
-│   ├── assets/                      # Assets copiados
-│   └── *.deb / *.zip               # Paquetes generados
+│   └── assets/                      # Assets copiados
 └── docs/
     └── HITO2.md                     # Esta documentación
 ```
@@ -403,7 +351,7 @@ chaos-crew-dca/
 |----------------|------------------|---------------|
 | Multiplataforma | ❌ Solo Linux | ✅ Linux + Windows |
 | Auto-detección deps | ❌ Manual | ✅ find_package() |
-| Generación paquetes | ❌ Script manual | ✅ CPack integrado |
+| Paquetes de distribución | ❌ No había | ✅ GitHub Actions |
 | CI/CD | ❌ No había | ✅ GitHub Actions |
 | Out-of-source build | ❌ Mezcla archivos | ✅ build/ separado |
 | IDEs compatibles | ❌ Solo terminal | ✅ VS Code, Visual Studio, CLion |
@@ -413,7 +361,6 @@ chaos-crew-dca/
 ## Referencias
 
 - [CMake Official Documentation](https://cmake.org/documentation/)
-- [CPack Documentation](https://cmake.org/cmake/help/latest/module/CPack.html)
 - [GitHub Actions - Uploading Release Assets](https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-cplusplus)
 - [vcpkg - C++ Package Manager](https://vcpkg.io/)
 

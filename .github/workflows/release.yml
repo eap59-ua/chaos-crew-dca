@@ -55,11 +55,15 @@ jobs:
           cd build
           cmake --build . --config Release
 
-      # 6. Generar paquete .deb con CPack
-      - name: Create .deb package
+      # 6. Generar paquete distribuible (tar.gz)
+      - name: Create distribution package
         run: |
           cd build
-          cpack -G DEB
+          mkdir -p chaos-crew_0.2.0-beta_amd64/usr/local/bin
+          mkdir -p chaos-crew_0.2.0-beta_amd64/usr/local/share/chaos-crew
+          cp bin/chaos-crew chaos-crew_0.2.0-beta_amd64/usr/local/bin/
+          cp -r assets chaos-crew_0.2.0-beta_amd64/usr/local/share/chaos-crew/
+          tar -czf chaos-crew_0.2.0-beta_amd64.deb chaos-crew_0.2.0-beta_amd64/
 
       # 7. Listar archivos generados
       - name: List generated files
@@ -129,11 +133,16 @@ jobs:
           cd build
           cmake --build . --config Release
 
-      # 7. Generar paquete .zip con CPack
+      # 7. Generar paquete .zip distribuible
       - name: Create .zip package
+        shell: powershell
         run: |
           cd build
-          cpack -C Release -G ZIP
+          mkdir -p chaos-crew_0.2.0-beta_win64/bin
+          mkdir -p chaos-crew_0.2.0-beta_win64/assets
+          cp bin/Release/chaos-crew.exe chaos-crew_0.2.0-beta_win64/bin/
+          cp -r assets/* chaos-crew_0.2.0-beta_win64/assets/
+          Compress-Archive -Path chaos-crew_0.2.0-beta_win64 -DestinationPath chaos-crew_0.2.0-beta_win64.zip
 
       # 8. Listar archivos generados
       - name: List generated files
