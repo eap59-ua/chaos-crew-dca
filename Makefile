@@ -21,7 +21,7 @@ BIN_DIR    := bin
 LIB_DIR    := vendor/lib
 INCLUDE    := vendor/include
 
-SRC_SUBDIRS := core entities states systems
+SRC_SUBDIRS := core entities states systems utils
 
 #Directorios de includes adicionales
 INC_DIRS := -I$(SRC_DIR) \
@@ -48,7 +48,7 @@ TARGET := $(BIN_DIR)/game
 
 
 # Raylib y dependencias del sistema
-LIBS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+LIBS := -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -ltinyxml2
 
 
 # ============================================================================
