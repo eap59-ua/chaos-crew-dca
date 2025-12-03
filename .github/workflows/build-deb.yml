@@ -18,7 +18,10 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential ccache cmake libgl1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libasound2-dev
+          sudo apt-get install -y build-essential ccache cmake \
+            libgl1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev \
+            libxcursor-dev libxi-dev libasound2-dev \
+            libtinyxml2-dev
       
       - name: Build Raylib
         working-directory: /tmp
@@ -37,6 +40,7 @@ jobs:
         run: |
           mkdir -p chaos-crew-linux
           cp bin/game chaos-crew-linux/chaos-crew
+          cp -r assets chaos-crew-linux/ 2>/dev/null || true
           tar -czf chaos-crew-linux-x64.tar.gz chaos-crew-linux/
       
       - name: Upload artifact
