@@ -23,39 +23,43 @@ No hemos encontrado fallos
 
 3.-Aplicad ccache en la compilación del proyecto y compara el tiempo de ejecución de la compilación con y sin esta herramienta.
 Realizamos una comparativa de los tiempos de compilación con y sin ccache utilizando -j4 para paralelización
-    sin ccache : 13,726s
-    con ccache primera compilación : 14,200s
-    con ccache segunda compilación : 0,850s
+    sin ccache : 9,449s
+    con ccache primera compilación : 9,678s
+    con ccache segunda compilación : 0,286
 
-    ccache proporciona una muy buena ganancia de [16.15x] en recompilaciones cuando los archivos no han cambiado. En la primera compilación, el overhead de ccache es mínimo ([~3%]), añadiendo solo [0.474s] al tiempo total debido al cálculo de hashes y almacenamiento en caché.
-    En la segunda compilación, al reutilizar los objetos ya compilados y cacheados, el tiempo se reduce drásticamente de 13.726s a 0.850s.
+    ccache proporciona una muy buena ganancia de 33.04x en recompilaciones cuando los archivos no han cambiado. En la primera compilación, el overhead de ccache es mínimo , añadiendo solo [0.229s] al tiempo total debido al cálculo de hashes y almacenamiento en caché.
+    En la segunda compilación, al reutilizar los objetos ya compilados y cacheados, el tiempo se reduce drásticamente de 9,449s a 0.2860s.
     ccache es altamente efectivo para acelerar recompilaciones durante el desarrollo, especialmente cuando se cambian solo algunos archivos del proyecto. 
 
 
 4.-Borrad las estadísticas de ccache y limpiadla. Después, ejecutad dos veces la compilación con esta herramienta y analizad las estadísticas que proporciona la herramienta.
-    1ªcompilación 14,200S
-  Cacheable calls:     16 /  16 (100.0%)
-  Hits:               0
+    1ªcompilación 9,678s
+  Estadísticas:
+Cacheable calls:     15 /  16 (93.75%)
+  Hits:               0 /  15 ( 0.00%)
     Direct:           0
     Preprocessed:     0
-  Misses:            16
-Uncacheable calls:    0 /  16 (  0.0%)
+  Misses:            15 /  15 (100.0%)
+Uncacheable calls:    1 /  16 ( 6.25%)
 Local storage:
-  Cache size (MiB): [85.4] / 5120
+  Cache size (GiB): 0.0 / 5.0 ( 0.01%)
+  Hits:               0 /  15 ( 0.00%)
+  Misses:            15 /  15 (100.0%)
 
-  En la primera compilación, todos los 16 archivos .cpp generan cache miss ya que la caché estaba vacía ccache compila cada archivo normalmente pero almacena los resultados en la caché, ocupando 85.4 MiB] de espacio.
+  En la primera compilación, casi todos los archivos .cpp generan cache miss ya que la caché estaba vacía ccache compila cada archivo normalmente pero almacena los resultados en la caché, ocupando 50 MiB] de espacio.
 
-Segunda compilación 0,850s
-Cacheable calls:     32 /  32 (100.0%)
-  Hits:              16
-    Direct:          16
-    Preprocessed:     0
-  Misses:            16
-  Hit rate:        50.0%
-Uncacheable calls:    0 /  32 (  0.0%)
+Segunda compilación 0,286s
+Cacheable calls:     30 /  32 (93.75%)
+  Hits:              15 /  30 (50.00%)
+    Direct:          15 /  15 (100.0%)
+    Preprocessed:     0 /  15 ( 0.00%)
+  Misses:            15 /  30 (50.00%)
+Uncacheable calls:    2 /  32 ( 6.25%)
 Local storage:
-  Cache size (MiB): [85.4] / 5120
+  Cache size (GiB): 0.0 / 5.0 ( 0.01%)
+  Hits:              15 /  30 (50.00%)
 
-  En la segunda compilación, todos los 16 archivos se reutilizan directamente de la caché (16 cache hits), evitando por completo la recompilación.
-  ccache funciona almacenando el resultado de compilaciones previas y reutilizándolos cuando detecta que el código fuente y sus dependencias no han cambiado. 
+  En la segunda compilación, todos los archivos cacheables se reutilizan directamente de la caché (15 cache hits), evitando por completo la recompilación.
+  Los ddirect hits al 100% indican que ccache pudo verificar que los archivos no habían cambiado usando solo los hashes, sin necesidad de ejecutar el preprocesador.
+  ccache funciona almacenando el resultado de compilaciones previas y reutilizándolos cuando detecta que el código fuente y sus dependencias no han cambiado.El tiempo se redujo de 9.678s a 0.286s, un speedup de 33.84x, aquí podemos observar la efectividad de ccache en recompilaciones sin cambios.
     
