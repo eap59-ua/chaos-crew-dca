@@ -1,41 +1,66 @@
-name: Build DEB CHAOS CREW Package
+name: Build and Release Package
 
 on:
   release:
     types: [created]
-
+  workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 jobs:
-  build-deb:
+  build:
     runs-on: ubuntu-22.04
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential ccache cmake \
+            libgl1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev \
+            libxcursor-dev libxi-dev libasound2-dev
+      
+      - name: Build Raylib
+        run: |
+          git clone --depth 1 --branch 5.0 https://github.com/raysan5/raylib.git
+          cd raylib/src
+          make PLATFORM=PLATFORM_DESKTOP -j$(nproc)
+          sudo make install PLATFORM=PLATFORM_DESKTOP
+          sudo ldconfig
+      
+      - name: Build project
+        run: |
+          make CXX="ccache g++" -j$(nproc)
+      
+      - name: Create package
+        run: |
+          mkdir -p chaos-crew-linux
+          cp bin/game chaos-crew-linux/chaos-crew
+          tar -czf chaos-crew-linux-x64.tar.gz chaos-crew-linux/
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-crew-package
+          path: chaos-crew-linux-x64.tar.gz
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
     
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          debhelper \
-          devscripts \
-          libraylib-dev \
-          libgl1-mesa-dev \
-          libx11-dev
-    
-    - name: Build DEB package
-      run: |
-        dpkg-buildpackage -us -uc -b
-    
-    - name: Upload DEB to Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: ../chaos-crew_*.deb
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-crew-package
+      
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: chaos-crew-linux-x64.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
