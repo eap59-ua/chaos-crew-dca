@@ -8,6 +8,8 @@
 
 #include "../entities/PlatformFactory.hpp"
 #include "../entities/DoorFactory.hpp"
+#include "../entities/SpikeFactory.hpp"
+#include "../entities/WheelFactory.hpp"
 
 #include "../components/Trap.hpp"
 #include "../components/Position.hpp"
@@ -15,6 +17,7 @@
 #include "../components/Solid.hpp"
 #include "../components/Player.hpp"
 #include "../components/Patron.hpp"
+
 
 #include "LoadMapSystem.hpp"
 
@@ -55,7 +58,7 @@ static void AddPatronLoopHorizontal(entt::registry& registry, entt::entity e, fl
 static void AddPatronLoopVertical(entt::registry& registry, entt::entity e, float amount);
 
 // ==== Cargar el mapa XML ====
-void loadTiledMap(const std::string& filename, entt::registry& registry) {
+void loadTiledMap(const std::string& filename, entt::registry& registry, Texture2D spikeTex, Texture2D wheelTex) {
     XMLDocument doc;
 
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
@@ -99,8 +102,19 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
                     entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
                 else if (o.type == "Door")
                     entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
-
-                if (entity == entt::null) continue;
+                else if(o.type == "Spike"){
+                    entity = createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
+                    std::cout<<"LLAMANDO CREATESPYKE"<<std::endl;
+                }
+                    
+                    
+                else if(o.type == "Wheel")
+                    entity = createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
+                
+                if (entity == entt::null){
+                    throw std::runtime_error("Tipo de objeto desconocido en ObjectsTraps: " + o.type);
+                }
+               
 
                 auto &trap = registry.get_or_emplace<Trap>(entity);
 
@@ -147,18 +161,24 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
                 }
 
                 // Si no hay trampas válidas, eliminar componente
-                if (trap.conditions.empty() && trap.actions.empty()) {
-                    registry.remove<Trap>(entity);
-                }
+                //comprobar el tamaño del registro de trampas
+                int numTraps = 0;
+                for (auto _ : registry.view<Trap>()) numTraps++;
+                
             }
             else if (properties && groupName == "ObjectsLogic")
             {
+                
                 entt::entity entity = entt::null;
 
                 if (o.type == "Platform")
                     entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
                 else if (o.type == "Door")
                     entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
+                else if(o.type == "Spike")
+                    entity = createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
+                else if(o.type == "Wheel")
+                    entity = createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
 
                 if (entity == entt::null) continue;
 
@@ -194,6 +214,13 @@ void loadTiledMap(const std::string& filename, entt::registry& registry) {
                     createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
                 else if (o.type == "Door") 
                     createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
+                else if(o.type == "Spike"){
+                    createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
+                    cout<<"LLAMANDO CREATESPYKE"<<endl;
+                }
+                    
+                else if(o.type == "Wheel")
+                    createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
             }
         }
     }
@@ -367,7 +394,7 @@ static void AddChangeDimensionAction(entt::registry& registry, entt::entity e, f
     auto &trap = registry.get<Trap>(e);
 
     trap.actions.push_back(
-        [e, amount, &registry](float dt) mutable -> bool
+        [e, amount, &registry](float ) mutable -> bool
         {
             if (!registry.any_of<Solid>(e) || !registry.any_of<Position>(e))
                 return true;

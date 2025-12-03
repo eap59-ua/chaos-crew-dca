@@ -13,8 +13,8 @@ class GameOverState;
 
 class GameplayState : public GameState {
 public:
-    GameplayState();
-    ~GameplayState() override;
+    explicit GameplayState(std::string mapPath);
+    ~GameplayState();
 
     void init() override;
     void handleInput() override;
@@ -22,6 +22,8 @@ public:
     void render() override;
     void pause() override {}
     void resume() override {}
+
+    std::string getMapPath() const { return selectedMapPath; }
 
 private:
     entt::registry registry;
@@ -34,6 +36,9 @@ private:
     Texture2D backgroundTexture;
     Texture2D terrainTexture;
     Texture2D doorTexture;
+
+    Texture2D trapSpikeTexture;
+    Texture2D trapWheelTexture;
 
     // --- RECURSOS DE AUDIO ---
     Music bgMusic;
@@ -54,6 +59,8 @@ private:
     
     static constexpr int SCREEN_WIDTH = 1280;
     static constexpr int SCREEN_HEIGHT = 720;
+
+    std::string selectedMapPath;
     
     void setupPlayers();
     void setupPlatforms();

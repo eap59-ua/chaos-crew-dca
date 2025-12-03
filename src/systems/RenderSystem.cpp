@@ -1,4 +1,5 @@
 #include <raylib.h>
+#include <iostream>
 #include "../entt/entt.hpp"
 #include "../components/Player.hpp"
 #include "../components/Platform.hpp"
@@ -7,11 +8,13 @@
 #include "../components/Sprite.hpp"
 #include "../components/Velocity.hpp"
 #include "../components/Solid.hpp"
+#include "../components/Obstacle.hpp"
+
 #include "RenderSystem.hpp"
 
 // Renderizado de JUGADORES (Usa Sprite y Texturas)
 void renderPlayers(entt::registry& registry) {
-    auto view = registry.view<Position, Sprite>();
+    auto view = registry.view<Player, Position, Sprite>();
     
     for (auto entity : view) {
         auto &pos = view.get<Position>(entity);
@@ -69,6 +72,45 @@ void renderPlatforms(entt::registry& registry, Texture2D terrainTex) {
     }
 }
 
+// Renderizado de TRAMPAS (Spike = triángulo rojo, Wheel = círculo rojo)
+void renderTraps(entt::registry& registry) {
+    auto traps = registry.view<Obstacle, Position, Solid>();
+
+    for (auto entity : traps) {
+        auto &pos = traps.get<Position>(entity);
+        auto &solid = traps.get<Solid>(entity);
+
+        // --- DEBUG: DIBUJAR HITBOX ---
+        // Esto dibujará un contorno verde alrededor del área real de daño
+        DrawRectangleLines(
+            (int)pos.x, 
+            (int)pos.y, 
+            (int)solid.width, 
+            (int)solid.height, 
+            GREEN
+        );
+
+        if (registry.any_of<Sprite>(entity)) {
+            auto &sprite = registry.get<Sprite>(entity);
+            float sourceX = (sprite.totalFrames > 1) ? (sprite.currentFrame * sprite.frameWidth) : 0.0f; //evitar repetición
+            Rectangle sourceRec = { sourceX, 0.0f, sprite.frameWidth, sprite.frameHeight };
+
+            // CÁLCULO DE CENTRADO
+            float destX = pos.x + (solid.width - (sprite.frameWidth * sprite.scale)) / 2.0f;
+            float destY = pos.y + (solid.height - (sprite.frameHeight * sprite.scale)); // Base alineada
+
+            // Si es la Rueda (animada), la centramos también verticalmente
+            if (sprite.totalFrames > 1) {
+                destY = pos.y + (solid.height - (sprite.frameHeight * sprite.scale)) / 2.0f;
+            }
+
+            Rectangle destRec = { destX, destY, sprite.frameWidth * sprite.scale, sprite.frameHeight * sprite.scale };
+            DrawTexturePro(sprite.texture, sourceRec, destRec, {0,0}, 0.0f, WHITE);
+        }
+    }
+}
+
+
 // Renderizado de PUERTAS (Usa Solid y Rectángulos simples)
 void renderDoors(entt::registry& registry, Texture2D doorTex) {
     auto doors = registry.view<Door, Position, Solid>();
@@ -117,7 +159,10 @@ void renderDoors(entt::registry& registry, Texture2D doorTex) {
 }
 
 void renderScene(entt::registry& registry, Texture2D terrainTex, Texture2D doorTex) {
+
     renderPlatforms(registry, terrainTex);
     renderDoors(registry, doorTex); // Pasamos la textura de la puerta
+    
     renderPlayers(registry); 
+    renderTraps(registry);
 }

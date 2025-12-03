@@ -17,8 +17,8 @@
 #include "../systems/AnimationSystem.hpp"
 
 #include <filesystem>
+GameplayState::GameplayState(std::string mapPath) 
 
-GameplayState::GameplayState() 
     : levelCompleted(false)
     , isGameOver(false)
     , isExitVisible(true)
@@ -27,6 +27,7 @@ GameplayState::GameplayState()
     , finishTimer(0.0f)
     , isFinishing(false)
     , won(false)
+    , selectedMapPath(std::move(mapPath)) //move hace que no se copie el string, sino que se transfiera su propiedad
 {
     // Inicializamos las estructuras a 0 para seguridad
     p1Anims = { {0}, {0}, {0} };
@@ -58,6 +59,10 @@ GameplayState::~GameplayState() {
     if (terrainTexture.id != 0) UnloadTexture(terrainTexture);
     if (doorTexture.id != 0) UnloadTexture(doorTexture);
 
+    // Trampas
+    if (trapSpikeTexture.id != 0) UnloadTexture(trapSpikeTexture);
+    if (trapWheelTexture.id != 0) UnloadTexture(trapWheelTexture);
+
     // Audio
     if (bgMusic.stream.buffer != nullptr) UnloadMusicStream(bgMusic);
     if (jumpSfx.stream.buffer != nullptr) UnloadSound(jumpSfx);
@@ -86,6 +91,14 @@ void GameplayState::init() {
     terrainTexture = LoadTexture("assets/images/Terrain/Terrain (32x32).png");
     doorTexture = LoadTexture("assets/images/Door.png"); // Asegúrate que la ruta sea correcta
 
+    // --- TRAMPAS ---
+    trapSpikeTexture = LoadTexture("assets/images/Spikes/Idle.png");
+    trapWheelTexture = LoadTexture("assets/images/Spike Head/Blink (54x52).png");
+
+    SetTextureWrap(trapSpikeTexture, TEXTURE_WRAP_CLAMP); // Evitar repetición
+    SetTextureFilter(trapSpikeTexture, TEXTURE_FILTER_POINT); // Pixel art nítido
+    SetTextureFilter(trapWheelTexture, TEXTURE_FILTER_POINT); // Pixel art nítido
+
     // --- AUDIO ---
     bgMusic = LoadMusicStream("assets/sounds/Theme.wav");
     jumpSfx = LoadSound("assets/sounds/Jump.wav");
@@ -97,7 +110,7 @@ void GameplayState::init() {
 
     // 3. Configurar escena
     setupPlayers();
-    loadTiledMap("mapas/mapa2.xml", registry);
+    loadTiledMap(selectedMapPath, registry, trapSpikeTexture, trapWheelTexture);
     
     // Resetear flags
     levelCompleted = false;
@@ -130,7 +143,7 @@ void GameplayState::handleInput() {
         return;
     }
     if (IsKeyPressed(KEY_ESCAPE)) {
-        state_machine->add_state(std::make_unique<PauseState>(), false);
+        state_machine->add_state(std::make_unique<PauseState>(selectedMapPath), false);
         return;
     }
 
@@ -147,7 +160,7 @@ void GameplayState::update(float deltaTime) {
         
         // Esperamos 2.0 segundos (ajusta este valor si el sonido es más largo/corto)
         if (finishTimer >= 2.0f) {
-            state_machine->add_state(std::make_unique<GameOverState>(won), true);
+            state_machine->add_state(std::make_unique<GameOverState>(won, selectedMapPath), true);
         }
         // IMPORTANTE: Return aquí para NO procesar movimiento ni colisiones mientras esperamos
         return; 
@@ -173,6 +186,7 @@ void GameplayState::update(float deltaTime) {
         isFinishing = true;
         won = false;
         finishTimer = 0.0f;
+        state_machine->add_state(std::make_unique<GameOverState>(false, selectedMapPath), true);
         return;
     }
     
@@ -182,6 +196,7 @@ void GameplayState::update(float deltaTime) {
         isFinishing = true;
         won = true;
         finishTimer = 0.0f;
+        state_machine->add_state(std::make_unique<GameOverState>(true, selectedMapPath), true);
         return;
     }
 }
@@ -192,6 +207,7 @@ void GameplayState::checkDefeatCondition() {}
 void GameplayState::handleTrollMechanic() {}
 
 void GameplayState::render() {
+
     BeginDrawing();
     
     // Fondo

@@ -9,55 +9,49 @@
   <objectgroup id="1" name="ObjectsStatics">
 
 	<object id="1" name="Door" type="Door" x="27" y="7.5" width="2" height="1.5" /> 
+	<object id="1" name="Plataforma3" type="Platform" x="0" y="9.3" width="12" height="1" />
 
   </objectgroup>
 
   <objectgroup name="ObjectsTraps">
 
-        <object id="1" name="Plataforma2" type="Platform" x="12" y="9.3" width="19" height="1"> <!--El suelo de la derecha-->
+        <object id="1" name="Plataforma2" type="Platform" x="16" y="9.3" width="6" height="1"> <!--El suelo de la derecha-->
 			<properties>
 				<!--Primera trampa-->
         		<property name="condition" value="proximity"/>
-        		<property name="condition_value" type="float" value="70"/>
+        		<property name="condition_value" type="float" value="240"/>
 		
         		<property name="action" value="move_horizontal"/>
-        		<property name="action_amount" type="float" value="120"/>
-		
-        		<property name="speed" type="float" value="10"/>
-
-				<!--Segunda trampa-->
-        		<property name="condition" value="timer"/>
-        		<property name="condition_value" type="float" value="3"/>
-		
-        		<property name="action" value="move_horizontal"/>
-        		<property name="action_amount" type="float" value="120"/>
+        		<property name="action_amount" type="float" value="-60"/>
 		
         		<property name="speed" type="float" value="10"/>
     		</properties>
   		</object>
 
-		<object id="1" name="Plataforma1" type="Platform" x="0" y="9.3" width="12" height="1" > <!--El suelo de la izquierda-->
+		<object id="1" name="Plataforma4" type="Platform" x="20" y="9.3" width="11" height="1"> <!--El suelo de la derecha-->
 			<properties>
-				<property name="condition" value="timer"/>
-        		<property name="condition_value" type="float" value="3"/>
+				<!--Primera trampa-->
+        		<property name="condition" value="proximity"/>
+        		<property name="condition_value" type="float" value="50"/>
 		
         		<property name="action" value="move_horizontal"/>
-        		<property name="action_amount" type="float" value="-120"/>
+        		<property name="action_amount" type="float" value="100"/>
+		
+        		<property name="speed" type="float" value="10"/>
+    		</properties>
+  		</object>
+
+		<object id="1" name="Plataforma1" type="Platform" x="11" y="9.3" width="2" height="1" >
+			<properties>
+				<property name="condition" value="proximity"/>
+        		<property name="condition_value" type="float" value="60"/>
+		
+        		<property name="action" value="dimension"/>
+        		<property name="action_amount" type="float" value="200"/>
 		
         		<property name="speed" type="float" value="10"/>
 			</properties>
 		</object>
-	
-	</objectgroup>
-
-	<objectgroup name="ObjectsLogic">
-
-        <object id="1" name="Plataforma3" type="Platform" x="9" y="5" width="3" height="0.5"> <!--El suelo de la derecha-->
-			<properties>
-				<property name="bucle_vertical" value="170"/>
-				<property name="speed" value="200"/>
-			</properties>
-  		</object>
 	
 	</objectgroup>
 
