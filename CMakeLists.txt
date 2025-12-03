@@ -87,6 +87,43 @@ else()
 endif()
 
 # ============================================================================
+# Buscar dependencias: TinyXML2
+# ============================================================================
+find_package(tinyxml2 QUIET)
+
+if(NOT tinyxml2_FOUND)
+    message(STATUS "TinyXML2 no encontrado en el sistema, buscando en vendor/")
+
+    # Si no se encuentra, usar la versión local en vendor/
+    set(TINYXML2_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/vendor/include")
+    set(TINYXML2_LIBRARY_DIR "${CMAKE_SOURCE_DIR}/vendor/lib")
+
+    if(EXISTS "${TINYXML2_INCLUDE_DIR}/tinyxml2.h")
+        message(STATUS "Usando TinyXML2 local en vendor/")
+
+        # Crear target importado para TinyXML2 local
+        add_library(tinyxml2 STATIC IMPORTED)
+        
+        # Ajustar el nombre de la librería según la plataforma
+        if(WIN32)
+            set_target_properties(tinyxml2 PROPERTIES
+                IMPORTED_LOCATION "${TINYXML2_LIBRARY_DIR}/libtinyxml2.a"
+                INTERFACE_INCLUDE_DIRECTORIES "${TINYXML2_INCLUDE_DIR}"
+            )
+        else()
+            set_target_properties(tinyxml2 PROPERTIES
+                IMPORTED_LOCATION "${TINYXML2_LIBRARY_DIR}/libtinyxml2.a"
+                INTERFACE_INCLUDE_DIRECTORIES "${TINYXML2_INCLUDE_DIR}"
+            )
+        endif()
+    else()
+        message(FATAL_ERROR "TinyXML2 no encontrado. Instálalo o colócalo en vendor/")
+    endif()
+else()
+    message(STATUS "TinyXML2 encontrado: ${tinyxml2_VERSION}")
+endif()
+
+# ============================================================================
 # Recopilación de archivos fuente
 # ============================================================================
 # Buscar recursivamente todos los archivos .cpp en src/
@@ -138,6 +175,7 @@ target_include_directories(chaos-crew PRIVATE
 # ============================================================================
 # Enlazar con Raylib
 target_link_libraries(chaos-crew PRIVATE raylib)
+target_link_libraries(chaos-crew PRIVATE tinyxml2)
 
 # ============================================================================
 # Configuración de salida
