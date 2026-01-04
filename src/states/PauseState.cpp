@@ -1,6 +1,7 @@
 #include "PauseState.hpp"
 #include "GameplayState.hpp"
 #include "../core/StateMachine.hpp"
+#include "../locale/Locale.hpp"
 #include <raylib.h>
 
 
@@ -50,9 +51,9 @@ void PauseState::render() {
     // Fondo semitransparente
     DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.6f));
 
-    DrawText("PAUSA", GetScreenWidth()/2 - MeasureText("PAUSA", 50)/2, 150, 50, WHITE);
+    DrawText(_("PAUSA"), GetScreenWidth()/2 - MeasureText(_("PAUSA"), 50)/2, 150, 50, WHITE);
 
-    const char* options[3] = { "Continuar", "Reiniciar nivel", "Salir del juego" };
+    const char* options[3] = { _("Continuar"), _("Reiniciar nivel"), _("Salir del juego") };
 
     for (int i = 0; i < 3; i++) {
         Color color = (i == selected) ? YELLOW : RAYWHITE;

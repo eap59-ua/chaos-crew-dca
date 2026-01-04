@@ -1,6 +1,7 @@
 #include "MainMenuState.hpp"
 #include "GameplayState.hpp"
 #include "../utils/MapProgress.hpp"
+#include "../locale/Locale.hpp"
 
 #include <raylib.h>
 #include <algorithm>
@@ -63,8 +64,8 @@ void MainMenuState::render() {
     BeginDrawing();
     ClearBackground(BLACK);
 
-    DrawText("CHAOS CREW", SCREEN_W/2 - MeasureText("CHAOS CREW", 60)/2, 60, 60, YELLOW);
-    DrawText("Choose a Level (UP/DOWN, ENTER). R = refresh", SCREEN_W/2 - 300, 130, 20, GRAY);
+    DrawText(_("CHAOS CREW"), SCREEN_W/2 - MeasureText(_("CHAOS CREW"), 60)/2, 60, 60, YELLOW);
+    DrawText(_("Choose a Level (UP/DOWN, ENTER). R = refresh"), SCREEN_W/2 - 300, 130, 20, GRAY);
 
     int startY = 200;
     for (int i = 0; i < (int)maps.size(); ++i) {
@@ -80,14 +81,14 @@ void MainMenuState::render() {
         DrawText(name, x, y, 28, textColor);
 
         if (!unlocked[i]) {
-            DrawText("[LOCKED]", x + 520, y, 28, RED);
+            DrawText(_("[LOCKED]"), x + 520, y, 28, RED);
         } else if (completed[i]) {
-            DrawText("[DONE]", x + 520, y, 28, GREEN);
+            DrawText(_("[DONE]"), x + 520, y, 28, GREEN);
         }
     }
 
     if (maps.empty()) {
-        DrawText("No maps found in ./mapas", SCREEN_W/2 - 180, SCREEN_H/2, 28, RED);
+        DrawText(_("No maps found in ./mapas"), SCREEN_W/2 - 180, SCREEN_H/2, 28, RED);
     }
 
     EndDrawing();
