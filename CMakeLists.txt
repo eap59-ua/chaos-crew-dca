@@ -101,13 +101,13 @@ find_package(tinyxml2 QUIET)
 
 if(NOT tinyxml2_FOUND)
     message(STATUS "TinyXML2 no encontrado en el sistema")
-    
+
     set(TINYXML2_LIB_FILE "${CMAKE_SOURCE_DIR}/vendor/lib/libtinyxml2.a")
-    
+
     # Verificar si existe el archivo de librería (.a)
     if(EXISTS "${TINYXML2_LIB_FILE}" AND EXISTS "${CMAKE_SOURCE_DIR}/vendor/include/tinyxml2.h")
         message(STATUS "Usando TinyXML2 local desde vendor/")
-        
+
         add_library(tinyxml2 STATIC IMPORTED)
         set_target_properties(tinyxml2 PROPERTIES
             IMPORTED_LOCATION "${TINYXML2_LIB_FILE}"
@@ -115,19 +115,59 @@ if(NOT tinyxml2_FOUND)
         )
     else()
         message(STATUS "TinyXML2 no encontrado en vendor/, descargando desde GitHub...")
-        
+
         FetchContent_Declare(
             tinyxml2
             GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
             GIT_TAG 9.0.0
             GIT_SHALLOW TRUE
         )
-        
+
         FetchContent_MakeAvailable(tinyxml2)
         message(STATUS "TinyXML2 descargado y configurado exitosamente")
     endif()
 else()
     message(STATUS "TinyXML2 encontrado en el sistema: ${tinyxml2_VERSION}")
+endif()
+
+# ============================================================================
+# Buscar dependencias: GNU Gettext (internacionalización)
+# ============================================================================
+find_package(Gettext)
+
+if(GETTEXT_FOUND)
+    message(STATUS "Gettext encontrado: ${GETTEXT_MSGFMT_EXECUTABLE}")
+
+    # Compilar archivos .po a .mo para español
+    add_custom_command(
+        OUTPUT "${CMAKE_BINARY_DIR}/po/es_ES/LC_MESSAGES/chaos-crew.mo"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/po/es_ES/LC_MESSAGES"
+        COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o "${CMAKE_BINARY_DIR}/po/es_ES/LC_MESSAGES/chaos-crew.mo"
+                "${CMAKE_SOURCE_DIR}/po/es_ES/LC_MESSAGES/chaos-crew.po"
+        DEPENDS "${CMAKE_SOURCE_DIR}/po/es_ES/LC_MESSAGES/chaos-crew.po"
+        COMMENT "Compilando traducción español (es_ES)"
+    )
+
+    # Compilar archivos .po a .mo para inglés
+    add_custom_command(
+        OUTPUT "${CMAKE_BINARY_DIR}/po/en_US/LC_MESSAGES/chaos-crew.mo"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/po/en_US/LC_MESSAGES"
+        COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o "${CMAKE_BINARY_DIR}/po/en_US/LC_MESSAGES/chaos-crew.mo"
+                "${CMAKE_SOURCE_DIR}/po/en_US/LC_MESSAGES/chaos-crew.po"
+        DEPENDS "${CMAKE_SOURCE_DIR}/po/en_US/LC_MESSAGES/chaos-crew.po"
+        COMMENT "Compilando traducción inglés (en_US)"
+    )
+
+    # Crear target custom para las traducciones
+    add_custom_target(translations ALL
+        DEPENDS
+            "${CMAKE_BINARY_DIR}/po/es_ES/LC_MESSAGES/chaos-crew.mo"
+            "${CMAKE_BINARY_DIR}/po/en_US/LC_MESSAGES/chaos-crew.mo"
+    )
+
+    message(STATUS "Internacionalización habilitada (es_ES, en_US)")
+else()
+    message(WARNING "Gettext no encontrado - internacionalización deshabilitada")
 endif()
 
 # ============================================================================
@@ -151,6 +191,14 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
 endif()
 
 # ============================================================================
+# Gestión de Mapas
+# ============================================================================
+if(EXISTS "${CMAKE_SOURCE_DIR}/mapas")
+    message(STATUS "Copiando mapas/ al directorio de build...")
+    file(COPY "${CMAKE_SOURCE_DIR}/mapas" DESTINATION "${CMAKE_BINARY_DIR}")
+endif()
+
+# ============================================================================
 # Definición del ejecutable
 # ============================================================================
 add_executable(chaos-crew ${SOURCES})
@@ -164,8 +212,10 @@ target_include_directories(chaos-crew PRIVATE
     ${CMAKE_SOURCE_DIR}/src/core
     ${CMAKE_SOURCE_DIR}/src/entities
     ${CMAKE_SOURCE_DIR}/src/entt
+    ${CMAKE_SOURCE_DIR}/src/locale
     ${CMAKE_SOURCE_DIR}/src/states
     ${CMAKE_SOURCE_DIR}/src/systems
+    ${CMAKE_SOURCE_DIR}/src/utils
 )
 
 # ============================================================================
@@ -192,6 +242,16 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
             "${CMAKE_SOURCE_DIR}/assets"
             "${CMAKE_BINARY_DIR}/assets"
         COMMENT "Actualizando assets en directorio de build"
+    )
+endif()
+
+# Copiar archivos de traducción al directorio de build
+if(GETTEXT_FOUND)
+    add_custom_command(TARGET chaos-crew POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_BINARY_DIR}/po"
+            "${CMAKE_BINARY_DIR}/bin/po"
+        COMMENT "Copiando traducciones al directorio de ejecución"
     )
 endif()
 
@@ -236,6 +296,19 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/README.md")
         DESTINATION ${CMAKE_INSTALL_DOCDIR}
         COMPONENT Documentation
     )
+endif()
+
+# Instalar archivos de traducción
+if(GETTEXT_FOUND)
+    install(FILES "${CMAKE_BINARY_DIR}/po/es_ES/LC_MESSAGES/chaos-crew.mo"
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale/es_ES/LC_MESSAGES
+        COMPONENT Translations
+    )
+    install(FILES "${CMAKE_BINARY_DIR}/po/en_US/LC_MESSAGES/chaos-crew.mo"
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale/en_US/LC_MESSAGES
+        COMPONENT Translations
+    )
+    message(STATUS "Traducciones se instalarán en: ${CMAKE_INSTALL_DATAROOTDIR}/locale")
 endif()
 
 message(STATUS "Prefijo de instalación: ${CMAKE_INSTALL_PREFIX}")

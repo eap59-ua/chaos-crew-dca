@@ -59,6 +59,9 @@ cmake_install.cmake
 *.suo
 *.user
 
+# Claude Code (AI assistant config - local only)
+.claude/
+
 # OS
 .DS_Store
 .AppleDouble
@@ -84,4 +87,9 @@ assets/*.xcf
 
 # Documentation temp
 docs/temp/
-*.pdfpackage-lock.json
+*.pdf
+
+# Node/NPM (if using any JS tools)
+node_modules/
+package-lock.json
+npm-debug.log*

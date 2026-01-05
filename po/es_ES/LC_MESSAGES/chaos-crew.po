@@ -1,0 +1,81 @@
+# CHAOS CREW - Traducción al Español
+# Copyright (C) 2025 Chaos Crew Team
+# This file is distributed under the same license as the chaos-crew package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: chaos-crew 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-04 00:00+0000\n"
+"PO-Revision-Date: 2025-01-04 00:00+0000\n"
+"Last-Translator: Chaos Crew Team\n"
+"Language-Team: Spanish\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# ===== MAIN MENU =====
+
+msgid "CHAOS CREW"
+msgstr "CHAOS CREW"
+
+msgid "Choose a Level (UP/DOWN, ENTER). R = refresh"
+msgstr "Elige un Nivel (ARRIBA/ABAJO, ENTER). R = actualizar"
+
+msgid "[LOCKED]"
+msgstr "[BLOQUEADO]"
+
+msgid "[DONE]"
+msgstr "[COMPLETADO]"
+
+msgid "No maps found in ./mapas"
+msgstr "No se encontraron mapas en ./mapas"
+
+# ===== GAMEPLAY =====
+
+msgid "CHAOS CREW - Hito 1 Alpha"
+msgstr "CHAOS CREW - Hito 1 Alpha"
+
+msgid "P1: Arrows | P2: WASD"
+msgstr "J1: Flechas | J2: WASD"
+
+msgid "COOPERATIVE: Both must reach EXIT!"
+msgstr "COOPERATIVO: ¡Ambos deben llegar a la SALIDA!"
+
+msgid "The exit moved! Go back!"
+msgstr "¡La salida se movió! ¡Regresa!"
+
+msgid "VICTORY!"
+msgstr "¡VICTORIA!"
+
+msgid "DEFEAT!"
+msgstr "¡DERROTA!"
+
+# ===== GAME OVER =====
+
+msgid "LEVEL COMPLETE!"
+msgstr "¡NIVEL COMPLETADO!"
+
+msgid "Press ENTER to return to MENU"
+msgstr "Presiona ENTER para volver al MENÚ"
+
+msgid "GAME OVER"
+msgstr "GAME OVER"
+
+msgid "Press ENTER to retry"
+msgstr "Presiona ENTER para reintentar"
+
+# ===== PAUSE MENU =====
+
+msgid "PAUSA"
+msgstr "PAUSA"
+
+msgid "Continuar"
+msgstr "Continuar"
+
+msgid "Reiniciar nivel"
+msgstr "Reiniciar nivel"
+
+msgid "Salir del juego"
+msgstr "Salir del juego"

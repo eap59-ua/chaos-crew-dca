@@ -1,0 +1,81 @@
+# CHAOS CREW - Plantilla de Traducción
+# Copyright (C) 2025 Chaos Crew Team
+# This file is distributed under the same license as the chaos-crew package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: chaos-crew 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-04 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# ===== MAIN MENU =====
+
+msgid "CHAOS CREW"
+msgstr ""
+
+msgid "Choose a Level (UP/DOWN, ENTER). R = refresh"
+msgstr ""
+
+msgid "[LOCKED]"
+msgstr ""
+
+msgid "[DONE]"
+msgstr ""
+
+msgid "No maps found in ./mapas"
+msgstr ""
+
+# ===== GAMEPLAY =====
+
+msgid "CHAOS CREW - Hito 1 Alpha"
+msgstr ""
+
+msgid "P1: Arrows | P2: WASD"
+msgstr ""
+
+msgid "COOPERATIVE: Both must reach EXIT!"
+msgstr ""
+
+msgid "The exit moved! Go back!"
+msgstr ""
+
+msgid "VICTORY!"
+msgstr ""
+
+msgid "DEFEAT!"
+msgstr ""
+
+# ===== GAME OVER =====
+
+msgid "LEVEL COMPLETE!"
+msgstr ""
+
+msgid "Press ENTER to return to MENU"
+msgstr ""
+
+msgid "GAME OVER"
+msgstr ""
+
+msgid "Press ENTER to retry"
+msgstr ""
+
+# ===== PAUSE MENU =====
+
+msgid "PAUSA"
+msgstr ""
+
+msgid "Continuar"
+msgstr ""
+
+msgid "Reiniciar nivel"
+msgstr ""
+
+msgid "Salir del juego"
+msgstr ""

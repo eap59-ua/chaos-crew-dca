@@ -17,6 +17,7 @@
 #include "../systems/AnimationSystem.hpp"
 
 #include "../core/ResourceManager.h"
+#include "../locale/Locale.hpp"
 
 #include <filesystem>
 GameplayState::GameplayState(std::string mapPath) 
@@ -210,19 +211,19 @@ void GameplayState::render() {
     
     // HUD
     DrawRectangle(0, 0, SCREEN_WIDTH, 100, Fade(BLACK, 0.7f));
-    DrawText("CHAOS CREW - Hito 1 Alpha", 20, 10, 30, YELLOW);
-    DrawText("P1: Arrows | P2: WASD", 20, 45, 20, GRAY);
-    DrawText("COOPERATIVE: Both must reach EXIT!", 20, 70, 18, GREEN);
-    
+    DrawText(_("CHAOS CREW - Hito 1 Alpha"), 20, 10, 30, YELLOW);
+    DrawText(_("P1: Arrows | P2: WASD"), 20, 45, 20, GRAY);
+    DrawText(_("COOPERATIVE: Both must reach EXIT!"), 20, 70, 18, GREEN);
+
     DrawText(TextFormat("FPS: %d", GetFPS()), SCREEN_WIDTH - 100, 10, 20, LIME);
-    
+
     if (isExitMoved) {
-        DrawText("The exit moved! Go back!", SCREEN_WIDTH/2 - 150, 120, 25, RED);
+        DrawText(_("The exit moved! Go back!"), SCREEN_WIDTH/2 - 150, 120, 25, RED);
     }
 
     // Mensaje opcional mientras se espera el sonido final
     if (isFinishing) {
-        const char* msg = won ? "VICTORY!" : "DEFEAT!";
+        const char* msg = won ? _("VICTORY!") : _("DEFEAT!");
         Color color = won ? GREEN : RED;
         DrawText(msg, SCREEN_WIDTH/2 - MeasureText(msg, 60)/2, SCREEN_HEIGHT/2, 60, color);
     }
