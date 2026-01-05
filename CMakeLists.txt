@@ -374,7 +374,7 @@ set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/eap59-ua/chaos-crew-dca")
 
 # Dependencias del paquete DEB
 # CRÍTICO: gettext-runtime debe estar instalado para que funcione i18n
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.31), libstdc++6 (>= 10)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.31), libstdc++6 (>= 10), libtinyxml2-9")
 set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "gettext")
 
 # Arquitectura

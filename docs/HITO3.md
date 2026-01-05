@@ -5,6 +5,7 @@
 - [Estado del Proyecto](#estado-del-proyecto)
 - [Funcionalidades Implementadas](#funcionalidades-implementadas)
 - [Internacionalización](#internacionalización)
+- [Empaquetado y Distribución (CPack)](#empaquetado-y-distribución-cpack)
 - [Sistema de Progreso](#sistema-de-progreso)
 - [Gestión de Recursos](#gestión-de-recursos)
 - [Pendiente](#pendiente)
@@ -22,8 +23,8 @@
 - [x] ResourceManager para optimización
 - [x] Integración con TinyXML2
 - [x] **Internacionalización (ES/EN)** ✨
+- [x] **CPack para empaquetado (DEB/ZIP)** 📦
 - [ ] Debug UI
-- [ ] CPack para empaquetado
 - [ ] Tests unitarios
 - [ ] Publicación en Itch.io
 - [ ] Sistema de sonido mejorado
@@ -403,6 +404,211 @@ pacman -S gettext
 - [📚 Guía Completa de Internacionalización](INTERNATIONALIZATION.md)
 - [🔗 GNU gettext Manual](https://www.gnu.org/software/gettext/manual/)
 - [🔗 CMake FindGettext](https://cmake.org/cmake/help/latest/module/FindGettext.html)
+
+---
+
+## 📦 Empaquetado y Distribución (CPack)
+
+### Descripción General
+
+Sistema de empaquetado automático implementado con **CPack** (parte de CMake) para generar instaladores profesionales multiplataforma.
+
+### Formatos Soportados
+
+| Formato | Plataforma | Extensión | Estado |
+|---------|-----------|-----------|--------|
+| **DEB** | Debian/Ubuntu Linux | `.deb` | ✅ Completo |
+| **ZIP** | Windows/Genérico | `.zip` | ✅ Completo |
+
+### Características del Paquete
+
+#### Paquete DEB (Linux)
+- **Dependencias automáticas**: `libc6`, `libstdc++6`, `libtinyxml2-9`
+- **Recomendaciones**: `gettext` (para i18n)
+- **Instalación estándar**: `/usr/bin/`, `/usr/share/`
+- **Integración con sistema**: Compatible con `apt`, `dpkg`
+- **Desinstalación limpia**: `sudo apt remove chaos-crew`
+
+#### Paquete ZIP (Windows/Genérico)
+- **Portátil**: No requiere instalación
+- **Autocontenido**: Incluye todas las dependencias estáticas
+- **Estructura preservada**: Ejecutable + assets + traducciones
+
+### Contenido de los Paquetes
+
+Todos los paquetes incluyen:
+
+```
+chaos-crew/
+├── bin/chaos-crew                    # Ejecutable del juego
+├── share/
+│   ├── chaos-crew/
+│   │   ├── assets/                   # Gráficos y sonidos
+│   │   │   ├── fonts/
+│   │   │   ├── images/
+│   │   │   ├── sounds/
+│   │   │   └── sprites/
+│   │   └── mapas/                    # Niveles del juego (6 mapas)
+│   │       ├── mapa0.xml
+│   │       ├── mapa1.xml
+│   │       └── ...
+│   └── locale/                       # Traducciones
+│       ├── es_ES/LC_MESSAGES/chaos-crew.mo
+│       └── en_US/LC_MESSAGES/chaos-crew.mo
+└── share/doc/chaos-crew/             # Documentación
+    ├── README.md
+    └── HITO3.md
+```
+
+### Generación de Paquetes
+
+#### Método Automático (Recomendado)
+
+Usa el script `package.sh` para generar ambos paquetes automáticamente:
+
+```bash
+./package.sh
+```
+
+Este script:
+1. Limpia build anterior
+2. Configura el proyecto con CMake
+3. Compila el código fuente
+4. Compila traducciones (.po → .mo)
+5. Genera paquetes DEB y ZIP con CPack
+6. Verifica el contenido
+
+#### Método Manual
+
+```bash
+# Configurar
+mkdir build && cd build
+cmake ..
+
+# Compilar
+cmake --build . -j$(nproc)
+
+# Generar paquetes
+cpack
+
+# Resultado: build/packages/
+# - chaos-crew_0.2.0_amd64.deb
+# - chaos-crew-0.2.0-Linux.zip
+```
+
+### Instalación
+
+#### Linux (DEB)
+
+```bash
+# Instalar paquete
+sudo dpkg -i chaos-crew_0.2.0_amd64.deb
+
+# Si hay dependencias faltantes
+sudo apt-get install -f
+
+# Ejecutar juego
+chaos-crew
+
+# Desinstalar
+sudo apt remove chaos-crew
+```
+
+#### Windows/Genérico (ZIP)
+
+```bash
+# Extraer
+unzip chaos-crew-0.2.0-Linux.zip
+
+# Ejecutar (desde directorio extraído)
+cd chaos-crew-0.2.0-Linux
+./bin/chaos-crew
+```
+
+### Configuración CPack en CMakeLists.txt
+
+```cmake
+# Información del paquete
+set(CPACK_PACKAGE_NAME "chaos-crew")
+set(CPACK_PACKAGE_VERSION "0.2.0")
+set(CPACK_PACKAGE_VENDOR "Chaos Crew Team - Universidad de Alicante")
+set(CPACK_PACKAGE_CONTACT "eap59@alu.ua.es")
+
+# Generadores
+set(CPACK_GENERATOR "DEB;ZIP")
+
+# Componentes
+set(CPACK_COMPONENTS_ALL Runtime Assets Translations Documentation)
+
+# DEB específico
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.31), libstdc++6 (>= 10), libtinyxml2-9")
+set(CPACK_DEBIAN_PACKAGE_SECTION "games")
+```
+
+### Verificación de Paquetes
+
+#### Verificar contenido DEB
+
+```bash
+# Listar archivos del paquete
+dpkg-deb -c chaos-crew_0.2.0_amd64.deb
+
+# Ver información del paquete
+dpkg-deb -I chaos-crew_0.2.0_amd64.deb
+
+# Verificar dependencias
+dpkg-deb -f chaos-crew_0.2.0_amd64.deb Depends
+```
+
+#### Verificar instalación
+
+```bash
+# Después de instalar, verificar archivos
+dpkg -L chaos-crew
+
+# Verificar traducciones instaladas
+ls -la /usr/share/locale/*/LC_MESSAGES/chaos-crew.mo
+
+# Verificar mapas instalados
+ls -la /usr/share/chaos-crew/mapas/
+```
+
+### Solución de Problemas
+
+#### DEB: Dependencias faltantes
+
+```bash
+# Si dpkg -i falla con dependencias
+sudo apt-get install -f
+
+# Instalar dependencias manualmente
+sudo apt-get install libc6 libstdc++6 libtinyxml2-9 gettext
+```
+
+#### i18n no funciona en paquete instalado
+
+```bash
+# Verificar que traducciones están instaladas
+ls /usr/share/locale/es_ES/LC_MESSAGES/chaos-crew.mo
+ls /usr/share/locale/en_US/LC_MESSAGES/chaos-crew.mo
+
+# Reinstalar paquete si faltan
+sudo dpkg -i --force-overwrite chaos-crew_0.2.0_amd64.deb
+```
+
+#### Ejecutable no encuentra recursos
+
+El ejecutable busca recursos en este orden:
+1. `/usr/share/chaos-crew/` (instalación sistema)
+2. `../share/chaos-crew/` (relativo al ejecutable)
+3. `./assets/` y `./mapas/` (directorio actual)
+
+### Referencias
+
+- **CMakeLists.txt**: Configuración completa de CPack (líneas 284-370)
+- **package.sh**: Script automatizado de empaquetado
+- [🔗 CPack Documentation](https://cmake.org/cmake/help/latest/module/CPack.html)
+- [🔗 Debian Package Format](https://www.debian.org/doc/debian-policy/ch-controlfields.html)
 
 ---
 
