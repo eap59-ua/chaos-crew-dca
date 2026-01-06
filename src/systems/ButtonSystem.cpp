@@ -3,96 +3,113 @@
 #include "../components/Position.hpp"
 #include "../components/Solid.hpp"
 #include "../components/Player.hpp"
-#include "../components/Sprite.hpp"
 #include <map>
 #include <vector>
+#include <iostream>
 
 void ButtonSystem(entt::registry& registry) {
-    
-    // Usamos un mapa de vectores para agrupar las entidades por canal
-    std::map<int, std::vector<entt::entity>> channelGroups;
-
-    auto viewButtons = registry.view<Button, Position, Solid, Sprite>();
+    auto viewButtons = registry.view<Button, Position, Solid>();
     auto viewPlayers = registry.view<Player, Position, Solid>();
 
+    // Usaremos esto para agrupar los botones por su canal (ID)
+    std::map<int, std::vector<entt::entity>> channelGroups;
+
     // ---------------------------------------------------------
-    // FASE 1: Detectar colisiones y agrupar
+    // FASE 1: DETECCIÓN INDIVIDUAL Y VISUALES
     // ---------------------------------------------------------
     for (auto entity : viewButtons) {
         auto& btn = viewButtons.get<Button>(entity);
         auto& pos = viewButtons.get<Position>(entity);
         auto& solid = viewButtons.get<Solid>(entity);
-        
-        // Agrupamos
+
+        // 1. Agrupar el botón en su canal correspondiente
         channelGroups[btn.channel].push_back(entity);
 
-        // Si ya se ejecutó, no necesitamos comprobar colisiones, 
-        // el puzle de este botón ya está resuelto.
-        if (btn.executed) continue; 
+        // Si ya se ejecutó la acción (ej: puerta abierta), no calculamos más colisiones
+        // pero mantenemos el aspecto visual de "pulsado".
+        if (btn.executed) {
+            btn.isPressed = true; 
+            // Visualmente aplastado permanentemente
+            btn.color = DARKBLUE;
+            btn.bounds.height = solid.height; 
+            btn.bounds.y = pos.y;
+            continue; 
+        }
 
-        // Reset momentáneo
-        btn.isPressed = false;
-        
-        Rectangle btnRect = {pos.x, pos.y, solid.width, solid.height};
+        // 2. Comprobar si ALGUIEN está pisando ESTE botón ahora mismo
+        bool currentFramePressed = false;
 
-        // Chequear colisión con jugadores
+        // Sensor un poco más arriba del botón para notar los pies del jugador
+        Rectangle sensorRect = { pos.x, pos.y - 4.0f, solid.width, solid.height };
+
         for (auto pEntity : viewPlayers) {
             auto& pPos = viewPlayers.get<Position>(pEntity);
             auto& pSolid = viewPlayers.get<Solid>(pEntity);
-            Rectangle pRect = {pPos.x, pPos.y, pSolid.width, pSolid.height};
+            Rectangle pRect = { pPos.x, pPos.y, pSolid.width, pSolid.height };
 
-            if (CheckCollisionRecs(btnRect, pRect)) {
-                btn.isPressed = true;
-                break; 
+            if (CheckCollisionRecs(sensorRect, pRect)) {
+                currentFramePressed = true;
+                break; // Con que uno lo pise nos vale
             }
         }
+
+        // 3. Actualizar estado y visuales
+        btn.isPressed = currentFramePressed;
+
+        if (btn.isPressed) {
+            // -- Aspecto PISADO --
+            btn.color = RED; // Color indicativo
+            btn.bounds.height = solid.height; // Aplastado (altura de hitbox)
+            btn.bounds.y = pos.y;             // Pegado al suelo
+        } else {
+            // -- Aspecto SIN PISAR --
+            btn.color = BLUE; // Color normal
+            btn.bounds.height = 32.0f;        // Alto visual completo
+            btn.bounds.y = pos.y - 22.0f;     // Desplazado hacia arriba
+        }
+
+        // Mantener X y ancho sincronizados
+        btn.bounds.x = pos.x;
+        btn.bounds.width = solid.width;
     }
 
     // ---------------------------------------------------------
-    // FASE 2: Lógica Cooperativa y Ejecución
+    // FASE 2: LÓGICA DE GRUPO (COOPERATIVO)
     // ---------------------------------------------------------
+    // Ahora recorremos los grupos para ver si se cumple la condición TOTAL
     for (auto& [channel, entities] : channelGroups) {
         
-        bool allPressed = true;
+        bool allButtonsPressed = true;
         bool alreadyExecuted = false;
 
-        // Comprobamos el estado del grupo
-        for (auto e : entities) {
-            auto& btn = registry.get<Button>(e);
-            if (!btn.isPressed) allPressed = false;
-            if (btn.executed) alreadyExecuted = true;
+        // Revisamos TODOS los botones de este canal
+        for (auto entity : entities) {
+            auto& btn = registry.get<Button>(entity);
+            
+            if (!btn.isPressed) {
+                allButtonsPressed = false; // ¡Falta uno!
+            }
+            if (btn.executed) {
+                alreadyExecuted = true;
+            }
         }
 
-        // CONDICIÓN DE ÉXITO: Todos pisados Y no se ha hecho antes
-        if (allPressed && !alreadyExecuted) {
-            
-            // 1. Ejecutar la función (usamos la del primer botón del grupo, por ejemplo)
-            // Asegúrate de que al menos uno tenga función asignada
-            if (!entities.empty()) {
-                auto& firstBtn = registry.get<Button>(entities[0]);
-                if (firstBtn.onPressAction) {
-                    firstBtn.onPressAction(registry); // ¡BOOM! Acción ejecutada
+        // LA CONDICIÓN MÁGICA:
+        // Todos pisados a la vez Y no se ha ejecutado antes.
+        if (allButtonsPressed && !alreadyExecuted) {
+
+            // 1. Ejecutar la acción (buscamos la primera válida en el grupo)
+            for (auto entity : entities) {
+                auto& btn = registry.get<Button>(entity);
+                if (btn.onPressAction) {
+                    btn.onPressAction(registry);
+                    break; // Ejecutamos solo una vez la acción del grupo
                 }
             }
 
-            // 2. BLOQUEAR EL ESTADO (Marcar todos como ejecutados)
-            for (auto e : entities) {
-                registry.get<Button>(e).executed = true;
-            }
-        }
-
-        // ---------------------------------------------------------
-        // FASE 3: Feedback Visual Permanente
-        // ---------------------------------------------------------
-        for (auto e : entities) {
-            auto& btn = registry.get<Button>(e);
-            auto& sprite = registry.get<Sprite>(e);
-
-            // Si se está pisando AHORA o si ya se COMPLETÓ el puzle -> Frame hundido
-            if (btn.isPressed || btn.executed) {
-                sprite.currentFrame = 1; // Botón abajo
-            } else {
-                sprite.currentFrame = 0; // Botón arriba
+            // 2. Bloquear el grupo para siempre (se queda resuelto)
+            for (auto entity : entities) {
+                registry.get<Button>(entity).executed = true;
             }
         }
     }

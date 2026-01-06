@@ -12,6 +12,7 @@
 #include "../systems/TrollSystem.hpp"
 #include "../systems/LoadMapSystem.hpp"
 #include "../systems/PatronSystem.hpp"
+#include "../systems/ButtonSystem.hpp"
 
 // Incluimos el Sistema de Animación
 #include "../systems/AnimationSystem.hpp"
@@ -162,6 +163,7 @@ void GameplayState::update(float deltaTime) {
     // 3. Lógica del Nivel
     TrapSystem(registry, deltaTime);
     PatronSystem(registry, deltaTime);
+    ButtonSystem(registry);
     
     // 4. Condiciones de Fin de Juego
     if (CheckDefeat(registry)) {

@@ -7,10 +7,12 @@
 #include "../components/Velocity.hpp"
 #include "../components/Solid.hpp"
 #include "../components/Sprite.hpp"
+#include "../components/Button.hpp"
 
 void CollisionSystem(entt::registry& registry) {
     auto players   = registry.view<Player, Position, Velocity, Solid>();
     auto platforms = registry.view<Platform, Position, Solid>();
+    auto buttons   = registry.view<Button, Position, Solid>();
     float expand = 8.0f; //para expandir hitbox
 
     for (auto playerEntity : players) {
@@ -138,6 +140,51 @@ void CollisionSystem(entt::registry& registry) {
                         pos.x = oPos.x - solid.width;
                         vel.vx = 0;
                     }
+                }
+            }
+        }
+
+        // ===============================
+        // 3. COLISIONES CON BOTONES
+        // ===============================
+        // Es idéntico a las plataformas: queremos que sean sólidos
+        for (auto btnEntity : buttons) {
+            auto& btnPos   = buttons.get<Position>(btnEntity);
+            auto& btnSolid = buttons.get<Solid>(btnEntity);
+
+            Rectangle playerRect = { pos.x, pos.y, solid.width, solid.height };
+            Rectangle btnRect    = { btnPos.x, btnPos.y, btnSolid.width, btnSolid.height };
+
+            if (CheckCollisionRecs(playerRect, btnRect)) {
+                float overlapTop    = (btnPos.y + btnSolid.height) - pos.y;
+                float overlapBottom = (pos.y + solid.height) - btnPos.y;
+                float overlapLeft   = (btnPos.x + btnSolid.width) - pos.x;
+                float overlapRight  = (pos.x + solid.width) - btnPos.x;
+
+                float minOverlap = fminf(fminf(overlapTop, overlapBottom),
+                                         fminf(overlapLeft, overlapRight));
+
+                // Resolución de colisión (física sólida)
+                if (minOverlap == overlapBottom && vel.vy >= 0) {
+                    // Pisando el botón
+                    pos.y = btnPos.y - solid.height;
+                    vel.vy = 0;
+                    player.onGround = true;
+                }
+                else if (minOverlap == overlapTop && vel.vy <= 0) {
+                    // Golpeando desde abajo
+                    pos.y = btnPos.y + btnSolid.height;
+                    vel.vy = 0;
+                }
+                else if (minOverlap == overlapLeft && vel.vx <= 0) {
+                    // Golpeando derecha
+                    pos.x = btnPos.x + btnSolid.width;
+                    vel.vx = 0;
+                }
+                else if (minOverlap == overlapRight && vel.vx >= 0) {
+                    // Golpeando izquierda
+                    pos.x = btnPos.x - solid.width;
+                    vel.vx = 0;
                 }
             }
         }
