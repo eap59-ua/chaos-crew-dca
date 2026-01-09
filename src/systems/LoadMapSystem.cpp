@@ -58,6 +58,7 @@ static void AddPatronLoopHorizontal(entt::registry& registry, entt::entity e, fl
 static void AddPatronLoopVertical(entt::registry& registry, entt::entity e, float amount);
 
 // ==== Cargar el mapa XML ====
+// ==== Cargar el mapa XML ====
 void loadTiledMap(const std::string& filename, entt::registry& registry, Texture2D spikeTex, Texture2D wheelTex) {
     XMLDocument doc;
 
@@ -71,7 +72,17 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
         std::cerr << "No se encontró el elemento <map>" << std::endl;
         return;
     }
+
+    // Opcional: Leer dimensiones totales del mapa (útil para límites de cámara)
+    int mapWidth = 0, mapHeight = 0, tileWidth = 0, tileHeight = 0;
+    map->QueryIntAttribute("width", &mapWidth);
+    map->QueryIntAttribute("height", &mapHeight);
+    map->QueryIntAttribute("tilewidth", &tileWidth);
+    map->QueryIntAttribute("tileheight", &tileHeight);
     
+    // Si necesitas usar estas variables globales, asígnalas aquí. 
+    // Ejemplo: GlobalLevelWidth = mapWidth * tileWidth;
+
     for (XMLElement* objectGroup = map->FirstChildElement("objectgroup");
          objectGroup; objectGroup = objectGroup->NextSiblingElement("objectgroup"))
     {
@@ -80,14 +91,23 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
         for (XMLElement* obj = objectGroup->FirstChildElement("object");
             obj; obj = obj->NextSiblingElement("object"))
         {
-            MapObject o;
+            // 1. Inicializamos la estructura a 0 para evitar basura de memoria
+            MapObject o = {}; 
             o.name = obj->Attribute("name") ? obj->Attribute("name") : "";
             o.type = obj->Attribute("type") ? obj->Attribute("type") : "";
+
+            // 2. Leemos los atributos
             obj->QueryFloatAttribute("x", &o.x);
             obj->QueryFloatAttribute("y", &o.y);
             obj->QueryFloatAttribute("width", &o.width);
             obj->QueryFloatAttribute("height", &o.height);
 
+            // 3. FIX CRÍTICO: Si Tiled no guardó ancho/alto (es 0), asumimos tamaño de 1 tile (1.0f)
+            // Esto evita que al multiplicar por la escala el resultado sea 0.
+            if (o.width <= 0.0f) o.width = 1.0f; 
+            if (o.height <= 0.0f) o.height = 1.0f;
+
+            // 4. Aplicamos la escala de pantalla
             o.x *= SCREEN_WIDTH / pixel_horizontal;
             o.y *= SCREEN_HEIGHT / pixel_vertical;
             o.width *= SCREEN_WIDTH / pixel_horizontal;
@@ -95,6 +115,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
 
             XMLElement* properties = obj->FirstChildElement("properties");
             
+            // --- GRUPO DE TRAMPAS ---
             if (properties && groupName == "ObjectsTraps")
             {
                 entt::entity entity = entt::null;
@@ -103,29 +124,27 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                 else if (o.type == "Door")
                     entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
                 else if(o.type == "Spike"){
+                    // Ahora o.width ya no será 0
                     entity = createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
-                    std::cout<<"LLAMANDO CREATESPYKE"<<std::endl;
                 }
-                    
-                    
                 else if(o.type == "Wheel")
                     entity = createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
                 
                 if (entity == entt::null){
-                    throw std::runtime_error("Tipo de objeto desconocido en ObjectsTraps: " + o.type);
+                    // Si el tipo no es válido, saltamos al siguiente
+                     std::cerr << "Tipo de objeto desconocido o no manejado: " << o.type << std::endl;
+                     continue; 
                 }
                
-
                 auto &trap = registry.get_or_emplace<Trap>(entity);
 
-                // Variables temporales para acumular un par condición-acción
+                // ... (resto de tu lógica de propiedades Trap igual que antes) ...
                 std::string conditionType;
                 float conditionValue = 0.f;
                 std::string actionType;
                 float actionValue = 0.f;
                 float speed = 0.f;
 
-                // Cambios -> poder tener varias trampas en un componente del mapa
                 for (XMLElement* prop = properties->FirstChildElement("property");
                     prop; prop = prop->NextSiblingElement("property"))
                 {
@@ -135,40 +154,24 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     if (name == "condition") {
                         if (!conditionType.empty() && !actionType.empty()) {
                             ProcessTrap(registry, entity, conditionType, conditionValue, actionType, actionValue, speed);
-                            // resetear vaariables
-                            conditionType.clear();
-                            actionType.clear();
-                            conditionValue = 0.f;
-                            actionValue = 0.f;
-                            speed = 0.f;
+                            conditionType.clear(); actionType.clear();
+                            conditionValue = 0.f; actionValue = 0.f; speed = 0.f;
                         }
                         conditionType = value;
                     }
-                    else if (name == "condition_value") 
-                        conditionValue = value.empty() ? 0.f : stof(value);
-                    else if (name == "action") 
-                        actionType = value;
-                    else if (name == "action_amount") 
-                        actionValue = value.empty() ? 0.f : stof(value);
-                    else if (name == "speed") 
-                        speed = value.empty() ? 0.f : stof(value);
+                    else if (name == "condition_value") conditionValue = value.empty() ? 0.f : stof(value);
+                    else if (name == "action") actionType = value;
+                    else if (name == "action_amount") actionValue = value.empty() ? 0.f : stof(value);
+                    else if (name == "speed") speed = value.empty() ? 0.f : stof(value);
                 }
 
-                // Procesar el último par acumulado
                 if (!conditionType.empty() && !actionType.empty()) {
-                    ProcessTrap(registry, entity, conditionType, conditionValue, 
-                            actionType, actionValue, speed);
+                    ProcessTrap(registry, entity, conditionType, conditionValue, actionType, actionValue, speed);
                 }
-
-                // Si no hay trampas válidas, eliminar componente
-                //comprobar el tamaño del registro de trampas
-                int numTraps = 0;
-                for (auto _ : registry.view<Trap>()) numTraps++;
-                
             }
+            // --- GRUPO DE LÓGICA ---
             else if (properties && groupName == "ObjectsLogic")
             {
-                
                 entt::entity entity = entt::null;
 
                 if (o.type == "Platform")
@@ -182,43 +185,31 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
 
                 if (entity == entt::null) continue;
 
-                // Leer propiedades
                 for (XMLElement* prop = properties->FirstChildElement("property");
                     prop; prop = prop->NextSiblingElement("property"))
                 {
                     std::string name = prop->Attribute("name");
                     std::string value = prop->Attribute("value") ? prop->Attribute("value") : "";
 
-                    // Velocidad inicial
-                    if (name == "speed")
-                    {
+                    if (name == "speed") {
                         float v = stof(value);
                         auto &vel = registry.get_or_emplace<Velocity>(entity);
-                        vel.vx = v;
-                        vel.vy = v;
+                        vel.vx = v; vel.vy = v;
                     }
-                    else if (name == "bucle_horizontal")
-                    {
-                        AddPatronLoopHorizontal(registry, entity, stof(value));
-                    }
-                    else if (name == "bucle_vertical")
-                    {
-                        AddPatronLoopVertical(registry, entity, stof(value));
-                    }
+                    else if (name == "bucle_horizontal") AddPatronLoopHorizontal(registry, entity, stof(value));
+                    else if (name == "bucle_vertical") AddPatronLoopVertical(registry, entity, stof(value));
                 }
             }
+            // --- OBJETOS SIMPLES ---
             else 
             {
-                // Sin propiedades -> crear entidad normal
                 if (o.type == "Platform") 
                     createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
                 else if (o.type == "Door") 
                     createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
                 else if(o.type == "Spike"){
                     createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
-                    cout<<"LLAMANDO CREATESPYKE"<<endl;
                 }
-                    
                 else if(o.type == "Wheel")
                     createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
             }
