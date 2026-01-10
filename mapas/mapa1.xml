@@ -60,7 +60,7 @@
       </properties>
   </object>
 
-  <object id="21" name="PinchoSuelo" type="Spike" x="20" y="9" width="1" height="0.5" />
+  <object id="21" name="PinchoSuelo" type="Spike" x="20" y="8.9" width="1" height="0.1" />
 
  </objectgroup>
 
