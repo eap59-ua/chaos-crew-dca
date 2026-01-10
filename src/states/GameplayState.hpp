@@ -40,6 +40,10 @@ private:
     Texture2D trapSpikeTexture;
     Texture2D trapWheelTexture;
 
+    // -- SPAWN DE JUGADORES ---
+    Vector2 spawnP1;
+    Vector2 spawnP2;
+
     // --- RECURSOS DE AUDIO ---
     Music bgMusic;
     Sound jumpSfx;

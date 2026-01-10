@@ -94,9 +94,13 @@ void GameplayState::init() {
     SetMusicVolume(bgMusic, 0.5f); 
     PlayMusicStream(bgMusic);
 
+    // --- POR DEFECTO ---
+    spawnP1 = { 100.0f, (float)SCREEN_HEIGHT - 200.0f };
+    spawnP2 = { 150.0f, (float)SCREEN_HEIGHT - 200.0f };
+
     // 3. Configurar escena
     setupPlayers();
-    loadTiledMap(selectedMapPath, registry, trapSpikeTexture, trapWheelTexture);
+    loadTiledMap(selectedMapPath, registry, trapSpikeTexture, trapWheelTexture, spawnP1, spawnP2);
     
     // Resetear flags
     levelCompleted = false;
@@ -110,10 +114,8 @@ void GameplayState::init() {
 }
 
 void GameplayState::setupPlayers() {
-    // P1: Animaciones Virtual Guy
-    createPlayer(registry, 100, SCREEN_HEIGHT - 200, p1Anims, KEY_LEFT, KEY_RIGHT, KEY_UP);
-    // P2: Animaciones Pink Man
-    createPlayer(registry, 150, SCREEN_HEIGHT - 200, p2Anims, KEY_A, KEY_D, KEY_W);
+    createPlayer(registry, spawnP1.x, spawnP1.y, p1Anims, KEY_LEFT, KEY_RIGHT, KEY_UP);
+    createPlayer(registry, spawnP2.x, spawnP2.y, p2Anims, KEY_A, KEY_D, KEY_W);
 }
 
 void GameplayState::setupPlatforms() {

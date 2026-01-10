@@ -27,6 +27,8 @@
 
 #include <cmath>
 #include <cfloat>
+#include <map>
+#include <string>
 
 using namespace tinyxml2;
 using namespace std;
@@ -62,7 +64,7 @@ static void AddPatronLoopHorizontal(entt::registry& registry, entt::entity e, fl
 static void AddPatronLoopVertical(entt::registry& registry, entt::entity e, float amount);
 
 // ==== Cargar el mapa XML ====
-void loadTiledMap(const std::string& filename, entt::registry& registry, Texture2D spikeTex, Texture2D wheelTex) {
+void loadTiledMap(const std::string& filename, entt::registry& registry, Texture2D spikeTex, Texture2D wheelTex, Vector2& p1Pos, Vector2& p2Pos) {
     XMLDocument doc;
 
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
@@ -109,8 +111,19 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
 
             XMLElement* properties = obj->FirstChildElement("properties");
             
+            if (groupName == "SpawnPoints") 
+            {
+                if (o.name == "Player1") {
+                    p1Pos = { o.x, o.y };
+                    std::cout << "Spawn P1 detectado en: " << o.x << ", " << o.y << std::endl;
+                }
+                else if (o.name == "Player2") {
+                    p2Pos = { o.x, o.y };
+                    std::cout << "Spawn P2 detectado en: " << o.x << ", " << o.y << std::endl;
+                }
+            }
             // --- CAPA DE TRAMPAS ---
-            if (properties && groupName == "ObjectsTraps")
+            else if (properties && groupName == "ObjectsTraps")
             {
                 entt::entity entity = entt::null;
                 if (o.type == "Platform")
@@ -197,50 +210,75 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     
                     int channel = 0;
                     std::string actionType = "";
-                    float spawnX = 0, spawnY = 0, spawnW = 0, spawnH = 0;
 
+                    // Estructura para guardar datos temporales
+                    struct SpawnData {
+                        float x = 0, y = 0, w = 0, h = 0;
+                    };
+                    // Mapa para agrupar por ID (1, 2, 3...)
+                    std::map<int, SpawnData> platformsToSpawn;
+
+                    // Bucle para leer propiedades
                     for (XMLElement* prop = properties->FirstChildElement("property");
-                         prop; prop = prop->NextSiblingElement("property"))
+                        prop; prop = prop->NextSiblingElement("property"))
                     {
-                        std::string name = prop->Attribute("name");
-                        std::string value = prop->Attribute("value") ? prop->Attribute("value") : "";
+                        const char* nameAttr = prop->Attribute("name");
+                        const char* valAttr  = prop->Attribute("value");
+                        
+                        if (!nameAttr) continue; // seguridad
 
-                        if (name == "channel") channel = std::stoi(value);
-                        else if (name == "action_type") actionType = value;
-                        else if (name == "spawn_x") spawnX = std::stof(value);
-                        else if (name == "spawn_y") spawnY = std::stof(value);
-                        else if (name == "spawn_w") spawnW = std::stof(value);
-                        else if (name == "spawn_h") spawnH = std::stof(value);
+                        std::string name = nameAttr;
+                        std::string value = valAttr ? valAttr : "";
+
+                        if (name == "channel") {
+                            channel = std::stoi(value);
+                        }
+                        else if (name == "action_type") {
+                            actionType = value;
+                        }
+                        else if (name.find("spawn_") == 0) {
+                            // DETECCIÓN DINÁMICA: spawn_x_1, spawn_y_2, etc.
+                            char type = 0;
+                            int id = 0;
+                            
+                            // Leemos el formato: spawn_Letra_Numero
+                            if (std::sscanf(name.c_str(), "spawn_%c_%d", &type, &id) == 2) {
+                                // Guardamos y aplicamos la escala AQUÍ mismo
+                                if (type == 'x') platformsToSpawn[id].x = std::stof(value) * scaleX;
+                                if (type == 'y') platformsToSpawn[id].y = std::stof(value) * scaleY;
+                                if (type == 'w') platformsToSpawn[id].w = std::stof(value) * scaleX;
+                                if (type == 'h') platformsToSpawn[id].h = std::stof(value) * scaleY;
+                            }
+                        }
                     }
 
+                    // Creamos la entidad Botón
                     auto entity = createButton(registry, o.x, o.y, channel);
                     auto& btn = registry.get<Button>(entity);
 
-                    // LÓGICA DEL SPAWN DE PLATAFORMA
+                    // --- LÓGICA DE ACCIÓN: SPAWN PLATFORM ---
                     if (actionType == "spawn_platform") {
-                        // AHORA SÍ FUNCIONA: scaleX y scaleY están declaradas arriba
-                        spawnX *= scaleX;
-                        spawnY *= scaleY;
-                        spawnW *= scaleX;
-                        spawnH *= scaleY;
-
-                        btn.onPressAction = [spawnX, spawnY, spawnW, spawnH](entt::registry& reg) {
-                            std::cout << "¡Puzzle resuelto! Creando plataforma." << std::endl;
-                            createPlatform(reg, spawnX, spawnY, spawnW, spawnH, 0.0f, 0.0f, GOLD); 
+                        // Capturamos el MAPA entero por valor [platformsToSpawn]
+                        btn.onPressAction = [platformsToSpawn](entt::registry& reg) {
+                            std::cout << "¡Puzzle resuelto! Creando plataformas..." << std::endl;
+                            
+                            // Recorremos todas las plataformas configuradas (1, 2, 3...)
+                            for (auto const& [id, data] : platformsToSpawn) {
+                                // Usamos tu función createPlatform
+                                createPlatform(reg, data.x, data.y, data.w, data.h, 0.0f, 0.0f, GOLD);
+                            }
                         };
                     }
-                    // LÓGICA DE ABRIR PUERTA
+                    // --- LÓGICA DE ACCIÓN: ABRIR PUERTA ---
                     else if (actionType == "abrir_puerta_final") {
                         btn.onPressAction = [](entt::registry& reg) {
-                             // AHORA SÍ FUNCIONA: Se ha incluido "../components/Door.hpp"
-                             auto view = reg.view<Door>();
-                             for(auto e : view) {
-                                 // Quitar la colisión sólida para que se pueda pasar
-                                 if (reg.any_of<Solid>(e)) {
-                                     reg.remove<Solid>(e);
-                                 }
-                                 std::cout << "Puerta abierta" << std::endl;
-                             }
+                            auto view = reg.view<Door>();
+                            for(auto e : view) {
+                                if (reg.any_of<Solid>(e)) {
+                                    reg.remove<Solid>(e);
+                                }
+                                std::cout << "Puerta abierta" << std::endl;
+                            }
                         };
                     }
                 }
@@ -556,5 +594,3 @@ static void AddPatronLoopVertical(entt::registry& registry, entt::entity e, floa
         }
     );
 }
-
-//====================FUNCIONES RELACIONADAS CON LOS BOTONES============================
