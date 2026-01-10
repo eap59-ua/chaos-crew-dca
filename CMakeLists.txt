@@ -291,24 +291,140 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
     message(STATUS "Assets se instalarán en: ${CMAKE_INSTALL_DATAROOTDIR}/chaos-crew/assets")
 endif()
 
+# Instalar mapas (niveles del juego) - CRÍTICO para que el juego funcione
+if(EXISTS "${CMAKE_SOURCE_DIR}/mapas")
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/mapas"
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/chaos-crew
+        COMPONENT Assets
+        FILES_MATCHING
+        PATTERN "*.xml"
+        PATTERN "*.tmx"   # Por si se usa Tiled
+        PATTERN "*.json"  # Por si se usan otros formatos
+    )
+    message(STATUS "Mapas se instalarán en: ${CMAKE_INSTALL_DATAROOTDIR}/chaos-crew/mapas")
+endif()
+
+# Documentación
 if(EXISTS "${CMAKE_SOURCE_DIR}/README.md")
-    install(FILES "${CMAKE_SOURCE_DIR}/README.md"
+    install(FILES
+        "${CMAKE_SOURCE_DIR}/README.md"
         DESTINATION ${CMAKE_INSTALL_DOCDIR}
         COMPONENT Documentation
     )
 endif()
 
-# Instalar archivos de traducción
-if(GETTEXT_FOUND)
-    install(FILES "${CMAKE_BINARY_DIR}/po/es_ES/LC_MESSAGES/chaos-crew.mo"
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale/es_ES/LC_MESSAGES
-        COMPONENT Translations
+if(EXISTS "${CMAKE_SOURCE_DIR}/docs/HITO3.md")
+    install(FILES
+        "${CMAKE_SOURCE_DIR}/docs/HITO3.md"
+        DESTINATION ${CMAKE_INSTALL_DOCDIR}
+        COMPONENT Documentation
     )
-    install(FILES "${CMAKE_BINARY_DIR}/po/en_US/LC_MESSAGES/chaos-crew.mo"
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale/en_US/LC_MESSAGES
-        COMPONENT Translations
-    )
-    message(STATUS "Traducciones se instalarán en: ${CMAKE_INSTALL_DATAROOTDIR}/locale")
 endif()
 
+# Instalar traducciones (.mo) - SIEMPRE, sin depender de GETTEXT_FOUND
+# Los archivos .mo ya deben estar compilados en build/po/
+install(FILES
+    "${CMAKE_BINARY_DIR}/po/es_ES/LC_MESSAGES/chaos-crew.mo"
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale/es_ES/LC_MESSAGES
+    COMPONENT Translations
+    OPTIONAL  # No fallar si no existe (para builds sin gettext)
+)
+
+install(FILES
+    "${CMAKE_BINARY_DIR}/po/en_US/LC_MESSAGES/chaos-crew.mo"
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale/en_US/LC_MESSAGES
+    COMPONENT Translations
+    OPTIONAL
+)
+
+message(STATUS "Traducciones se instalarán en: ${CMAKE_INSTALL_DATAROOTDIR}/locale")
+
 message(STATUS "Prefijo de instalación: ${CMAKE_INSTALL_PREFIX}")
+
+# ============================================================================
+# CPACK CONFIGURATION
+# ============================================================================
+
+# Información del paquete
+set(CPACK_PACKAGE_NAME "chaos-crew")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_VENDOR "Chaos Crew Team - Universidad de Alicante")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Cooperative 2D platformer game")
+set(CPACK_PACKAGE_DESCRIPTION "Chaos Crew is a cooperative 2D platformer game where 2-5 players must work together to overcome levels full of dynamic traps and puzzles.")
+set(CPACK_PACKAGE_CONTACT "eap59@alu.ua.es")
+
+# Archivos de licencia y README
+if(EXISTS "${CMAKE_SOURCE_DIR}/LICENSE")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+endif()
+if(EXISTS "${CMAKE_SOURCE_DIR}/README.md")
+    set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+endif()
+
+# Directorio de salida de paquetes
+set(CPACK_PACKAGE_DIRECTORY "${CMAKE_BINARY_DIR}/packages")
+
+# ============================================================================
+# CONFIGURACIÓN ESPECÍFICA DE DEB (Debian/Ubuntu)
+# ============================================================================
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Chaos Crew Team <eap59@alu.ua.es>")
+set(CPACK_DEBIAN_PACKAGE_SECTION "games")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/eap59-ua/chaos-crew-dca")
+
+# Dependencias del paquete DEB
+# CRÍTICO: gettext-runtime debe estar instalado para que funcione i18n
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.31), libstdc++6 (>= 10), libtinyxml2-9")
+set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "gettext")
+
+# Arquitectura
+set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+
+# Nombre del archivo DEB
+set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
+
+# ============================================================================
+# CONFIGURACIÓN ESPECÍFICA DE ZIP (Windows/Generic)
+# ============================================================================
+set(CPACK_GENERATOR "DEB;ZIP")
+
+# Nombre del archivo ZIP
+set(CPACK_ARCHIVE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}")
+
+# Para Windows: incluir todo lo necesario en el ZIP
+if(WIN32)
+    # Incluir DLLs necesarias (si las hay)
+    install(DIRECTORY "${CMAKE_BINARY_DIR}/bin/"
+        DESTINATION bin
+        FILES_MATCHING
+        PATTERN "*.dll"
+        OPTIONAL
+    )
+endif()
+
+# Componentes a incluir en el paquete
+set(CPACK_COMPONENTS_ALL Runtime Assets Translations Documentation)
+
+# Descripción de componentes
+set(CPACK_COMPONENT_RUNTIME_DISPLAY_NAME "Game Executable")
+set(CPACK_COMPONENT_RUNTIME_DESCRIPTION "Chaos Crew game executable")
+set(CPACK_COMPONENT_RUNTIME_REQUIRED TRUE)
+
+set(CPACK_COMPONENT_ASSETS_DISPLAY_NAME "Game Assets")
+set(CPACK_COMPONENT_ASSETS_DESCRIPTION "Graphics, sounds, maps and other game resources")
+set(CPACK_COMPONENT_ASSETS_REQUIRED TRUE)
+
+set(CPACK_COMPONENT_TRANSLATIONS_DISPLAY_NAME "Translations")
+set(CPACK_COMPONENT_TRANSLATIONS_DESCRIPTION "Language files (Spanish, English)")
+set(CPACK_COMPONENT_TRANSLATIONS_REQUIRED FALSE)
+
+set(CPACK_COMPONENT_DOCUMENTATION_DISPLAY_NAME "Documentation")
+set(CPACK_COMPONENT_DOCUMENTATION_DESCRIPTION "README and documentation files")
+set(CPACK_COMPONENT_DOCUMENTATION_REQUIRED FALSE)
+
+# Incluir CPack
+include(CPack)
+
+message(STATUS "")
+message(STATUS "CPack configurado para generar paquetes DEB y ZIP")
+message(STATUS "Ejecutar 'cpack' en el directorio de build para generar paquetes")

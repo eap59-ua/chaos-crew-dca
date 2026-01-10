@@ -62,6 +62,9 @@ cmake_install.cmake
 # Claude Code (AI assistant config - local only)
 .claude/
 
+# Temporary PR description files
+PR_DESCRIPTION.md
+
 # OS
 .DS_Store
 .AppleDouble
