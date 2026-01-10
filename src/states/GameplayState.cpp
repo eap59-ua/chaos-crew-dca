@@ -99,9 +99,9 @@ void GameplayState::init() {
     spawnP2 = { 150.0f, (float)SCREEN_HEIGHT - 200.0f };
 
     // 3. Configurar escena
-    setupPlayers();
     loadTiledMap(selectedMapPath, registry, trapSpikeTexture, trapWheelTexture, spawnP1, spawnP2);
-    
+    setupPlayers();
+
     // Resetear flags
     levelCompleted = false;
     isGameOver = false;
@@ -114,6 +114,7 @@ void GameplayState::init() {
 }
 
 void GameplayState::setupPlayers() {
+    std::cout << spawnP1.x << std::endl;
     createPlayer(registry, spawnP1.x, spawnP1.y, p1Anims, KEY_LEFT, KEY_RIGHT, KEY_UP);
     createPlayer(registry, spawnP2.x, spawnP2.y, p2Anims, KEY_A, KEY_D, KEY_W);
 }
