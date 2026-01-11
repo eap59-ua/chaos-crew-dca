@@ -93,6 +93,9 @@ assets/*.xcf
 docs/temp/
 *.pdf
 
+# Bash stackdump (Windows crash dump)
+bash.exe.stackdump
+
 # Node/NPM (if using any JS tools)
 node_modules/
 package-lock.json
