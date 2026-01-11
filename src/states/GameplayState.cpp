@@ -12,6 +12,7 @@
 #include "../systems/TrollSystem.hpp"
 #include "../systems/LoadMapSystem.hpp"
 #include "../systems/PatronSystem.hpp"
+#include "../systems/ButtonSystem.hpp"
 
 // Incluimos el Sistema de Animación
 #include "../systems/AnimationSystem.hpp"
@@ -95,10 +96,14 @@ void GameplayState::init() {
     SetMusicVolume(bgMusic, 0.5f); 
     PlayMusicStream(bgMusic);
 
+    // --- POR DEFECTO ---
+    spawnP1 = { 100.0f, (float)SCREEN_HEIGHT - 200.0f };
+    spawnP2 = { 150.0f, (float)SCREEN_HEIGHT - 200.0f };
+
     // 3. Configurar escena
+    loadTiledMap(selectedMapPath, registry, trapSpikeTexture, trapWheelTexture, spawnP1, spawnP2);
     setupPlayers();
-    loadTiledMap(selectedMapPath, registry, trapSpikeTexture, trapWheelTexture);
-    
+
     // Resetear flags
     levelCompleted = false;
     isGameOver = false;
@@ -111,14 +116,17 @@ void GameplayState::init() {
 }
 
 void GameplayState::setupPlayers() {
+    std::cout << spawnP1.x << std::endl;
+    
+    
     LOG_INFO("[GameplayState] ========== PLAYER SETUP START ==========");
 
     // P1: Keyboard player 1 (Arrows) - Virtual Guy
-    createPlayer(registry, 100, SCREEN_HEIGHT - 200, p1Anims, KEY_LEFT, KEY_RIGHT, KEY_UP);
+    createPlayer(registry, spawnP1.x, spawnP1.y, p1Anims, KEY_LEFT, KEY_RIGHT, KEY_UP);
     LOG_INFO("[GameplayState] Player 1 created with keyboard (Arrows)");
 
     // P2: Keyboard player 2 (WASD) - Pink Man
-    createPlayer(registry, 150, SCREEN_HEIGHT - 200, p2Anims, KEY_A, KEY_D, KEY_W);
+    createPlayer(registry, spawnP2.x, spawnP2.y, p2Anims, KEY_A, KEY_D, KEY_W);
     LOG_INFO("[GameplayState] Player 2 created with keyboard (WASD)");
 
     // FORCE polling before detection
@@ -204,6 +212,7 @@ void GameplayState::update(float deltaTime) {
     // 3. Lógica del Nivel
     TrapSystem(registry, deltaTime);
     PatronSystem(registry, deltaTime);
+    ButtonSystem(registry);
     
     // 4. Condiciones de Fin de Juego
     if (CheckDefeat(registry)) {
