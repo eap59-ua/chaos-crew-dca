@@ -1,10 +1,10 @@
-#include <iostream>
 #include <vector>
 #include <string>
 #include <sstream>
 #include <tinyxml2.h>
 #include <raylib.h>
 #include "../entt/entt.hpp"
+#include "../utils/Logger.hpp"
 
 #include "../entities/PlatformFactory.hpp"
 #include "../entities/DoorFactory.hpp"
@@ -62,13 +62,13 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
     XMLDocument doc;
 
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
-        std::cerr << "Error cargando archivo: " << filename << std::endl;
+        LOG_ERROR("[LoadMapSystem] Failed to load map file: {}", filename);
         return;
     }
 
     XMLElement* map = doc.FirstChildElement("map");
     if (!map) {
-        std::cerr << "No se encontró el elemento <map>" << std::endl;
+        LOG_ERROR("[LoadMapSystem] <map> element not found in: {}", filename);
         return;
     }
     
@@ -104,7 +104,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
                 else if(o.type == "Spike"){
                     entity = createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
-                    std::cout<<"LLAMANDO CREATESPYKE"<<std::endl;
+                    LOG_DEBUG("[LoadMapSystem] Creating spike entity at ({}, {})", o.x, o.y);
                 }
                     
                     
