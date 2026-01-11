@@ -1,73 +1,113 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.1"
-     orientation="orthogonal" renderorder="right-down"
-     width="30" height="20" tilewidth="32" tileheight="32"
-     infinite="0" nextlayerid="4" nextobjectid="10">
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="80">
 
+ <objectgroup id="4" name="SpawnPoints">
+  <object id="1" name="Player1" x="2" y="8" width="1" height="1"/>
+  <object id="2" name="Player2" x="4" y="8" width="1" height="1"/>
+ </objectgroup>
 
-  <!-- Capa de objetos con lógica -->
-  <objectgroup id="1" name="ObjectsStatics">
+ <objectgroup id="1" name="ObjectsStatics">
+  <object id="3" name="Suelo_Izq" type="Platform" x="0" y="9" width="8" height="1" />
+  
+  <object id="4" name="Suelo_Der" type="Platform" x="22" y="9" width="8" height="1" />
 
-	<object id="1" name="Door" type="Door" x="27" y="7.5" width="2" height="1.5" /> 
+  <object id="5" name="Plataforma_Media" type="Platform" x="12" y="6" width="4" height="0.5" />
 
-  </objectgroup>
+  <object id="6" name="Piso_Alto_Izq" type="Platform" x="0" y="3" width="5" height="0.5" />
 
-  <objectgroup name="ObjectsTraps">
+  <object id="7" name="Suelo_Meta" type="Platform" x="24" y="3" width="6" height="0.5" />
+  <object id="8" name="Door" type="Door" x="27" y="1.5" width="2" height="1.5" /> 
 
-        <object id="1" name="Plataforma2" type="Platform" x="12" y="9.3" width="19" height="1"> <!--El suelo de la derecha-->
-			<properties>
-				<!--Primera trampa-->
-        		<property name="condition" value="proximity"/>
-        		<property name="condition_value" type="float" value="70"/>
-		
-        		<property name="action" value="move_horizontal"/>
-        		<property name="action_amount" type="float" value="120"/>
-		
-        		<property name="speed" type="float" value="10"/>
+  <object id="9" name="Escalon_Ayuda" type="Platform" x="10" y="7.5" width="2" height="0.5" />
 
-				<!--Segunda trampa-->
-        		<property name="condition" value="timer"/>
-        		<property name="condition_value" type="float" value="3"/>
-		
-        		<property name="action" value="move_horizontal"/>
-        		<property name="action_amount" type="float" value="120"/>
-		
-        		<property name="speed" type="float" value="10"/>
-    		</properties>
-  		</object>
+  <object id="10" name="Pinchos_Foso_Central" type="Spike" x="6" y="8.5" width="0.5" height="0.5" />
+ </objectgroup>
 
-		<object id="1" name="Plataforma1" type="Platform" x="0" y="9.3" width="12" height="1" > <!--El suelo de la izquierda-->
-			<properties>
-				<property name="condition" value="timer"/>
-        		<property name="condition_value" type="float" value="3"/>
-		
-        		<property name="action" value="move_horizontal"/>
-        		<property name="action_amount" type="float" value="-120"/>
-		
-        		<property name="speed" type="float" value="10"/>
-			</properties>
-		</object>
-	
-	</objectgroup>
+ <objectgroup name="ObjectsLogic">
+  
+  <object id="20" name="Transportador_Bajo" type="Platform" x="8" y="9" width="4" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="60"/> 
+		<property name="bucle_horizontal" type="float" value="300.0"/> 
+	  </properties>
+  </object>
 
-	<objectgroup name="ObjectsLogic">
+  <object id="21" name="Ascensor_Vertical" type="Platform" x="6" y="6" width="3" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="-40"/> 
+		<property name="bucle_vertical" type="float" value="200.0"/> 
+	  </properties>
+  </object>
 
-        <object id="1" name="Plataforma3" type="Platform" x="9" y="5" width="3" height="0.5"> <!--El suelo de la derecha-->
-			<properties>
-				<property name="bucle_vertical" value="170"/>
-				<property name="speed" value="200"/>
-			</properties>
-  		</object>
-	
-	</objectgroup>
+  <object id="10" name="wheel_1" type="Wheel" x="15" y="2" width="0.5" height="0.5">
+	<properties>
+        <property name="speed" type="float" value="200"/> 
+		<property name="bucle_horizontal" type="float" value="300.0"/> 
+	</properties>
+  </object>
 
+ </objectgroup>
+
+ <objectgroup id="2" name="ObjectsButtons">
+
+  <object id="30" name="Boton_Paso1" type="Button" x="28" y="8.5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="1"/>
+	<property name="action_type" value="spawn_platform"/>
+    
+    <property name="spawn_x_1" type="float" value="12.0"/>
+    <property name="spawn_y_1" type="float" value="3.0"/>
+    <property name="spawn_w_1" type="float" value="10.0"/> 
+	<property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+
+  <object id="31" name="Boton_Paso2" type="Button" x="1" y="2.5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="1"/>
+    <property name="action_type" value="spawn_platform"/>
+    
+    <property name="spawn_x_1" type="float" value="12.0"/>
+    <property name="spawn_y_1" type="float" value="3.0"/>
+    <property name="spawn_w_1" type="float" value="10.0"/> 
+	<property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+
+ </objectgroup>
+
+ <objectgroup name="ObjectsTraps">
+    
+    <object id="40" name="Sierra_Boton1" type="Spike" x="24" y="8.5" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="150"/> 
+		<property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="100"/> 
+		<property name="speed" type="float" value="4"/> 
+	  </properties>
+    </object>
+
+	<object id="19" name="Plataforma_Media" type="Platform" x="15" y="6" width="4" height="0.5">
+		<properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="60"/> 
+		<property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="80"/> 
+		<property name="speed" type="float" value="8"/> 
+	  </properties>
+	</object>
+
+	<object id="10" name="wheel_1" type="Wheel" x="-2" y="1.5" width="0.5" height="0.5">
+		<properties>
+			<property name="condition" value="timer"/>
+			<property name="condition_value" type="float" value="10"/> 
+			<property name="action" value="move_horizontal"/>
+			<property name="action_amount" type="float" value="260"/> 
+			<property name="speed" type="float" value="5"/> 
+		</properties>
+    </object>
+
+ </objectgroup>
 
 </map>
-
-<!--
-PARA INCLUIR LA LIBRERÍA DE LECTURA DE FICHEROS XML
-git clone https://github.com/leethomason/tinyxml2.git
-cd tinyxml2
-cmake .
-make
--->
