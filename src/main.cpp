@@ -47,7 +47,8 @@ int main() {
     SetExitKey(KEY_NULL); //quitamos que con esc se salga del juego, para añadirlo en la pantalla de pausa.
 
     InitAudioDevice();
-    SetMasterVolume(0.5f);
+    SetMasterVolume(1.0f);
+    ResourceManager::GetInstance().PlayGlobalMusic("assets/sounds/Theme.wav");
 
     SetTargetFPS(60);
 
@@ -77,6 +78,7 @@ int main() {
     // Bucle principal del juego
     while (!stateMachine.is_game_ending() && !WindowShouldClose()) {
         deltaTime = GetFrameTime();
+        ResourceManager::GetInstance().UpdateGlobalMusic();
 
         // ============================================================================
         // TECLAS DE DEBUG Y TESTING
