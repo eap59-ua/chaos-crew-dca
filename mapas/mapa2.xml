@@ -8,7 +8,7 @@
   <!-- Capa de objetos con lógica -->
   <objectgroup id="1" name="ObjectsStatics">
 
-	<object id="1" name="Door" type="Door" x="27" y="8.2" width="2" height="1.5" /> 
+	<object id="1" name="Door" type="Door" x="27" y="6.8" width="2" height="1.5" /> 
 	<object id="1" name="Plataforma3" type="Platform" x="0" y="9.3" width="12" height="1" />
 
   </objectgroup>
