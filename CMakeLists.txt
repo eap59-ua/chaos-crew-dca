@@ -131,6 +131,21 @@ else()
 endif()
 
 # ============================================================================
+# Buscar dependencias: spdlog (Logging System)
+# ============================================================================
+message(STATUS "Configurando spdlog...")
+
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.12.0
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(spdlog)
+message(STATUS "spdlog descargado y configurado exitosamente")
+
+# ============================================================================
 # Buscar dependencias: GNU Gettext (internacionalización)
 # ============================================================================
 find_package(Gettext)
@@ -221,7 +236,7 @@ target_include_directories(chaos-crew PRIVATE
 # ============================================================================
 # Enlazado de librerías
 # ============================================================================
-target_link_libraries(chaos-crew PRIVATE raylib tinyxml2)
+target_link_libraries(chaos-crew PRIVATE raylib tinyxml2 spdlog::spdlog)
 
 # ============================================================================
 # Configuración de salida
