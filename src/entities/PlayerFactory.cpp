@@ -58,7 +58,54 @@ entt::entity createPlayer(entt::registry& registry, float x, float y, PlayerAnim
                              );
     
     // Configurar controles
-    registry.emplace<Mandos>(player, LEFT, RIGHT, JUMP);
-    
+    registry.emplace<Mandos>(player, InputType::KEYBOARD, LEFT, RIGHT, JUMP, 0, 0.15f);
+
+    return player;
+}
+
+entt::entity createPlayerWithGamepad(entt::registry& registry, float x, float y, PlayerAnimations anims, int gamepadIndex) {
+    entt::entity player = registry.create();
+
+    // Componente de posición
+    registry.emplace<Position>(player, x, y);
+
+    // Componente de velocidad
+    registry.emplace<Velocity>(player, 0.0f, 0.0f);
+
+    // Componente de jugador
+    registry.emplace<Player>(player, false, false, false, false);
+
+    // Hitbox
+    float hitboxWidth = 36.0f;
+    float hitboxHeight = 50.0f;
+    registry.emplace<Solid>(player, hitboxWidth, hitboxHeight, WHITE);
+
+    // Animaciones
+    registry.emplace<PlayerAnimations>(player, anims);
+
+    // Configuración del Sprite Inicial
+    float spriteSize = 32.0f;
+    float scale = 2.0f;
+
+    Vector2 visualOffset;
+    visualOffset.x = (spriteSize * scale - hitboxWidth) / 2.0f;
+    visualOffset.y = (spriteSize * scale - hitboxHeight);
+
+    registry.emplace<Sprite>(player,
+                             anims.idle,
+                             visualOffset,
+                             spriteSize,
+                             spriteSize,
+                             scale,
+                             false,
+                             11,
+                             0,
+                             0.05f,
+                             0.0f
+                             );
+
+    // Configurar controles de gamepad
+    registry.emplace<Mandos>(player, InputType::GAMEPAD, KEY_NULL, KEY_NULL, KEY_NULL, gamepadIndex, 0.15f);
+
     return player;
 }
