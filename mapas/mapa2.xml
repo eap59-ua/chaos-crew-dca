@@ -1,67 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.1"
-     orientation="orthogonal" renderorder="right-down"
-     width="30" height="20" tilewidth="32" tileheight="32"
-     infinite="0" nextlayerid="4" nextobjectid="10">
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="70">
 
+ <objectgroup id="4" name="SpawnPoints">
+  <object id="1" name="Player1" x="14" y="8" width="1" height="1"/>
+  <object id="2" name="Player2" x="16" y="8" width="1" height="1"/>
+ </objectgroup>
 
-  <!-- Capa de objetos con lógica -->
-  <objectgroup id="1" name="ObjectsStatics">
+ <objectgroup id="1" name="ObjectsStatics">
+  <object id="3" name="SueloInicio" type="Platform" x="13" y="9" width="5" height="0.5" />
+  
+  <object id="4" name="PlatIzq_Baja" type="Platform" x="0" y="7" width="6" height="0.5" />
+  <object id="5" name="PlatIzq_Alta" type="Platform" x="0" y="3" width="4" height="0.5" /> 
+  <object id="6" name="PlatDer_Baja" type="Platform" x="24" y="7" width="6" height="0.5" />
+  <object id="7" name="PlatDer_Alta" type="Platform" x="26" y="3" width="4" height="0.5" /> 
+  <object id="8" name="SueloMeta" type="Platform" x="13" y="2" width="4" height="0.5" />
+  <object id="9" name="Door" type="Door" x="14" y="0.5" width="2" height="1.5" /> 
 
-	<object id="1" name="Door" type="Door" x="27" y="6.8" width="2" height="1.5" /> 
-	<object id="1" name="Plataforma3" type="Platform" x="0" y="9.3" width="12" height="1" />
+  <object id="10" name="Escalon_Izq" type="Platform" x="9" y="8" width="2" height="0.5" />
+  <object id="11" name="Escalon_Der" type="Platform" x="20" y="8" width="2" height="0.5" />
+  <object id="12" name="Pinchos_Fondo" type="Spike" x="1" y="6.5" width="0.5" height="0.5"/>
+  <object id="13" name="Pinchos_Fondo" type="Spike" x="28" y="6.5" width="0.5" height="0.5"/>
 
-  </objectgroup>
+ </objectgroup>
 
-  <objectgroup name="ObjectsTraps">
+ <objectgroup name="ObjectsLogic">
+  
+  <object id="20" name="AscensorIzq" type="Platform" x="5" y="6" width="3" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="-50"/> 
+		<property name="bucle_vertical" type="float" value="250.0"/>
+      </properties>
+  </object>
 
-        <object id="1" name="Plataforma2" type="Platform" x="16" y="9.3" width="6" height="1"> <!--El suelo de la derecha-->
-			<properties>
-				<!--Primera trampa-->
-        		<property name="condition" value="proximity"/>
-        		<property name="condition_value" type="float" value="240"/>
-		
-        		<property name="action" value="move_horizontal"/>
-        		<property name="action_amount" type="float" value="-60"/>
-		
-        		<property name="speed" type="float" value="10"/>
-    		</properties>
-  		</object>
+  <object id="21" name="AscensorDer" type="Platform" x="22" y="6" width="3" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="-50"/> 
+		<property name="bucle_vertical" type="float" value="250.0"/>
+      </properties>
+  </object>
 
-		<object id="1" name="Plataforma4" type="Platform" x="20" y="9.3" width="11" height="1"> <!--El suelo de la derecha-->
-			<properties>
-				<!--Primera trampa-->
-        		<property name="condition" value="proximity"/>
-        		<property name="condition_value" type="float" value="50"/>
-		
-        		<property name="action" value="move_horizontal"/>
-        		<property name="action_amount" type="float" value="100"/>
-		
-        		<property name="speed" type="float" value="10"/>
-    		</properties>
-  		</object>
+ </objectgroup>
 
-		<object id="1" name="Plataforma1" type="Platform" x="11" y="9.3" width="2" height="1" >
-			<properties>
-				<property name="condition" value="proximity"/>
-        		<property name="condition_value" type="float" value="60"/>
-		
-        		<property name="action" value="dimension"/>
-        		<property name="action_amount" type="float" value="200"/>
-		
-        		<property name="speed" type="float" value="10"/>
-			</properties>
-		</object>
-	
-	</objectgroup>
+ <objectgroup id="2" name="ObjectsButtons">
 
+  <object id="30" name="Boton_Izq" type="Button" x="1" y="2.5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="1"/>
+    <property name="action_type" value="spawn_platform"/>
+    
+    <property name="spawn_x_1" type="float" value="17.0"/>
+    <property name="spawn_y_1" type="float" value="2.5"/> 
+    <property name="spawn_w_1" type="float" value="5.0"/> <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+
+  <object id="31" name="Boton_Der" type="Button" x="28" y="2.5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="2"/>
+    <property name="action_type" value="spawn_platform"/>
+    
+    <property name="spawn_x_1" type="float" value="8.0"/>
+    <property name="spawn_y_1" type="float" value="2.5"/>
+    <property name="spawn_w_1" type="float" value="5.0"/>
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+
+ </objectgroup>
+
+ <objectgroup id="3" name="ObjectsTraps">
+  	<object id="13" name="Pinchos_Fondo" type="Spike" x="2.2" y="6.5" width="0.5" height="0.5">
+		<properties>
+			<property name="condition" value="proximity"/>
+			<property name="condition_value" type="float" value="230"/>
+			
+			<property name="action" value="move_horizontal"/>
+			<property name="action_amount" type="float" value="120"/> 
+			<property name="speed" type="float" value="4"/>
+		</properties>
+	</object>
+	<object id="13" name="Pinchos_Fondo" type="Spike" x="26.8" y="6.5" width="0.5" height="0.5">
+		<properties>
+			<property name="condition" value="proximity"/>
+			<property name="condition_value" type="float" value="230"/>
+			
+			<property name="action" value="move_horizontal"/>
+			<property name="action_amount" type="float" value="-100"/> 
+			<property name="speed" type="float" value="4"/>
+		</properties>
+	</object>
+ </objectgroup>
 
 </map>
-
-<!--
-PARA INCLUIR LA LIBRERÍA DE LECTURA DE FICHEROS XML
-git clone https://github.com/leethomason/tinyxml2.git
-cd tinyxml2
-cmake .
-make
--->

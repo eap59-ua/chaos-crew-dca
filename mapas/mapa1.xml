@@ -1,40 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.1"
-     orientation="orthogonal" renderorder="right-down"
-     width="30" height="20" tilewidth="32" tileheight="32"
-     infinite="0" nextlayerid="4" nextobjectid="10">
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="40">
 
+ <objectgroup id="4" name="SpawnPoints">
+  <object id="1" name="Player1" x="2" y="8" width="1" height="1"/>
+  <object id="2" name="Player2" x="4" y="8" width="1" height="1"/>
+ </objectgroup>
 
-  <!-- Capa de objetos con lógica -->
-  <objectgroup id="1" name="ObjectsStatics">
+ <objectgroup id="1" name="ObjectsStatics">
+  <object id="3" name="SueloInicio" type="Platform" x="0" y="9" width="10" height="1" />
+  
+  <object id="4" name="Escalon1" type="Platform" x="0" y="6.5" width="2" height="0.5" />
 
-	<object id="1" name="Door" type="Door" x="27" y="6.8" width="2" height="1.5" /> 
-	<object id="1" name="Plataforma3" type="Platform" x="0" y="9.3" width="12" height="1" />
+  <object id="8" name="Escalon2" type="Platform" x="26" y="4.5" width="4" height="0.5" />
 
-  </objectgroup>
+  <object id="9" name="Escalon3" type="Platform" x="23" y="5.5" width="2" height="0.5" />
+  
+  <object id="5" name="PlatBotonA" type="Platform" x="3" y="4" width="3" height="0.5" />
 
-  <objectgroup name="ObjectsTraps">
+  <object id="6" name="SueloFinal" type="Platform" x="18" y="9" width="12" height="1" />
 
-        <object id="1" name="Plataforma2" type="Platform" x="16" y="9.3" width="6" height="1"> <!--El suelo de la izq-->
-			<properties>
-				
-    		</properties>
-  		</object>
+  <object id="7" name="Door" type="Door" x="27" y="3" width="2" height="1.5" /> 
+ </objectgroup>
 
-		<object id="1" name="Plataforma4" type="Platform" x="20" y="9.3" width="11" height="1"> <!--El suelo de la derecha-->
-			
-  		</object>
+ <objectgroup id="2" name="ObjectsButtons">
 
-	
-	</objectgroup>
+  <object id="10" name="Boton_Puente" type="Button" x="4" y="3.5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="1"/>
+    <property name="action_type" value="spawn_platform"/>
+    <property name="spawn_x_1" type="float" value="10.0"/>
+    <property name="spawn_y_1" type="float" value="7.5"/>
+    <property name="spawn_w_1" type="float" value="2.0"/>
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
 
+  <object id="11" name="Boton_Salida" type="Button" x="22" y="8.5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="2"/>
+    <property name="action_type" value="spawn_platform"/>
+    <property name="spawn_x_1" type="float" value="26.0"/>
+    <property name="spawn_y_1" type="float" value="7.5"/>
+    <property name="spawn_w_1" type="float" value="4.0"/>
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+
+ </objectgroup>
+
+ <objectgroup name="ObjectsTraps">
+  
+  <object id="20" name="MuroMovil" type="Platform" x="13.5" y="9" width="1" height="3">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="210"/>
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="-200"/> 
+        <property name="speed" type="float" value="4"/>
+      </properties>
+  </object>
+
+  <object id="21" name="PinchoSuelo" type="Spike" x="20" y="8.9" width="1" height="0.1" />
+
+ </objectgroup>
 
 </map>
-
-<!--
-PARA INCLUIR LA LIBRERÍA DE LECTURA DE FICHEROS XML
-git clone https://github.com/leethomason/tinyxml2.git
-cd tinyxml2
-cmake .
-make
--->

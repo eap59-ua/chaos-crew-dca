@@ -17,13 +17,19 @@
 #include "../components/Solid.hpp"
 #include "../components/Player.hpp"
 #include "../components/Patron.hpp"
+#include "../components/Door.hpp"
+
+#include "../entities/ButtonFactory.hpp" // nuevo: idea para hacerlo colaborativo
+#include "../components/Button.hpp"      // nuevo: idea para hacerlo colaborativo
 
 
 #include "LoadMapSystem.hpp"
 
 #include <cmath>
-#include <iostream>
 #include <cfloat>
+#include <map>
+#include <string>
+#include <iostream>
 
 using namespace tinyxml2;
 using namespace std;
@@ -59,8 +65,7 @@ static void AddPatronLoopHorizontal(entt::registry& registry, entt::entity e, fl
 static void AddPatronLoopVertical(entt::registry& registry, entt::entity e, float amount);
 
 // ==== Cargar el mapa XML ====
-// ==== Cargar el mapa XML ====
-void loadTiledMap(const std::string& filename, entt::registry& registry, Texture2D spikeTex, Texture2D wheelTex) {
+void loadTiledMap(const std::string& filename, entt::registry& registry, Texture2D spikeTex, Texture2D wheelTex, Vector2& p1Pos, Vector2& p2Pos) {
     XMLDocument doc;
 
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
@@ -74,15 +79,12 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
         return;
     }
 
-    // Opcional: Leer dimensiones totales del mapa (útil para límites de cámara)
-    int mapWidth = 0, mapHeight = 0, tileWidth = 0, tileHeight = 0;
-    map->QueryIntAttribute("width", &mapWidth);
-    map->QueryIntAttribute("height", &mapHeight);
-    map->QueryIntAttribute("tilewidth", &tileWidth);
-    map->QueryIntAttribute("tileheight", &tileHeight);
-    
-    // Si necesitas usar estas variables globales, asígnalas aquí. 
-    // Ejemplo: GlobalLevelWidth = mapWidth * tileWidth;
+    // ---------------------------------------------------------
+    // 1. DEFINIR ESCALAS (Corrección del error scaleX/scaleY)
+    // ---------------------------------------------------------
+    // Usamos float para no perder precisión en la división
+    float scaleX = (float)SCREEN_WIDTH / (float)pixel_horizontal;
+    float scaleY = (float)SCREEN_HEIGHT / (float)pixel_vertical;
 
     for (XMLElement* objectGroup = map->FirstChildElement("objectgroup");
          objectGroup; objectGroup = objectGroup->NextSiblingElement("objectgroup"))
@@ -90,59 +92,53 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
         const string groupName = objectGroup->Attribute("name");
 
         for (XMLElement* obj = objectGroup->FirstChildElement("object");
-            obj; obj = obj->NextSiblingElement("object"))
+             obj; obj = obj->NextSiblingElement("object"))
         {
-            // 1. Inicializamos la estructura a 0 para evitar basura de memoria
-            MapObject o = {}; 
+            MapObject o;
             o.name = obj->Attribute("name") ? obj->Attribute("name") : "";
             o.type = obj->Attribute("type") ? obj->Attribute("type") : "";
-
-            // 2. Leemos los atributos
             obj->QueryFloatAttribute("x", &o.x);
             obj->QueryFloatAttribute("y", &o.y);
             obj->QueryFloatAttribute("width", &o.width);
             obj->QueryFloatAttribute("height", &o.height);
 
-            // 3. FIX CRÍTICO: Si Tiled no guardó ancho/alto (es 0), asumimos tamaño de 1 tile (1.0f)
-            // Esto evita que al multiplicar por la escala el resultado sea 0.
-            if (o.width <= 0.0f) o.width = 1.0f; 
-            if (o.height <= 0.0f) o.height = 1.0f;
-
-            // 4. Aplicamos la escala de pantalla
-            o.x *= SCREEN_WIDTH / pixel_horizontal;
-            o.y *= SCREEN_HEIGHT / pixel_vertical;
-            o.width *= SCREEN_WIDTH / pixel_horizontal;
-            o.height *= SCREEN_HEIGHT / pixel_vertical;
+            // ---------------------------------------------------------
+            // 2. APLICAR ESCALAS USANDO LAS VARIABLES
+            // ---------------------------------------------------------
+            o.x *= scaleX;
+            o.y *= scaleY;
+            o.width *= scaleX;
+            o.height *= scaleY;
 
             XMLElement* properties = obj->FirstChildElement("properties");
             
-            // =========================================================
-            // CASO 1: OBJETOS CON TRAMPAS (ObjectsTraps)
-            // =========================================================
-            if (properties && groupName == "ObjectsTraps")
+            if (groupName == "SpawnPoints") 
+            {
+                if (o.name == "Player1") {
+                    p1Pos = { o.x, o.y };
+                    std::cout << "Spawn P1 detectado en: " << o.x << ", " << o.y << std::endl;
+                }
+                else if (o.name == "Player2") {
+                    p2Pos = { o.x, o.y };
+                    std::cout << "Spawn P2 detectado en: " << o.x << ", " << o.y << std::endl;
+                }
+            }
+            // --- CAPA DE TRAMPAS ---
+            else if (properties && groupName == "ObjectsTraps")
             {
                 entt::entity entity = entt::null;
-                if (o.type == "Platform") {
+                if (o.type == "Platform") 
                     entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
-                }
-                // --- CORRECCIÓN: LLAVES AÑADIDAS ---
-                else if (o.type == "Door") {
-                    float groundOffset = 70.0f; 
-                    entity = createDoor(registry, o.x, o.y + groundOffset, o.width, o.height, GREEN);
-                }
-                // -----------------------------------
-                else if(o.type == "Spike"){
-                    // Ahora o.width ya no será 0
+                else if (o.type == "Door")
+                    entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
+                else if(o.type == "Spike")
                     entity = createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
-                    LOG_DEBUG("[LoadMapSystem] Creating spike entity at ({}, {})", o.x, o.y);
-                }     
-                else if(o.type == "Wheel") {
+                else if(o.type == "Wheel")
                     entity = createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
-                }
                 
-                if (entity == entt::null){
-                    // Si el tipo no es válido, saltamos al siguiente
-                     std::cerr << "Tipo de objeto desconocido o no manejado: " << o.type << std::endl;
+                
+                if (entity == entt::null) {
+                     // Si no es un tipo conocido, saltamos o lanzamos error (opcional)
                      continue; 
                 }
 
@@ -222,31 +218,102 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     else if (name == "bucle_vertical") AddPatronLoopVertical(registry, entity, stof(value));
                 }
             }
-            // =========================================================
-            // CASO 3: OBJETOS ESTÁTICOS / POR DEFECTO
-            // =========================================================
+            // --- CAPA DE BOTONES (Nueva lógica arreglada) ---
+            else if (properties && groupName == "ObjectsButtons")
+            {
+                if (o.type == "Button") {
+                    
+                    int channel = 0;
+                    std::string actionType = "";
+
+                    // Estructura para guardar datos temporales
+                    struct SpawnData {
+                        float x = 0, y = 0, w = 0, h = 0;
+                    };
+                    // Mapa para agrupar por ID (1, 2, 3...)
+                    std::map<int, SpawnData> platformsToSpawn;
+
+                    // Bucle para leer propiedades
+                    for (XMLElement* prop = properties->FirstChildElement("property");
+                        prop; prop = prop->NextSiblingElement("property"))
+                    {
+                        const char* nameAttr = prop->Attribute("name");
+                        const char* valAttr  = prop->Attribute("value");
+                        
+                        if (!nameAttr) continue; // seguridad
+
+                        std::string name = nameAttr;
+                        std::string value = valAttr ? valAttr : "";
+
+                        if (name == "channel") {
+                            channel = std::stoi(value);
+                        }
+                        else if (name == "action_type") {
+                            actionType = value;
+                        }
+                        else if (name.find("spawn_") == 0) {
+                            // DETECCIÓN DINÁMICA: spawn_x_1, spawn_y_2, etc.
+                            char type = 0;
+                            int id = 0;
+                            
+                            // Leemos el formato: spawn_Letra_Numero
+                            if (std::sscanf(name.c_str(), "spawn_%c_%d", &type, &id) == 2) {
+                                // Guardamos y aplicamos la escala AQUÍ mismo
+                                if (type == 'x') platformsToSpawn[id].x = std::stof(value) * scaleX;
+                                if (type == 'y') platformsToSpawn[id].y = std::stof(value) * scaleY;
+                                if (type == 'w') platformsToSpawn[id].w = std::stof(value) * scaleX;
+                                if (type == 'h') platformsToSpawn[id].h = std::stof(value) * scaleY;
+                            }
+                        }
+                    }
+
+                    // Creamos la entidad Botón
+                    auto entity = createButton(registry, o.x, o.y, channel);
+                    auto& btn = registry.get<Button>(entity);
+
+                    // --- LÓGICA DE ACCIÓN: SPAWN PLATFORM ---
+                    if (actionType == "spawn_platform") {
+                        // Capturamos el MAPA entero por valor [platformsToSpawn]
+                        btn.onPressAction = [platformsToSpawn](entt::registry& reg) {
+                            std::cout << "¡Puzzle resuelto! Creando plataformas..." << std::endl;
+                            
+                            // Recorremos todas las plataformas configuradas (1, 2, 3...)
+                            for (auto const& [id, data] : platformsToSpawn) {
+                                // Usamos tu función createPlatform
+                                createPlatform(reg, data.x, data.y, data.w, data.h, 0.0f, 0.0f, GOLD);
+                            }
+                        };
+                    }
+                    // --- LÓGICA DE ACCIÓN: ABRIR PUERTA ---
+                    else if (actionType == "abrir_puerta_final") {
+                        btn.onPressAction = [](entt::registry& reg) {
+                            auto view = reg.view<Door>();
+                            for(auto e : view) {
+                                if (reg.any_of<Solid>(e)) {
+                                    reg.remove<Solid>(e);
+                                }
+                                std::cout << "Puerta abierta" << std::endl;
+                            }
+                        };
+                    }
+                }
+            }
+            // --- OBJETOS ESTÁTICOS SIN PROPIEDADES ---
             else 
             {
-                if (o.type == "Platform") {
+                if (o.type == "Platform") 
                     createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
-                }
-                // --- CORRECCIÓN: LLAVES AÑADIDAS ---
-                else if (o.type == "Door") {
-                    float groundOffset = 70.0f;
-                    createDoor(registry, o.x, o.y + groundOffset, o.width, o.height, GREEN);
-                }
-                // -----------------------------------
-                else if(o.type == "Spike"){
+                else if (o.type == "Door") 
+                    createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
+                else if(o.type == "Spike")
                     createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
-                    LOG_DEBUG("[LoadMapSystem] Creating spike entity at ({}, {})", o.x, o.y);
-                }     
-                else if(o.type == "Wheel") {
+                else if(o.type == "Wheel")
                     createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
                 }
             }
         }
     }
-}
+
 
 
 // --------------------------------------------------------------------------------------------------------------------------------------------

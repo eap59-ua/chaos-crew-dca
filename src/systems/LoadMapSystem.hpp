@@ -17,4 +17,4 @@ struct MapObject {
 };
 
 
-void loadTiledMap(const std::string& filename, entt::registry& registry, Texture2D spikeTex, Texture2D wheelTex);
+void loadTiledMap(const std::string& filename, entt::registry& registry, Texture2D spikeTex, Texture2D wheelTex, Vector2& p1Pos, Vector2& p2Pos);
