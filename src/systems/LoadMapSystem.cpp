@@ -1,10 +1,10 @@
-#include <iostream>
 #include <vector>
 #include <string>
 #include <sstream>
 #include <tinyxml2.h>
 #include <raylib.h>
 #include "../entt/entt.hpp"
+#include "../utils/Logger.hpp"
 
 #include "../entities/PlatformFactory.hpp"
 #include "../entities/DoorFactory.hpp"
@@ -68,13 +68,13 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
     XMLDocument doc;
 
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
-        std::cerr << "Error cargando archivo: " << filename << std::endl;
+        LOG_ERROR("[LoadMapSystem] Failed to load map file: {}", filename);
         return;
     }
 
     XMLElement* map = doc.FirstChildElement("map");
     if (!map) {
-        std::cerr << "No se encontró el elemento <map>" << std::endl;
+        LOG_ERROR("[LoadMapSystem] <map> element not found in: {}", filename);
         return;
     }
 
@@ -126,7 +126,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
             else if (properties && groupName == "ObjectsTraps")
             {
                 entt::entity entity = entt::null;
-                if (o.type == "Platform")
+                if (o.type == "Platform") {
                     entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
                 else if (o.type == "Door")
                     entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
@@ -134,6 +134,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     entity = createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
                 else if(o.type == "Wheel")
                     entity = createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
+                }
                 
                 if (entity == entt::null) {
                      // Si no es un tipo conocido, saltamos o lanzamos error (opcional)
@@ -142,7 +143,6 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
 
                 auto &trap = registry.get_or_emplace<Trap>(entity);
 
-                // Variables temporales
                 std::string conditionType;
                 float conditionValue = 0.f;
                 std::string actionType;
@@ -158,8 +158,11 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     if (name == "condition") {
                         if (!conditionType.empty() && !actionType.empty()) {
                             ProcessTrap(registry, entity, conditionType, conditionValue, actionType, actionValue, speed);
-                            conditionType.clear(); actionType.clear();
-                            conditionValue = 0.f; actionValue = 0.f; speed = 0.f;
+                            conditionType.clear();
+                            actionType.clear();
+                            conditionValue = 0.f;
+                            actionValue = 0.f;
+                            speed = 0.f;
                         }
                         conditionType = value;
                     }
@@ -173,18 +176,28 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     ProcessTrap(registry, entity, conditionType, conditionValue, actionType, actionValue, speed);
                 }
             }
-            // --- CAPA DE LÓGICA (Plataformas móviles simples) ---
+            // =========================================================
+            // CASO 2: OBJETOS LÓGICOS (ObjectsLogic)
+            // =========================================================
             else if (properties && groupName == "ObjectsLogic")
             {
                 entt::entity entity = entt::null;
-                if (o.type == "Platform")
+
+                if (o.type == "Platform") {
                     entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
-                else if (o.type == "Door")
-                    entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
-                else if(o.type == "Spike")
+                }
+                // --- CORRECCIÓN: LLAVES AÑADIDAS ---
+                else if (o.type == "Door") {
+                    float groundOffset = 70.0f;
+                    entity = createDoor(registry, o.x, o.y + groundOffset, o.width, o.height, GREEN);
+                }
+                // -----------------------------------
+                else if(o.type == "Spike") {
                     entity = createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
-                else if(o.type == "Wheel")
+                }
+                else if(o.type == "Wheel") {
                     entity = createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
+                }
 
                 if (entity == entt::null) continue;
 
@@ -194,7 +207,8 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     std::string name = prop->Attribute("name");
                     std::string value = prop->Attribute("value") ? prop->Attribute("value") : "";
 
-                    if (name == "speed") {
+                    if (name == "speed")
+                    {
                         float v = stof(value);
                         auto &vel = registry.get_or_emplace<Velocity>(entity);
                         vel.vx = v; vel.vy = v;
@@ -294,6 +308,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
                 else if(o.type == "Wheel")
                     createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
+                }
             }
         }
     }

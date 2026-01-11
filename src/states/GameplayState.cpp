@@ -18,6 +18,8 @@
 #include "../systems/AnimationSystem.hpp"
 
 #include "../core/ResourceManager.h"
+#include "../locale/Locale.hpp"
+#include "../utils/Logger.hpp"
 
 #include <filesystem>
 GameplayState::GameplayState(std::string mapPath) 
@@ -115,8 +117,49 @@ void GameplayState::init() {
 
 void GameplayState::setupPlayers() {
     std::cout << spawnP1.x << std::endl;
+    
+    
+    LOG_INFO("[GameplayState] ========== PLAYER SETUP START ==========");
+
+    // P1: Keyboard player 1 (Arrows) - Virtual Guy
     createPlayer(registry, spawnP1.x, spawnP1.y, p1Anims, KEY_LEFT, KEY_RIGHT, KEY_UP);
+    LOG_INFO("[GameplayState] Player 1 created with keyboard (Arrows)");
+
+    // P2: Keyboard player 2 (WASD) - Pink Man
     createPlayer(registry, spawnP2.x, spawnP2.y, p2Anims, KEY_A, KEY_D, KEY_W);
+    LOG_INFO("[GameplayState] Player 2 created with keyboard (WASD)");
+
+    // FORCE polling before detection
+    LOG_INFO("[GameplayState] Checking for gamepads...");
+    PollInputEvents();
+
+    // Detect and create gamepad players (P3, P4, P5)
+    int playerCount = 2; // Already have 2 keyboard players
+    const int MAX_PLAYERS = 5;
+
+    for (int gamepadIndex = 0; gamepadIndex < 4 && playerCount < MAX_PLAYERS; gamepadIndex++) {
+        bool available = IsGamepadAvailable(gamepadIndex);
+        LOG_INFO("[GameplayState] Gamepad {} availability: {}", gamepadIndex, available ? "YES" : "NO");
+
+        if (available) {
+            const char* gamepadName = GetGamepadName(gamepadIndex);
+            LOG_INFO("[GameplayState] Gamepad {} detected: {}", gamepadIndex, gamepadName);
+
+            // Alternate animations between Virtual Guy and Pink Man
+            PlayerAnimations& anims = (playerCount % 2 == 0) ? p1Anims : p2Anims;
+
+            // Create gamepad player with offset position
+            float xOffset = 50.0f * (playerCount - 1);
+            createPlayerWithGamepad(registry, 100 + xOffset, SCREEN_HEIGHT - 200, anims, gamepadIndex);
+
+            LOG_INFO("[GameplayState] Player {} created with Gamepad {}", playerCount + 1, gamepadIndex);
+            playerCount++;
+        }
+    }
+
+    if (playerCount == 2) {
+        LOG_INFO("[GameplayState] No gamepads detected, using keyboard only");
+    }
 }
 
 void GameplayState::setupPlatforms() {
@@ -142,6 +185,9 @@ void GameplayState::handleInput() {
 void GameplayState::update(float deltaTime) {
     // Siempre actualizamos la música para que no se corte el loop
     UpdateMusicStream(bgMusic);
+
+    // IMPORTANT: Poll for gamepad events every frame for hot-plugging support
+    PollInputEvents();
 
     // --- LÓGICA DE ESPERA PARA SONIDOS ---
     if (isFinishing) {
@@ -215,19 +261,19 @@ void GameplayState::render() {
     
     // HUD
     DrawRectangle(0, 0, SCREEN_WIDTH, 100, Fade(BLACK, 0.7f));
-    DrawText("CHAOS CREW - Hito 1 Alpha", 20, 10, 30, YELLOW);
-    DrawText("P1: Arrows | P2: WASD", 20, 45, 20, GRAY);
-    DrawText("COOPERATIVE: Both must reach EXIT!", 20, 70, 18, GREEN);
-    
+    DrawText(_("CHAOS CREW - Hito 1 Alpha"), 20, 10, 30, YELLOW);
+    DrawText(_("P1: Arrows | P2: WASD"), 20, 45, 20, GRAY);
+    DrawText(_("COOPERATIVE: Both must reach EXIT!"), 20, 70, 18, GREEN);
+
     DrawText(TextFormat("FPS: %d", GetFPS()), SCREEN_WIDTH - 100, 10, 20, LIME);
-    
+
     if (isExitMoved) {
-        DrawText("The exit moved! Go back!", SCREEN_WIDTH/2 - 150, 120, 25, RED);
+        DrawText(_("The exit moved! Go back!"), SCREEN_WIDTH/2 - 150, 120, 25, RED);
     }
 
     // Mensaje opcional mientras se espera el sonido final
     if (isFinishing) {
-        const char* msg = won ? "VICTORY!" : "DEFEAT!";
+        const char* msg = won ? _("VICTORY!") : _("DEFEAT!");
         Color color = won ? GREEN : RED;
         DrawText(msg, SCREEN_WIDTH/2 - MeasureText(msg, 60)/2, SCREEN_HEIGHT/2, 60, color);
     }

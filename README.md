@@ -48,7 +48,7 @@ Inspirado en **Level Devil** (mecánicas de trampas dinámicas) y **Pico Park** 
 
 - [ ] 5-8 niveles completos
 - [ ] Sistema ECS con EnTT
-- [ ] Internacionalización (ES/EN)
+- [x] Internacionalización (ES/EN) ✨
 - [ ] Ejecutables Linux y Windows
 - [ ] Documentación completa
 
@@ -57,17 +57,20 @@ Inspirado en **Level Devil** (mecánicas de trampas dinámicas) y **Pico Park** 
 ### Requisitos previos
 
 - **C++ Compiler:** g++ (GCC) 9.0 o superior
+- **CMake:** 3.15 o superior
 - **Raylib:** v5.0 o superior
+- **GNU Gettext:** Para soporte de internacionalización
 - **Sistema Operativo:** Linux (Ubuntu 20.04+) o Windows 10+
 
-### Instalar Raylib en Linux (Ubuntu/Debian)
+### Instalar dependencias en Linux (Ubuntu/Debian)
 
 ```bash
 sudo apt update
-sudo apt install build-essential git
+sudo apt install build-essential git cmake gettext
 sudo apt install libasound2-dev libx11-dev libxrandr-dev libxi-dev \
                  libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev \
-                 libxinerama-dev libwayland-dev libxkbcommon-dev
+                 libxinerama-dev libwayland-dev libxkbcommon-dev \
+                 libtinyxml2-dev
 
 # Clonar e instalar Raylib
 git clone https://github.com/raysan5/raylib.git
@@ -84,18 +87,16 @@ cd ../..
 git clone https://github.com/eap59-ua/chaos-crew-dca.git
 cd chaos-crew-dca
 
-# Compilar para Linux
-g++ -std=c++17 -Isrc \
-  $(find src -name '*.cpp') \
-  -o bin/chaos-crew \
-  -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
-
+# Compilar con CMake (recomendado)
+cmake -S . -B build
+cmake --build build
 
 # Ejecutar
-./bin/chaos-crew
+cd build/bin
+./chaos-crew
 ```
 
-### Script de compilación (recomendado)
+### Compilación alternativa (Makefile legacy)
 
 ```bash
 # Dar permisos de ejecución
@@ -105,14 +106,31 @@ chmod +x build.sh
 ./build.sh linux
 ```
 
-## 🎮 Controles (Hito 1)
+## 🌍 Multi-language Support
 
-| Acción                | Jugador 1 | Jugador 2 |
-| --------------------- | --------- | --------- |
-| Mover izquierda       | A         | ←         |
-| Mover derecha         | D         | →         |
-| Saltar                | W / SPACE | ↑         |
-| Reiniciar (Game Over) | ENTER     | ENTER     |
+Chaos Crew supports multiple languages with automatic detection:
+
+- 🇪🇸 **Spanish (Español)** - Default language
+- 🇬🇧 **English** - Full translation
+
+### Change Language
+
+Press **L** during gameplay to toggle between Spanish and English.
+
+The game automatically detects your system language at startup and selects the appropriate translation.
+
+For more details, see [Internationalization Documentation](docs/INTERNATIONALIZATION.md).
+
+## 🎮 Controls
+
+| Action                | Player 1  | Player 2 |
+| --------------------- | --------- | -------- |
+| Move left             | A         | ←        |
+| Move right            | D         | →        |
+| Jump                  | W / SPACE | ↑        |
+| Restart (Game Over)   | ENTER     | ENTER    |
+| Toggle Language       | L         | L        |
+| Pause                 | ESC       | ESC      |
 
 ## 👥 Equipo de Desarrollo
 

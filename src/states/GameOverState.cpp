@@ -2,6 +2,7 @@
 #include "GameplayState.hpp"  // ✅ Incluir en .cpp, no en .hpp
 #include "../utils/MapProgress.hpp"
 #include "MainMenuState.hpp"
+#include "../locale/Locale.hpp"
 
 constexpr int SCREEN_WIDTH = 1280;
 constexpr int SCREEN_HEIGHT = 720;
@@ -32,11 +33,11 @@ void GameOverState::render() {
     ClearBackground(BLACK);
 
     if (levelCompleted) {
-        DrawText("LEVEL COMPLETE!", SCREEN_WIDTH/2 - MeasureText("LEVEL COMPLETE!", 60)/2, SCREEN_HEIGHT/2 - 100, 60, GREEN);
-        DrawText("Press ENTER to return to MENU", SCREEN_WIDTH/2 - 250, SCREEN_HEIGHT/2 + 40, 25, GRAY);
+        DrawText(_("LEVEL COMPLETE!"), SCREEN_WIDTH/2 - MeasureText(_("LEVEL COMPLETE!"), 60)/2, SCREEN_HEIGHT/2 - 100, 60, GREEN);
+        DrawText(_("Press ENTER to return to MENU"), SCREEN_WIDTH/2 - 250, SCREEN_HEIGHT/2 + 40, 25, GRAY);
     } else {
-        DrawText("GAME OVER", SCREEN_WIDTH/2 - MeasureText("GAME OVER", 60)/2, SCREEN_HEIGHT/2 - 100, 60, RED);
-        DrawText("Press ENTER to retry", SCREEN_WIDTH/2 - 160, SCREEN_HEIGHT/2 + 40, 25, GRAY);
+        DrawText(_("GAME OVER"), SCREEN_WIDTH/2 - MeasureText(_("GAME OVER"), 60)/2, SCREEN_HEIGHT/2 - 100, 60, RED);
+        DrawText(_("Press ENTER to retry"), SCREEN_WIDTH/2 - 160, SCREEN_HEIGHT/2 + 40, 25, GRAY);
     }
 
     EndDrawing();
