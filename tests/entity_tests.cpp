@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(test_create_entity_with_sprite) {
     // Añadir componente Sprite a la entidad
     auto& sprite = registry.emplace<SpriteComponent>(entity);
     sprite.textureID = 42;
-    sprite.x = 101.0f;
+    sprite.x = 100.0f;
     sprite.y = 200.0f;
     sprite.width = 32.0f;
     sprite.height = 32.0f;
