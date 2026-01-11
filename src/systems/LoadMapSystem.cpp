@@ -212,11 +212,11 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                 // Sin propiedades -> crear entidad normal
                 if (o.type == "Platform") 
                     createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
-                else if (o.type == "Door") 
+                else if (o.type == "Door")
                     createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
                 else if(o.type == "Spike"){
                     createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
-                    cout<<"LLAMANDO CREATESPYKE"<<endl;
+                    LOG_DEBUG("[LoadMapSystem] Creating spike entity at ({}, {})", o.x, o.y);
                 }
                     
                 else if(o.type == "Wheel")
