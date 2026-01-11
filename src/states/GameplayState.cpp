@@ -18,6 +18,7 @@
 
 #include "../core/ResourceManager.h"
 #include "../locale/Locale.hpp"
+#include "../utils/Logger.hpp"
 
 #include <filesystem>
 GameplayState::GameplayState(std::string mapPath) 
