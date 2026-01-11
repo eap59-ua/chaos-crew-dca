@@ -91,5 +91,26 @@ void MainMenuState::render() {
         DrawText(_("No maps found in ./mapas"), SCREEN_W/2 - 180, SCREEN_H/2, 28, RED);
     }
 
+    // Display connected gamepads at bottom right
+    int gamepadCount = 0;
+    const int startY = SCREEN_H - 150;
+
+    DrawText(_("CONTROLLERS:"), SCREEN_W - 300, startY - 30, 16, GRAY);
+    DrawText(_("P1: Keyboard (Arrows)"), SCREEN_W - 300, startY, 14, RAYWHITE);
+    DrawText(_("P2: Keyboard (WASD)"), SCREEN_W - 300, startY + 20, 14, RAYWHITE);
+
+    for (int i = 0; i < 4; i++) {
+        if (IsGamepadAvailable(i)) {
+            const char* gamepadName = GetGamepadName(i);
+            const char* displayText = TextFormat(_("P%d: %s"), gamepadCount + 3, gamepadName);
+            DrawText(displayText, SCREEN_W - 300, startY + 40 + (gamepadCount * 20), 14, GREEN);
+            gamepadCount++;
+        }
+    }
+
+    if (gamepadCount == 0) {
+        DrawText(_("(No gamepads detected)"), SCREEN_W - 300, startY + 40, 14, DARKGRAY);
+    }
+
     EndDrawing();
 }
