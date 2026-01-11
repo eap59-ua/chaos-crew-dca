@@ -2,12 +2,12 @@
 <map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="70">
 
  <objectgroup id="4" name="SpawnPoints">
-  <object id="1" name="Player1" x="14" y="9" width="1" height="1"/>
-  <object id="2" name="Player2" x="16" y="9" width="1" height="1"/>
+  <object id="1" name="Player1" x="14" y="8" width="1" height="1"/>
+  <object id="2" name="Player2" x="16" y="8" width="1" height="1"/>
  </objectgroup>
 
  <objectgroup id="1" name="ObjectsStatics">
-  <object id="3" name="SueloInicio" type="Platform" x="12" y="10" width="6" height="0.5" />
+  <object id="3" name="SueloInicio" type="Platform" x="13" y="9" width="5" height="0.5" />
   
   <object id="4" name="PlatIzq_Baja" type="Platform" x="0" y="7" width="6" height="0.5" />
   <object id="5" name="PlatIzq_Alta" type="Platform" x="0" y="3" width="4" height="0.5" /> 
@@ -15,7 +15,11 @@
   <object id="7" name="PlatDer_Alta" type="Platform" x="26" y="3" width="4" height="0.5" /> 
   <object id="8" name="SueloMeta" type="Platform" x="13" y="2" width="4" height="0.5" />
   <object id="9" name="Door" type="Door" x="14" y="0.5" width="2" height="1.5" /> 
-  <object id="10" name="Plat_Medio" type="Platform" x="2" y="9" width="2" height="0.5" /> 
+
+  <object id="10" name="Escalon_Izq" type="Platform" x="9" y="8" width="2" height="0.5" />
+  <object id="11" name="Escalon_Der" type="Platform" x="20" y="8" width="2" height="0.5" />
+  <object id="12" name="Pinchos_Fondo" type="Spike" x="1" y="6.5" width="0.5" height="0.5"/>
+  <object id="13" name="Pinchos_Fondo" type="Spike" x="28" y="6.5" width="0.5" height="0.5"/>
 
  </objectgroup>
 
@@ -62,6 +66,29 @@
    </properties>
   </object>
 
+ </objectgroup>
+
+ <objectgroup id="3" name="ObjectsTraps">
+  	<object id="13" name="Pinchos_Fondo" type="Spike" x="2.2" y="6.5" width="0.5" height="0.5">
+		<properties>
+			<property name="condition" value="proximity"/>
+			<property name="condition_value" type="float" value="230"/>
+			
+			<property name="action" value="move_horizontal"/>
+			<property name="action_amount" type="float" value="120"/> 
+			<property name="speed" type="float" value="4"/>
+		</properties>
+	</object>
+	<object id="13" name="Pinchos_Fondo" type="Spike" x="26.8" y="6.5" width="0.5" height="0.5">
+		<properties>
+			<property name="condition" value="proximity"/>
+			<property name="condition_value" type="float" value="230"/>
+			
+			<property name="action" value="move_horizontal"/>
+			<property name="action_amount" type="float" value="-100"/> 
+			<property name="speed" type="float" value="4"/>
+		</properties>
+	</object>
  </objectgroup>
 
 </map>
