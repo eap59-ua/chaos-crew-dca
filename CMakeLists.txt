@@ -146,6 +146,21 @@ FetchContent_MakeAvailable(spdlog)
 message(STATUS "spdlog descargado y configurado exitosamente")
 
 # ============================================================================
+# Buscar dependencias: rlImGui (Debug Interface)
+# ============================================================================
+message(STATUS "Configurando rlImGui...")
+
+FetchContent_Declare(
+    rlImGui
+    GIT_REPOSITORY https://github.com/raylib-extras/rlImGui.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(rlImGui)
+message(STATUS "rlImGui descargado y configurado exitosamente")
+
+# ============================================================================
 # Buscar dependencias: GNU Gettext (internacionalización)
 # ============================================================================
 find_package(Gettext)
@@ -225,6 +240,7 @@ target_include_directories(chaos-crew PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/src/components
     ${CMAKE_SOURCE_DIR}/src/core
+    ${CMAKE_SOURCE_DIR}/src/debug
     ${CMAKE_SOURCE_DIR}/src/entities
     ${CMAKE_SOURCE_DIR}/src/entt
     ${CMAKE_SOURCE_DIR}/src/locale
@@ -236,7 +252,7 @@ target_include_directories(chaos-crew PRIVATE
 # ============================================================================
 # Enlazado de librerías
 # ============================================================================
-target_link_libraries(chaos-crew PRIVATE raylib tinyxml2 spdlog::spdlog)
+target_link_libraries(chaos-crew PRIVATE raylib tinyxml2 spdlog::spdlog rlImGui)
 
 # ============================================================================
 # Configuración de salida
