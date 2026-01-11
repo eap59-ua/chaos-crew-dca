@@ -3,11 +3,19 @@
 #include "states/GameplayState.hpp"
 #include "states/MainMenuState.hpp"
 #include "locale/Locale.hpp"
+#include "utils/Logger.hpp"
 #include <raylib.h>
 #include <cstdlib>
 #include <cstring>
 
 int main() {
+    // ============================================================================
+    // INICIALIZACIÓN DE LOGGER
+    // ============================================================================
+    Logger::GetInstance().Init("chaos-crew.log");
+    LOG_INFO("=== Chaos Crew Starting ===");
+    LOG_INFO("Version: 0.2.0");
+
     // ============================================================================
     // INICIALIZACIÓN DE INTERNACIONALIZACIÓN (i18n)
     // ============================================================================
@@ -24,6 +32,7 @@ int main() {
 
     // Inicializar sistema de localización
     Locale::GetInstance().Init(defaultLang);
+    LOG_INFO("i18n initialized with language: {}", defaultLang);
 
     // ============================================================================
     // CONFIGURACIÓN DE VENTANA Y AUDIO
@@ -59,6 +68,7 @@ int main() {
             std::string currentLang = Locale::GetInstance().GetCurrentLanguage();
             std::string newLang = (currentLang == "es_ES") ? "en_US" : "es_ES";
             Locale::GetInstance().SetLanguage(newLang);
+            LOG_INFO("Language changed: {} -> {}", currentLang, newLang);
         }
 
         // Manejar cambios de estado
@@ -73,12 +83,16 @@ int main() {
         currentState->render();
     }
     
+    LOG_INFO("Game loop ended");
+
     CloseAudioDevice();
 
     // Cleanup recursos
     ResourceManager::GetInstance().UnloadAll();
+    LOG_INFO("Resources unloaded");
 
     CloseWindow();
+    LOG_INFO("=== Chaos Crew Shutdown ===");
 
     return 0;
 }
