@@ -46,6 +46,26 @@ int main() {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Chaos Crew - Hito 1 Alpha");
     SetExitKey(KEY_NULL); //quitamos que con esc se salga del juego, para añadirlo en la pantalla de pausa.
 
+    // ============================================================================
+    // GAMEPAD DETECTION DEBUG
+    // ============================================================================
+    LOG_INFO("========== GAMEPAD DETECTION CHECK ==========");
+    LOG_INFO("Checking for connected gamepads after InitWindow...");
+
+    // Force poll inputs immediately after window creation
+    PollInputEvents();
+
+    for (int i = 0; i < 4; i++) {
+        bool available = IsGamepadAvailable(i);
+        if (available) {
+            const char* name = GetGamepadName(i);
+            LOG_INFO("Gamepad {} DETECTED: {}", i, name);
+        } else {
+            LOG_INFO("Gamepad {} NOT DETECTED", i);
+        }
+    }
+    LOG_INFO("=============================================");
+
     InitAudioDevice();
     SetMasterVolume(1.0f);
     ResourceManager::GetInstance().PlayGlobalMusic("assets/sounds/Theme.wav");

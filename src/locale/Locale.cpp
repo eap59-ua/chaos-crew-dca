@@ -1,15 +1,17 @@
 #include "Locale.hpp"
 #include "utils/Logger.hpp"
-#include <libintl.h>
 #include <locale.h>
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
 
+#if CHAOSCREW_ENABLE_GETTEXT
+    #include <libintl.h>
+#endif
+
 // Platform-specific includes para obtener ruta del ejecutable
 #ifdef _WIN32
     #include <windows.h>
-    #define PATH_MAX MAX_PATH
 #else
     #include <unistd.h>
     #include <linux/limits.h>
@@ -104,6 +106,7 @@ void Locale::Init(const std::string& defaultLang) {
 
     currentLang = defaultLang;
 
+#if CHAOSCREW_ENABLE_GETTEXT
     // 1. Obtener ruta de traducciones
     std::string localePath = GetLocalePath();
     LOG_INFO("[Locale] Using locale directory: {}", localePath);
@@ -132,8 +135,13 @@ void Locale::Init(const std::string& defaultLang) {
     SetLanguage(defaultLang);
 
     initialized = true;
-
     LOG_INFO("[Locale] Initialized with language: {}", currentLang);
+#else
+    // Fallback: compilación/ejecución sin gettext/libintl.
+    // La macro _() seguirá funcionando y devolverá el texto original.
+    initialized = true;
+    LOG_WARN("[Locale] Gettext/libintl disabled at build time (CHAOSCREW_ENABLE_GETTEXT=0). Using fallback translations.");
+#endif
 }
 
 void Locale::SetLanguage(const std::string& lang) {
@@ -143,6 +151,12 @@ void Locale::SetLanguage(const std::string& lang) {
     }
 
     currentLang = lang;
+
+#if !CHAOSCREW_ENABLE_GETTEXT
+    // En modo fallback solo almacenamos el idioma para UI/debug.
+    LOG_INFO("[Locale] Language set to: {} (fallback mode)", lang);
+    return;
+#else
 
     // Método multiplataforma para cambiar idioma en runtime:
     // Configurar variable de entorno LANGUAGE (tiene prioridad sobre LANG)
@@ -166,6 +180,7 @@ void Locale::SetLanguage(const std::string& lang) {
     textdomain(TEXTDOMAIN);
 
     LOG_INFO("[Locale] Language changed to: {}", lang);
+#endif
 }
 
 std::string Locale::GetCurrentLanguage() const {
@@ -178,6 +193,11 @@ const char* Locale::T(const char* msgid) const {
         return msgid;
     }
 
+#if CHAOSCREW_ENABLE_GETTEXT
     // gettext devuelve el msgid original si no encuentra traducción
     return gettext(msgid);
+#else
+    // Fallback sin gettext: devolver el texto original.
+    return msgid;
+#endif
 }

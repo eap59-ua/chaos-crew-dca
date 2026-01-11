@@ -18,6 +18,7 @@
 
 #include "../core/ResourceManager.h"
 #include "../locale/Locale.hpp"
+#include "../utils/Logger.hpp"
 
 #include <filesystem>
 GameplayState::GameplayState(std::string mapPath) 
@@ -110,10 +111,47 @@ void GameplayState::init() {
 }
 
 void GameplayState::setupPlayers() {
-    // P1: Animaciones Virtual Guy
+    LOG_INFO("[GameplayState] ========== PLAYER SETUP START ==========");
+
+    // P1: Keyboard player 1 (Arrows) - Virtual Guy
     createPlayer(registry, 100, SCREEN_HEIGHT - 200, p1Anims, KEY_LEFT, KEY_RIGHT, KEY_UP);
-    // P2: Animaciones Pink Man
+    LOG_INFO("[GameplayState] Player 1 created with keyboard (Arrows)");
+
+    // P2: Keyboard player 2 (WASD) - Pink Man
     createPlayer(registry, 150, SCREEN_HEIGHT - 200, p2Anims, KEY_A, KEY_D, KEY_W);
+    LOG_INFO("[GameplayState] Player 2 created with keyboard (WASD)");
+
+    // FORCE polling before detection
+    LOG_INFO("[GameplayState] Checking for gamepads...");
+    PollInputEvents();
+
+    // Detect and create gamepad players (P3, P4, P5)
+    int playerCount = 2; // Already have 2 keyboard players
+    const int MAX_PLAYERS = 5;
+
+    for (int gamepadIndex = 0; gamepadIndex < 4 && playerCount < MAX_PLAYERS; gamepadIndex++) {
+        bool available = IsGamepadAvailable(gamepadIndex);
+        LOG_INFO("[GameplayState] Gamepad {} availability: {}", gamepadIndex, available ? "YES" : "NO");
+
+        if (available) {
+            const char* gamepadName = GetGamepadName(gamepadIndex);
+            LOG_INFO("[GameplayState] Gamepad {} detected: {}", gamepadIndex, gamepadName);
+
+            // Alternate animations between Virtual Guy and Pink Man
+            PlayerAnimations& anims = (playerCount % 2 == 0) ? p1Anims : p2Anims;
+
+            // Create gamepad player with offset position
+            float xOffset = 50.0f * (playerCount - 1);
+            createPlayerWithGamepad(registry, 100 + xOffset, SCREEN_HEIGHT - 200, anims, gamepadIndex);
+
+            LOG_INFO("[GameplayState] Player {} created with Gamepad {}", playerCount + 1, gamepadIndex);
+            playerCount++;
+        }
+    }
+
+    if (playerCount == 2) {
+        LOG_INFO("[GameplayState] No gamepads detected, using keyboard only");
+    }
 }
 
 void GameplayState::setupPlatforms() {
@@ -139,6 +177,9 @@ void GameplayState::handleInput() {
 void GameplayState::update(float deltaTime) {
     // Siempre actualizamos la música para que no se corte el loop
     UpdateMusicStream(bgMusic);
+
+    // IMPORTANT: Poll for gamepad events every frame for hot-plugging support
+    PollInputEvents();
 
     // --- LÓGICA DE ESPERA PARA SONIDOS ---
     if (isFinishing) {

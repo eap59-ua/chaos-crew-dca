@@ -48,6 +48,30 @@ find_package(raylib 5.0 QUIET)
 
 if(NOT raylib_FOUND)
     message(STATUS "Raylib no encontrado en el sistema")
+
+    # En Windows (especialmente con MinGW) es común que una librería precompilada
+    # no sea compatible con el toolchain del usuario. Para evitar errores de link
+    # del tipo "undefined reference to InitWindow/LoadTexture/...", forzamos a
+    # compilar Raylib desde fuentes.
+    if(WIN32)
+        message(STATUS "Windows detectado: compilando Raylib desde GitHub para asegurar compatibilidad")
+
+        FetchContent_Declare(
+            raylib
+            GIT_REPOSITORY https://github.com/raysan5/raylib.git
+            GIT_TAG 5.5
+            GIT_SHALLOW TRUE
+        )
+
+        # Política de compatibilidad para versiones antiguas de CMake en raylib
+        set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+
+        set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+        set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
+
+        FetchContent_MakeAvailable(raylib)
+        message(STATUS "Raylib descargado y configurado exitosamente")
+    else()
     
     # Determinar la ruta de la librería según la plataforma
     if(WIN32)
@@ -89,6 +113,7 @@ if(NOT raylib_FOUND)
         
         FetchContent_MakeAvailable(raylib)
         message(STATUS "Raylib descargado y configurado exitosamente")
+    endif()
     endif()
 else()
     message(STATUS "Raylib encontrado en el sistema: ${raylib_VERSION}")
@@ -202,8 +227,29 @@ message(STATUS "rlImGui configurado exitosamente")
 # ============================================================================
 find_package(Gettext)
 
-if(GETTEXT_FOUND)
+# FindGettext solo localiza las herramientas (msgfmt/msgmerge), pero nuestro código
+# también necesita el header y la librería de libintl para usar gettext en runtime.
+include(CheckIncludeFileCXX)
+check_include_file_cxx("libintl.h" CHAOSCREW_HAVE_LIBINTL_H)
+
+if(CHAOSCREW_HAVE_LIBINTL_H)
+    # En MinGW/MSYS2 suele ser libintl; en Linux puede ser opcional.
+    find_library(CHAOSCREW_INTL_LIB intl)
+endif()
+
+set(CHAOSCREW_ENABLE_GETTEXT 0)
+
+if(GETTEXT_FOUND AND CHAOSCREW_HAVE_LIBINTL_H)
+    # Si no se encuentra la librería, igualmente permitimos compilar sin gettext
+    # (se usará el fallback sin i18n). Solo habilitamos i18n si existe libintl.
+    if(CHAOSCREW_INTL_LIB)
+        set(CHAOSCREW_ENABLE_GETTEXT 1)
+    endif()
+endif()
+
+if(CHAOSCREW_ENABLE_GETTEXT)
     message(STATUS "Gettext encontrado: ${GETTEXT_MSGFMT_EXECUTABLE}")
+    message(STATUS "libintl encontrado: ${CHAOSCREW_INTL_LIB}")
 
     # Compilar archivos .po a .mo para español
     add_custom_command(
@@ -234,7 +280,7 @@ if(GETTEXT_FOUND)
 
     message(STATUS "Internacionalización habilitada (es_ES, en_US)")
 else()
-    message(WARNING "Gettext no encontrado - internacionalización deshabilitada")
+    message(WARNING "Gettext/libintl no encontrado - internacionalización deshabilitada")
 endif()
 
 # ============================================================================
@@ -270,6 +316,9 @@ endif()
 # ============================================================================
 add_executable(chaos-crew ${SOURCES})
 
+# Habilitar/deshabilitar gettext en el código.
+target_compile_definitions(chaos-crew PRIVATE CHAOSCREW_ENABLE_GETTEXT=${CHAOSCREW_ENABLE_GETTEXT})
+
 # ============================================================================
 # Directorios de inclusión
 # ============================================================================
@@ -289,7 +338,13 @@ target_include_directories(chaos-crew PRIVATE
 # ============================================================================
 # Enlazado de librerías
 # ============================================================================
-target_link_libraries(chaos-crew PRIVATE raylib tinyxml2 spdlog::spdlog rlImGui)
+# Orden importante con librerías estáticas en MinGW: dependientes primero.
+target_link_libraries(chaos-crew PRIVATE rlImGui raylib tinyxml2 spdlog::spdlog)
+
+# Enlazar libintl únicamente si está disponible y la i18n está habilitada.
+if(CHAOSCREW_ENABLE_GETTEXT)
+    target_link_libraries(chaos-crew PRIVATE ${CHAOSCREW_INTL_LIB})
+endif()
 
 # ============================================================================
 # Configuración de salida
@@ -327,7 +382,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/mapas")
 endif()
 
 # Copiar archivos de traducción al directorio de build
-if(GETTEXT_FOUND)
+if(CHAOSCREW_ENABLE_GETTEXT)
     add_custom_command(TARGET chaos-crew POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_BINARY_DIR}/po"
@@ -477,9 +532,9 @@ if(WIN32)
     # Incluir DLLs necesarias (si las hay)
     install(DIRECTORY "${CMAKE_BINARY_DIR}/bin/"
         DESTINATION bin
+        OPTIONAL
         FILES_MATCHING
         PATTERN "*.dll"
-        OPTIONAL
     )
 endif()
 
