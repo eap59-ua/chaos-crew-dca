@@ -4,6 +4,8 @@
 #include "states/MainMenuState.hpp"
 #include "locale/Locale.hpp"
 #include "utils/Logger.hpp"
+#include "debug/DebugUI.hpp"
+#include "systems/PhysicsConfig.hpp"
 #include <raylib.h>
 #include <cstdlib>
 #include <cstring>
@@ -48,6 +50,21 @@ int main() {
     SetMasterVolume(0.5f);
 
     SetTargetFPS(60);
+
+    // ============================================================================
+    // INICIALIZACIÓN DE DEBUG UI
+    // ============================================================================
+    DebugUI::GetInstance().Init();
+
+    // Registrar parámetros de física para tweaking en tiempo real
+    auto& physics = PhysicsConfig::Instance();
+    DebugUI::GetInstance().RegisterFloat("Horizontal Speed", &physics.H_SPEED, 50.0f, 500.0f);
+    DebugUI::GetInstance().RegisterFloat("Air Control", &physics.AIR_CONTROL, 0.0f, 1.0f);
+    DebugUI::GetInstance().RegisterFloat("Gravity", &physics.GRAVITY, 100.0f, 2000.0f);
+    DebugUI::GetInstance().RegisterFloat("Jump Force", &physics.JUMP_FORCE, -1000.0f, -100.0f);
+    DebugUI::GetInstance().RegisterFloat("Max Fall Speed", &physics.MAX_FALL_SPEED, 200.0f, 2000.0f);
+
+    LOG_INFO("Debug UI initialized and physics parameters registered");
     
     // Crear máquina de estados
     StateMachine stateMachine;
@@ -62,8 +79,16 @@ int main() {
         deltaTime = GetFrameTime();
 
         // ============================================================================
-        // CAMBIO DE IDIOMA CON TECLA L (para testing)
+        // TECLAS DE DEBUG Y TESTING
         // ============================================================================
+
+        // F1: Toggle Debug UI
+        if (IsKeyPressed(KEY_F1)) {
+            DebugUI::GetInstance().Toggle();
+            LOG_DEBUG("Debug UI toggled: {}", DebugUI::GetInstance().IsEnabled() ? "ON" : "OFF");
+        }
+
+        // L: Cambio de idioma (para testing)
         if (IsKeyPressed(KEY_L)) {
             std::string currentLang = Locale::GetInstance().GetCurrentLanguage();
             std::string newLang = (currentLang == "es_ES") ? "en_US" : "es_ES";
@@ -80,7 +105,15 @@ int main() {
         // Actualizar estado actual
         currentState->handleInput();
         currentState->update(deltaTime);
+
+        // Iniciar frame de ImGui antes de renderizar
+        DebugUI::GetInstance().NewFrame();
+
+        // Renderizar estado actual
         currentState->render();
+
+        // Renderizar Debug UI al final (overlay sobre el juego)
+        DebugUI::GetInstance().Render();
     }
     
     LOG_INFO("Game loop ended");
@@ -90,6 +123,9 @@ int main() {
     // Cleanup recursos
     ResourceManager::GetInstance().UnloadAll();
     LOG_INFO("Resources unloaded");
+
+    // Shutdown Debug UI
+    DebugUI::GetInstance().Shutdown();
 
     CloseWindow();
     LOG_INFO("=== Chaos Crew Shutdown ===");
