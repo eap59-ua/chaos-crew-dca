@@ -48,6 +48,30 @@ find_package(raylib 5.0 QUIET)
 
 if(NOT raylib_FOUND)
     message(STATUS "Raylib no encontrado en el sistema")
+
+    # En Windows (especialmente con MinGW) es común que una librería precompilada
+    # no sea compatible con el toolchain del usuario. Para evitar errores de link
+    # del tipo "undefined reference to InitWindow/LoadTexture/...", forzamos a
+    # compilar Raylib desde fuentes.
+    if(WIN32)
+        message(STATUS "Windows detectado: compilando Raylib desde GitHub para asegurar compatibilidad")
+
+        FetchContent_Declare(
+            raylib
+            GIT_REPOSITORY https://github.com/raysan5/raylib.git
+            GIT_TAG 5.5
+            GIT_SHALLOW TRUE
+        )
+
+        # Política de compatibilidad para versiones antiguas de CMake en raylib
+        set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+
+        set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+        set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
+
+        FetchContent_MakeAvailable(raylib)
+        message(STATUS "Raylib descargado y configurado exitosamente")
+    else()
     
     # Determinar la ruta de la librería según la plataforma
     if(WIN32)
@@ -90,6 +114,7 @@ if(NOT raylib_FOUND)
         FetchContent_MakeAvailable(raylib)
         message(STATUS "Raylib descargado y configurado exitosamente")
     endif()
+    endif()
 else()
     message(STATUS "Raylib encontrado en el sistema: ${raylib_VERSION}")
 endif()
@@ -131,12 +156,100 @@ else()
 endif()
 
 # ============================================================================
+# Buscar dependencias: spdlog (Logging System)
+# ============================================================================
+message(STATUS "Configurando spdlog...")
+
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.12.0
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(spdlog)
+message(STATUS "spdlog descargado y configurado exitosamente")
+
+# ============================================================================
+# Buscar dependencias: Dear ImGui y rlImGui (Debug Interface)
+# ============================================================================
+message(STATUS "Configurando Dear ImGui...")
+
+# First, download Dear ImGui
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.92.1
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_GetProperties(imgui)
+if(NOT imgui_POPULATED)
+    FetchContent_Populate(imgui)
+endif()
+
+message(STATUS "Dear ImGui v1.92.1 descargado exitosamente")
+message(STATUS "Configurando rlImGui...")
+
+# Then, download rlImGui
+FetchContent_Declare(
+    rlImGui
+    GIT_REPOSITORY https://github.com/raylib-extras/rlImGui.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_GetProperties(rlImGui)
+if(NOT rlimgui_POPULATED)
+    FetchContent_Populate(rlImGui)
+    # rlImGui doesn't have CMakeLists, so we add it manually
+    # Combine both Dear ImGui and rlImGui into a single library
+    add_library(rlImGui STATIC
+        # Dear ImGui core files
+        ${imgui_SOURCE_DIR}/imgui.cpp
+        ${imgui_SOURCE_DIR}/imgui_draw.cpp
+        ${imgui_SOURCE_DIR}/imgui_tables.cpp
+        ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+        # rlImGui integration
+        ${rlimgui_SOURCE_DIR}/rlImGui.cpp
+    )
+    target_include_directories(rlImGui PUBLIC
+        ${imgui_SOURCE_DIR}
+        ${rlimgui_SOURCE_DIR}
+    )
+    target_link_libraries(rlImGui PUBLIC raylib)
+endif()
+
+message(STATUS "rlImGui configurado exitosamente")
+
+# ============================================================================
 # Buscar dependencias: GNU Gettext (internacionalización)
 # ============================================================================
 find_package(Gettext)
 
-if(GETTEXT_FOUND)
+# FindGettext solo localiza las herramientas (msgfmt/msgmerge), pero nuestro código
+# también necesita el header y la librería de libintl para usar gettext en runtime.
+include(CheckIncludeFileCXX)
+check_include_file_cxx("libintl.h" CHAOSCREW_HAVE_LIBINTL_H)
+
+if(CHAOSCREW_HAVE_LIBINTL_H)
+    # En MinGW/MSYS2 suele ser libintl; en Linux puede ser opcional.
+    find_library(CHAOSCREW_INTL_LIB intl)
+endif()
+
+set(CHAOSCREW_ENABLE_GETTEXT 0)
+
+if(GETTEXT_FOUND AND CHAOSCREW_HAVE_LIBINTL_H)
+    # Si no se encuentra la librería, igualmente permitimos compilar sin gettext
+    # (se usará el fallback sin i18n). Solo habilitamos i18n si existe libintl.
+    if(CHAOSCREW_INTL_LIB)
+        set(CHAOSCREW_ENABLE_GETTEXT 1)
+    endif()
+endif()
+
+if(CHAOSCREW_ENABLE_GETTEXT)
     message(STATUS "Gettext encontrado: ${GETTEXT_MSGFMT_EXECUTABLE}")
+    message(STATUS "libintl encontrado: ${CHAOSCREW_INTL_LIB}")
 
     # Compilar archivos .po a .mo para español
     add_custom_command(
@@ -167,7 +280,7 @@ if(GETTEXT_FOUND)
 
     message(STATUS "Internacionalización habilitada (es_ES, en_US)")
 else()
-    message(WARNING "Gettext no encontrado - internacionalización deshabilitada")
+    message(WARNING "Gettext/libintl no encontrado - internacionalización deshabilitada")
 endif()
 
 # ============================================================================
@@ -203,6 +316,9 @@ endif()
 # ============================================================================
 add_executable(chaos-crew ${SOURCES})
 
+# Habilitar/deshabilitar gettext en el código.
+target_compile_definitions(chaos-crew PRIVATE CHAOSCREW_ENABLE_GETTEXT=${CHAOSCREW_ENABLE_GETTEXT})
+
 # ============================================================================
 # Directorios de inclusión
 # ============================================================================
@@ -210,6 +326,7 @@ target_include_directories(chaos-crew PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/src/components
     ${CMAKE_SOURCE_DIR}/src/core
+    ${CMAKE_SOURCE_DIR}/src/debug
     ${CMAKE_SOURCE_DIR}/src/entities
     ${CMAKE_SOURCE_DIR}/src/entt
     ${CMAKE_SOURCE_DIR}/src/locale
@@ -221,7 +338,13 @@ target_include_directories(chaos-crew PRIVATE
 # ============================================================================
 # Enlazado de librerías
 # ============================================================================
-target_link_libraries(chaos-crew PRIVATE raylib tinyxml2)
+# Orden importante con librerías estáticas en MinGW: dependientes primero.
+target_link_libraries(chaos-crew PRIVATE rlImGui raylib tinyxml2 spdlog::spdlog)
+
+# Enlazar libintl únicamente si está disponible y la i18n está habilitada.
+if(CHAOSCREW_ENABLE_GETTEXT)
+    target_link_libraries(chaos-crew PRIVATE ${CHAOSCREW_INTL_LIB})
+endif()
 
 # ============================================================================
 # Configuración de salida
@@ -241,12 +364,25 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_SOURCE_DIR}/assets"
             "${CMAKE_BINARY_DIR}/assets"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/assets"
+            "${CMAKE_BINARY_DIR}/bin/assets"
         COMMENT "Actualizando assets en directorio de build"
     )
 endif()
 
+# Copiar mapas al directorio de ejecución
+if(EXISTS "${CMAKE_SOURCE_DIR}/mapas")
+    add_custom_command(TARGET chaos-crew POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/mapas"
+            "${CMAKE_BINARY_DIR}/bin/mapas"
+        COMMENT "Copiando mapas al directorio de ejecución"
+    )
+endif()
+
 # Copiar archivos de traducción al directorio de build
-if(GETTEXT_FOUND)
+if(CHAOSCREW_ENABLE_GETTEXT)
     add_custom_command(TARGET chaos-crew POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_BINARY_DIR}/po"
@@ -291,24 +427,140 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
     message(STATUS "Assets se instalarán en: ${CMAKE_INSTALL_DATAROOTDIR}/chaos-crew/assets")
 endif()
 
+# Instalar mapas (niveles del juego) - CRÍTICO para que el juego funcione
+if(EXISTS "${CMAKE_SOURCE_DIR}/mapas")
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/mapas"
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/chaos-crew
+        COMPONENT Assets
+        FILES_MATCHING
+        PATTERN "*.xml"
+        PATTERN "*.tmx"   # Por si se usa Tiled
+        PATTERN "*.json"  # Por si se usan otros formatos
+    )
+    message(STATUS "Mapas se instalarán en: ${CMAKE_INSTALL_DATAROOTDIR}/chaos-crew/mapas")
+endif()
+
+# Documentación
 if(EXISTS "${CMAKE_SOURCE_DIR}/README.md")
-    install(FILES "${CMAKE_SOURCE_DIR}/README.md"
+    install(FILES
+        "${CMAKE_SOURCE_DIR}/README.md"
         DESTINATION ${CMAKE_INSTALL_DOCDIR}
         COMPONENT Documentation
     )
 endif()
 
-# Instalar archivos de traducción
-if(GETTEXT_FOUND)
-    install(FILES "${CMAKE_BINARY_DIR}/po/es_ES/LC_MESSAGES/chaos-crew.mo"
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale/es_ES/LC_MESSAGES
-        COMPONENT Translations
+if(EXISTS "${CMAKE_SOURCE_DIR}/docs/HITO3.md")
+    install(FILES
+        "${CMAKE_SOURCE_DIR}/docs/HITO3.md"
+        DESTINATION ${CMAKE_INSTALL_DOCDIR}
+        COMPONENT Documentation
     )
-    install(FILES "${CMAKE_BINARY_DIR}/po/en_US/LC_MESSAGES/chaos-crew.mo"
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale/en_US/LC_MESSAGES
-        COMPONENT Translations
-    )
-    message(STATUS "Traducciones se instalarán en: ${CMAKE_INSTALL_DATAROOTDIR}/locale")
 endif()
 
+# Instalar traducciones (.mo) - SIEMPRE, sin depender de GETTEXT_FOUND
+# Los archivos .mo ya deben estar compilados en build/po/
+install(FILES
+    "${CMAKE_BINARY_DIR}/po/es_ES/LC_MESSAGES/chaos-crew.mo"
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale/es_ES/LC_MESSAGES
+    COMPONENT Translations
+    OPTIONAL  # No fallar si no existe (para builds sin gettext)
+)
+
+install(FILES
+    "${CMAKE_BINARY_DIR}/po/en_US/LC_MESSAGES/chaos-crew.mo"
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale/en_US/LC_MESSAGES
+    COMPONENT Translations
+    OPTIONAL
+)
+
+message(STATUS "Traducciones se instalarán en: ${CMAKE_INSTALL_DATAROOTDIR}/locale")
+
 message(STATUS "Prefijo de instalación: ${CMAKE_INSTALL_PREFIX}")
+
+# ============================================================================
+# CPACK CONFIGURATION
+# ============================================================================
+
+# Información del paquete
+set(CPACK_PACKAGE_NAME "chaos-crew")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_VENDOR "Chaos Crew Team - Universidad de Alicante")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Cooperative 2D platformer game")
+set(CPACK_PACKAGE_DESCRIPTION "Chaos Crew is a cooperative 2D platformer game where 2-5 players must work together to overcome levels full of dynamic traps and puzzles.")
+set(CPACK_PACKAGE_CONTACT "eap59@alu.ua.es")
+
+# Archivos de licencia y README
+if(EXISTS "${CMAKE_SOURCE_DIR}/LICENSE")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+endif()
+if(EXISTS "${CMAKE_SOURCE_DIR}/README.md")
+    set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+endif()
+
+# Directorio de salida de paquetes
+set(CPACK_PACKAGE_DIRECTORY "${CMAKE_BINARY_DIR}/packages")
+
+# ============================================================================
+# CONFIGURACIÓN ESPECÍFICA DE DEB (Debian/Ubuntu)
+# ============================================================================
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Chaos Crew Team <eap59@alu.ua.es>")
+set(CPACK_DEBIAN_PACKAGE_SECTION "games")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/eap59-ua/chaos-crew-dca")
+
+# Dependencias del paquete DEB
+# CRÍTICO: gettext-runtime debe estar instalado para que funcione i18n
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.31), libstdc++6 (>= 10), libtinyxml2-9")
+set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "gettext")
+
+# Arquitectura
+set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+
+# Nombre del archivo DEB
+set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
+
+# ============================================================================
+# CONFIGURACIÓN ESPECÍFICA DE ZIP (Windows/Generic)
+# ============================================================================
+set(CPACK_GENERATOR "DEB;ZIP")
+
+# Nombre del archivo ZIP
+set(CPACK_ARCHIVE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}")
+
+# Para Windows: incluir todo lo necesario en el ZIP
+if(WIN32)
+    # Incluir DLLs necesarias (si las hay)
+    install(DIRECTORY "${CMAKE_BINARY_DIR}/bin/"
+        DESTINATION bin
+        OPTIONAL
+        FILES_MATCHING
+        PATTERN "*.dll"
+    )
+endif()
+
+# Componentes a incluir en el paquete
+set(CPACK_COMPONENTS_ALL Runtime Assets Translations Documentation)
+
+# Descripción de componentes
+set(CPACK_COMPONENT_RUNTIME_DISPLAY_NAME "Game Executable")
+set(CPACK_COMPONENT_RUNTIME_DESCRIPTION "Chaos Crew game executable")
+set(CPACK_COMPONENT_RUNTIME_REQUIRED TRUE)
+
+set(CPACK_COMPONENT_ASSETS_DISPLAY_NAME "Game Assets")
+set(CPACK_COMPONENT_ASSETS_DESCRIPTION "Graphics, sounds, maps and other game resources")
+set(CPACK_COMPONENT_ASSETS_REQUIRED TRUE)
+
+set(CPACK_COMPONENT_TRANSLATIONS_DISPLAY_NAME "Translations")
+set(CPACK_COMPONENT_TRANSLATIONS_DESCRIPTION "Language files (Spanish, English)")
+set(CPACK_COMPONENT_TRANSLATIONS_REQUIRED FALSE)
+
+set(CPACK_COMPONENT_DOCUMENTATION_DISPLAY_NAME "Documentation")
+set(CPACK_COMPONENT_DOCUMENTATION_DESCRIPTION "README and documentation files")
+set(CPACK_COMPONENT_DOCUMENTATION_REQUIRED FALSE)
+
+# Incluir CPack
+include(CPack)
+
+message(STATUS "")
+message(STATUS "CPack configurado para generar paquetes DEB y ZIP")
+message(STATUS "Ejecutar 'cpack' en el directorio de build para generar paquetes")

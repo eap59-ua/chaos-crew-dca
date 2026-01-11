@@ -35,7 +35,7 @@ chaos-crew-game
 build/
 bin/
 obj/
-Debug/
+/Debug/
 Release/
 x64/
 x86/
@@ -61,6 +61,10 @@ cmake_install.cmake
 
 # Claude Code (AI assistant config - local only)
 .claude/
+
+# Temporary PR description files
+PR_DESCRIPTION.md
+PR_DESCRIPTION_*.md
 
 # OS
 .DS_Store
@@ -88,6 +92,9 @@ assets/*.xcf
 # Documentation temp
 docs/temp/
 *.pdf
+
+# Bash stackdump (Windows crash dump)
+bash.exe.stackdump
 
 # Node/NPM (if using any JS tools)
 node_modules/
