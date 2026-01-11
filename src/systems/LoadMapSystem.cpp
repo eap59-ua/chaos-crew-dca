@@ -95,37 +95,41 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
 
             XMLElement* properties = obj->FirstChildElement("properties");
             
+            // =========================================================
+            // CASO 1: OBJETOS CON TRAMPAS (ObjectsTraps)
+            // =========================================================
             if (properties && groupName == "ObjectsTraps")
             {
                 entt::entity entity = entt::null;
-                if (o.type == "Platform")
+                if (o.type == "Platform") {
                     entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
-                else if (o.type == "Door")
-                    entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
+                }
+                // --- CORRECCIÓN: LLAVES AÑADIDAS ---
+                else if (o.type == "Door") {
+                    float groundOffset = 70.0f; 
+                    entity = createDoor(registry, o.x, o.y + groundOffset, o.width, o.height, GREEN);
+                }
+                // -----------------------------------
                 else if(o.type == "Spike"){
                     entity = createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
                     LOG_DEBUG("[LoadMapSystem] Creating spike entity at ({}, {})", o.x, o.y);
-                }
-                    
-                    
-                else if(o.type == "Wheel")
+                }     
+                else if(o.type == "Wheel") {
                     entity = createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
+                }
                 
                 if (entity == entt::null){
                     throw std::runtime_error("Tipo de objeto desconocido en ObjectsTraps: " + o.type);
                 }
-               
 
                 auto &trap = registry.get_or_emplace<Trap>(entity);
 
-                // Variables temporales para acumular un par condición-acción
                 std::string conditionType;
                 float conditionValue = 0.f;
                 std::string actionType;
                 float actionValue = 0.f;
                 float speed = 0.f;
 
-                // Cambios -> poder tener varias trampas en un componente del mapa
                 for (XMLElement* prop = properties->FirstChildElement("property");
                     prop; prop = prop->NextSiblingElement("property"))
                 {
@@ -135,7 +139,6 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     if (name == "condition") {
                         if (!conditionType.empty() && !actionType.empty()) {
                             ProcessTrap(registry, entity, conditionType, conditionValue, actionType, actionValue, speed);
-                            // resetear vaariables
                             conditionType.clear();
                             actionType.clear();
                             conditionValue = 0.f;
@@ -154,42 +157,42 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                         speed = value.empty() ? 0.f : stof(value);
                 }
 
-                // Procesar el último par acumulado
                 if (!conditionType.empty() && !actionType.empty()) {
                     ProcessTrap(registry, entity, conditionType, conditionValue, 
                             actionType, actionValue, speed);
                 }
-
-                // Si no hay trampas válidas, eliminar componente
-                //comprobar el tamaño del registro de trampas
-                int numTraps = 0;
-                for (auto _ : registry.view<Trap>()) numTraps++;
-                
             }
+            // =========================================================
+            // CASO 2: OBJETOS LÓGICOS (ObjectsLogic)
+            // =========================================================
             else if (properties && groupName == "ObjectsLogic")
             {
-                
                 entt::entity entity = entt::null;
 
-                if (o.type == "Platform")
+                if (o.type == "Platform") {
                     entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
-                else if (o.type == "Door")
-                    entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
-                else if(o.type == "Spike")
+                }
+                // --- CORRECCIÓN: LLAVES AÑADIDAS ---
+                else if (o.type == "Door") {
+                    float groundOffset = 70.0f;
+                    entity = createDoor(registry, o.x, o.y + groundOffset, o.width, o.height, GREEN);
+                }
+                // -----------------------------------
+                else if(o.type == "Spike") {
                     entity = createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
-                else if(o.type == "Wheel")
+                }
+                else if(o.type == "Wheel") {
                     entity = createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
+                }
 
                 if (entity == entt::null) continue;
 
-                // Leer propiedades
                 for (XMLElement* prop = properties->FirstChildElement("property");
                     prop; prop = prop->NextSiblingElement("property"))
                 {
                     std::string name = prop->Attribute("name");
                     std::string value = prop->Attribute("value") ? prop->Attribute("value") : "";
 
-                    // Velocidad inicial
                     if (name == "speed")
                     {
                         float v = stof(value);
@@ -207,20 +210,27 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     }
                 }
             }
+            // =========================================================
+            // CASO 3: OBJETOS ESTÁTICOS / POR DEFECTO
+            // =========================================================
             else 
             {
-                // Sin propiedades -> crear entidad normal
-                if (o.type == "Platform") 
+                if (o.type == "Platform") {
                     createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
-                else if (o.type == "Door")
-                    createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
+                }
+                // --- CORRECCIÓN: LLAVES AÑADIDAS ---
+                else if (o.type == "Door") {
+                    float groundOffset = 70.0f;
+                    createDoor(registry, o.x, o.y + groundOffset, o.width, o.height, GREEN);
+                }
+                // -----------------------------------
                 else if(o.type == "Spike"){
                     createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
                     LOG_DEBUG("[LoadMapSystem] Creating spike entity at ({}, {})", o.x, o.y);
-                }
-                    
-                else if(o.type == "Wheel")
+                }     
+                else if(o.type == "Wheel") {
                     createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
+                }
             }
         }
     }
