@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="100">
+
+ <objectgroup id="4" name="SpawnPoints">
+  <object id="1" name="Player1" x="1" y="4" width="1" height="1"/>
+  <object id="2" name="Player2" x="3" y="4" width="1" height="1"/>
+ </objectgroup>
+
+ <objectgroup id="1" name="ObjectsStatics">
+  <object id="3" name="Inicio" type="Platform" x="0" y="6" width="5" height="1" />
+  <object id="4" name="Isla1" type="Platform" x="8" y="8" width="3" height="1" />
+  <object id="5" name="Isla2" type="Platform" x="15" y="8" width="3" height="1" />
+  <object id="6" name="Meta" type="Platform" x="25" y="6" width="5" height="1" />
+  <object id="7" name="Door" type="Door" x="27" y="4.5" width="2" height="1.5" />
+ </objectgroup>
+
+ <objectgroup id="2" name="ObjectsButtons">
+  <object id="30" name="Btn_Puente_Final" type="Button" x="16" y="7.5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="1"/>
+    <property name="action_type" value="spawn_platform"/>
+    <property name="spawn_x_1" type="float" value="19.0"/>
+    <property name="spawn_y_1" type="float" value="7.0"/>
+    <property name="spawn_w_1" type="float" value="5.0"/> 
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+ </objectgroup>
+
+ <objectgroup name="ObjectsLogic">
+    
+    <object id="41" name="Sierra_Patrulla" type="Wheel" x="19" y="6" width="0.5" height="0.5">
+       <properties>
+        <property name="speed" type="float" value="100"/> 
+        <property name="bucle_horizontal" type="float" value="180.0"/>
+        <property name="bucle_vertical" type="float" value="150.0"/>
+      </properties>
+    </object>
+
+    <object id="50" name="Aplastador_Bloque" type="Platform" x="15" y="1" width="3" height="1">
+      <properties>
+        <property name="speed" type="float" value="150"/> 
+        <property name="bucle_vertical" type="float" value="290.0"/> 
+      </properties>
+    </object>
+
+    <object id="51" name="Sierra_1" type="Wheel" x="15" y="2" width="0.8" height="0.8">
+      <properties>
+        <property name="speed" type="float" value="150"/>
+        <property name="bucle_vertical" type="float" value="290.0"/>
+      </properties>
+    </object>
+
+    <object id="52" name="Sierra_2" type="Wheel" x="16.1" y="2" width="0.8" height="0.8">
+      <properties>
+        <property name="speed" type="float" value="150"/>
+        <property name="bucle_vertical" type="float" value="290.0"/>
+      </properties>
+    </object>
+    
+    <object id="53" name="Sierra_3" type="Wheel" x="17.2" y="2" width="0.8" height="0.8">
+      <properties>
+        <property name="speed" type="float" value="150"/>
+        <property name="bucle_vertical" type="float" value="290.0"/>
+      </properties>
+    </object>
+
+ </objectgroup>
+
+ <objectgroup name="ObjectsTraps">
+    
+    <object id="40" name="Techo_Trampa" type="Platform" x="6" y="1" width="4" height="1">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="100"/>
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="200"/> 
+        <property name="speed" type="float" value="15"/>
+      </properties>
+    </object>
+
+    <object id="60" name="Sierra_Techo_Abajo1" type="Wheel" x="6.2" y="2" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="100"/>
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="200"/> 
+        <property name="speed" type="float" value="15"/>
+      </properties>
+    </object>
+    <object id="61" name="Sierra_Techo_Abajo2" type="Wheel" x="7.5" y="2" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="100"/>
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="200"/> 
+        <property name="speed" type="float" value="15"/>
+      </properties>
+    </object>
+    <object id="62" name="Sierra_Techo_Abajo3" type="Wheel" x="8.8" y="2" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="100"/>
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="200"/> 
+        <property name="speed" type="float" value="15"/>
+      </properties>
+    </object>
+
+    <object id="63" name="Sierra_Techo_Arriba1" type="Wheel" x="6.2" y="0.5" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="100"/>
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="200"/> 
+        <property name="speed" type="float" value="15"/>
+      </properties>
+    </object>
+    <object id="64" name="Sierra_Techo_Arriba2" type="Wheel" x="8.8" y="0.5" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="100"/>
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="200"/> 
+        <property name="speed" type="float" value="15"/>
+      </properties>
+    </object>
+
+ </objectgroup>
+
+</map>

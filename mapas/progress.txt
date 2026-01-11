@@ -4,3 +4,5 @@ mapas/mapa0.xml
 mapas/mapa1.xml
 mapas/mapa3.xml
 mapas/mapa5.xml
+mapas/mapa6.xml
+mapas/mapa7.xml
