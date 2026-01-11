@@ -1,5 +1,5 @@
 #include "ResourceManager.h"
-#include <iostream>
+#include "utils/Logger.hpp"
 
 // Implementación del Singleton
 ResourceManager& ResourceManager::GetInstance() {
@@ -20,13 +20,13 @@ Texture2D& ResourceManager::GetTexture(const std::string& path) {
     }
 
     // Textura no está cacheada - cargarla del disco
-    std::cout << "[ResourceManager] Cargando textura: " << path << std::endl;
+    LOG_DEBUG("[ResourceManager] Loading texture: {}", path);
 
     Texture2D texture = LoadTexture(path.c_str());
 
     // Verificar si la carga fue exitosa
     if (texture.id == 0) {
-        std::cerr << "[ResourceManager] ERROR: No se pudo cargar la textura: " << path << std::endl;
+        LOG_ERROR("[ResourceManager] Failed to load texture: {}", path);
         // Devolver una textura vacía o default (riesgo: puede causar problemas)
         // En producción, se podría devolver una textura de error/placeholder
     }
@@ -50,13 +50,13 @@ Font& ResourceManager::GetFont(const std::string& path, int fontSize) {
     }
 
     // Fuente no está cacheada - cargarla del disco
-    std::cout << "[ResourceManager] Cargando fuente: " << path << " (tamaño: " << fontSize << ")" << std::endl;
+    LOG_DEBUG("[ResourceManager] Loading font: {} (size: {})", path, fontSize);
 
     Font font = LoadFontEx(path.c_str(), fontSize, nullptr, 0);
 
     // Verificar si la carga fue exitosa
     if (font.baseSize == 0) {
-        std::cerr << "[ResourceManager] ERROR: No se pudo cargar la fuente: " << path << std::endl;
+        LOG_ERROR("[ResourceManager] Failed to load font: {}", path);
     }
 
     // Guardar en cache e devolver referencia
@@ -66,23 +66,23 @@ Font& ResourceManager::GetFont(const std::string& path, int fontSize) {
 
 // Descargar todos los recursos cacheados
 void ResourceManager::UnloadAll() {
-    std::cout << "[ResourceManager] Descargar todos los recursos..." << std::endl;
+    LOG_INFO("[ResourceManager] Unloading all resources...");
 
     // Descargar todas las texturas
-    std::cout << "[ResourceManager] Descargando " << textureCache.size() << " texturas..." << std::endl;
+    LOG_INFO("[ResourceManager] Unloading {} textures...", textureCache.size());
     for (auto& pair : textureCache) {
         UnloadTexture(pair.second);
     }
     textureCache.clear();
 
     // Descargar todas las fuentes
-    std::cout << "[ResourceManager] Descargando " << fontCache.size() << " fuentes..." << std::endl;
+    LOG_INFO("[ResourceManager] Unloading {} fonts...", fontCache.size());
     for (auto& pair : fontCache) {
         UnloadFont(pair.second);
     }
     fontCache.clear();
 
-    std::cout << "[ResourceManager] Todos los recursos han sido descargados." << std::endl;
+    LOG_INFO("[ResourceManager] All resources unloaded");
 }
 
 // Destructor
