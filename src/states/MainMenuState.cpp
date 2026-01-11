@@ -44,6 +44,10 @@ MainMenuState::~MainMenuState() {
 
 void MainMenuState::update(float dt) {
     UpdateMusicStream(menuMusic);
+
+    // IMPORTANT: Poll for gamepad events every frame
+    // This is necessary because GLFW/Raylib on Windows doesn't do hot-plugging automatically
+    PollInputEvents();
 }
 
 void MainMenuState::handleInput() {
@@ -99,8 +103,13 @@ void MainMenuState::render() {
     DrawText(_("P1: Keyboard (Arrows)"), SCREEN_W - 300, gamepadStartY, 14, RAYWHITE);
     DrawText(_("P2: Keyboard (WASD)"), SCREEN_W - 300, gamepadStartY + 20, 14, RAYWHITE);
 
+    // Debug: Check all gamepad slots
     for (int i = 0; i < 4; i++) {
-        if (IsGamepadAvailable(i)) {
+        bool available = IsGamepadAvailable(i);
+        const char* debugText = TextFormat("GP%d: %s", i, available ? "YES" : "NO");
+        DrawText(debugText, SCREEN_W - 450, gamepadStartY + 40 + (i * 15), 10, available ? GREEN : DARKGRAY);
+
+        if (available) {
             const char* gamepadName = GetGamepadName(i);
             const char* displayText = TextFormat(_("P%d: %s"), gamepadCount + 3, gamepadName);
             DrawText(displayText, SCREEN_W - 300, gamepadStartY + 40 + (gamepadCount * 20), 14, GREEN);

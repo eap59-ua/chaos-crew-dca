@@ -111,6 +111,8 @@ void GameplayState::init() {
 }
 
 void GameplayState::setupPlayers() {
+    LOG_INFO("[GameplayState] ========== PLAYER SETUP START ==========");
+
     // P1: Keyboard player 1 (Arrows) - Virtual Guy
     createPlayer(registry, 100, SCREEN_HEIGHT - 200, p1Anims, KEY_LEFT, KEY_RIGHT, KEY_UP);
     LOG_INFO("[GameplayState] Player 1 created with keyboard (Arrows)");
@@ -119,12 +121,19 @@ void GameplayState::setupPlayers() {
     createPlayer(registry, 150, SCREEN_HEIGHT - 200, p2Anims, KEY_A, KEY_D, KEY_W);
     LOG_INFO("[GameplayState] Player 2 created with keyboard (WASD)");
 
+    // FORCE polling before detection
+    LOG_INFO("[GameplayState] Checking for gamepads...");
+    PollInputEvents();
+
     // Detect and create gamepad players (P3, P4, P5)
     int playerCount = 2; // Already have 2 keyboard players
     const int MAX_PLAYERS = 5;
 
     for (int gamepadIndex = 0; gamepadIndex < 4 && playerCount < MAX_PLAYERS; gamepadIndex++) {
-        if (IsGamepadAvailable(gamepadIndex)) {
+        bool available = IsGamepadAvailable(gamepadIndex);
+        LOG_INFO("[GameplayState] Gamepad {} availability: {}", gamepadIndex, available ? "YES" : "NO");
+
+        if (available) {
             const char* gamepadName = GetGamepadName(gamepadIndex);
             LOG_INFO("[GameplayState] Gamepad {} detected: {}", gamepadIndex, gamepadName);
 
@@ -168,6 +177,9 @@ void GameplayState::handleInput() {
 void GameplayState::update(float deltaTime) {
     // Siempre actualizamos la música para que no se corte el loop
     UpdateMusicStream(bgMusic);
+
+    // IMPORTANT: Poll for gamepad events every frame for hot-plugging support
+    PollInputEvents();
 
     // --- LÓGICA DE ESPERA PARA SONIDOS ---
     if (isFinishing) {
