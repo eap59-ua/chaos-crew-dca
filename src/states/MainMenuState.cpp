@@ -110,6 +110,7 @@ void MainMenuState::render() {
 
     if (gamepadCount == 0) {
         DrawText(_("(No gamepads detected)"), SCREEN_W - 300, gamepadStartY + 40, 14, DARKGRAY);
+        DrawText(_("Use DS4Windows for PS controllers"), SCREEN_W - 300, gamepadStartY + 60, 12, DARKGRAY);
     }
 
     EndDrawing();
