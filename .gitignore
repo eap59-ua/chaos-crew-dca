@@ -64,6 +64,7 @@ cmake_install.cmake
 
 # Temporary PR description files
 PR_DESCRIPTION.md
+PR_DESCRIPTION_*.md
 
 # OS
 .DS_Store
