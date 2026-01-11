@@ -146,6 +146,58 @@ FetchContent_MakeAvailable(spdlog)
 message(STATUS "spdlog descargado y configurado exitosamente")
 
 # ============================================================================
+# Buscar dependencias: Dear ImGui y rlImGui (Debug Interface)
+# ============================================================================
+message(STATUS "Configurando Dear ImGui...")
+
+# First, download Dear ImGui
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.92.1
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_GetProperties(imgui)
+if(NOT imgui_POPULATED)
+    FetchContent_Populate(imgui)
+endif()
+
+message(STATUS "Dear ImGui v1.92.1 descargado exitosamente")
+message(STATUS "Configurando rlImGui...")
+
+# Then, download rlImGui
+FetchContent_Declare(
+    rlImGui
+    GIT_REPOSITORY https://github.com/raylib-extras/rlImGui.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_GetProperties(rlImGui)
+if(NOT rlimgui_POPULATED)
+    FetchContent_Populate(rlImGui)
+    # rlImGui doesn't have CMakeLists, so we add it manually
+    # Combine both Dear ImGui and rlImGui into a single library
+    add_library(rlImGui STATIC
+        # Dear ImGui core files
+        ${imgui_SOURCE_DIR}/imgui.cpp
+        ${imgui_SOURCE_DIR}/imgui_draw.cpp
+        ${imgui_SOURCE_DIR}/imgui_tables.cpp
+        ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+        # rlImGui integration
+        ${rlimgui_SOURCE_DIR}/rlImGui.cpp
+    )
+    target_include_directories(rlImGui PUBLIC
+        ${imgui_SOURCE_DIR}
+        ${rlimgui_SOURCE_DIR}
+    )
+    target_link_libraries(rlImGui PUBLIC raylib)
+endif()
+
+message(STATUS "rlImGui configurado exitosamente")
+
+# ============================================================================
 # Buscar dependencias: GNU Gettext (internacionalización)
 # ============================================================================
 find_package(Gettext)
@@ -225,6 +277,7 @@ target_include_directories(chaos-crew PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/src/components
     ${CMAKE_SOURCE_DIR}/src/core
+    ${CMAKE_SOURCE_DIR}/src/debug
     ${CMAKE_SOURCE_DIR}/src/entities
     ${CMAKE_SOURCE_DIR}/src/entt
     ${CMAKE_SOURCE_DIR}/src/locale
@@ -236,7 +289,7 @@ target_include_directories(chaos-crew PRIVATE
 # ============================================================================
 # Enlazado de librerías
 # ============================================================================
-target_link_libraries(chaos-crew PRIVATE raylib tinyxml2 spdlog::spdlog)
+target_link_libraries(chaos-crew PRIVATE raylib tinyxml2 spdlog::spdlog rlImGui)
 
 # ============================================================================
 # Configuración de salida
@@ -256,7 +309,20 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_SOURCE_DIR}/assets"
             "${CMAKE_BINARY_DIR}/assets"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/assets"
+            "${CMAKE_BINARY_DIR}/bin/assets"
         COMMENT "Actualizando assets en directorio de build"
+    )
+endif()
+
+# Copiar mapas al directorio de ejecución
+if(EXISTS "${CMAKE_SOURCE_DIR}/mapas")
+    add_custom_command(TARGET chaos-crew POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/mapas"
+            "${CMAKE_BINARY_DIR}/bin/mapas"
+        COMMENT "Copiando mapas al directorio de ejecución"
     )
 endif()
 

@@ -35,7 +35,7 @@ chaos-crew-game
 build/
 bin/
 obj/
-Debug/
+/Debug/
 Release/
 x64/
 x86/
@@ -92,6 +92,9 @@ assets/*.xcf
 # Documentation temp
 docs/temp/
 *.pdf
+
+# Bash stackdump (Windows crash dump)
+bash.exe.stackdump
 
 # Node/NPM (if using any JS tools)
 node_modules/
