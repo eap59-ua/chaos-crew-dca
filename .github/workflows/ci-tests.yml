@@ -1,0 +1,79 @@
+name: Tests CI - P03
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Permitir ejecución manual
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    # ===================================
+    # PASO 1: Checkout del código
+    # ===================================
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    # ===================================
+    # PASO 2: Instalar dependencias
+    # ===================================
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          cmake \
+          build-essential \
+          libboost-test-dev \
+          libentt-dev
+    
+    # ===================================
+    # PASO 3: Configurar CMake
+    # ===================================
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
+    
+    # ===================================
+    # PASO 4: Compilar proyecto
+    # ===================================
+    - name: Build
+      run: cmake --build build --parallel
+    
+    # ===================================
+    # PASO 5: Ejecutar tests
+    # ===================================
+    - name: Run tests
+      run: |
+        cd build
+        ctest --output-on-failure --verbose
+    
+    # ===================================
+    # PASO 6: Generar reporte
+    # ===================================
+    - name: Generate test report
+      if: always()
+      run: |
+        cd build
+        echo "## 🧪 Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        ctest --output-on-failure 2>&1 | tee test_results.txt
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        cat test_results.txt >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+    
+    # ===================================
+    # PASO 7: Upload logs en caso de fallo
+    # ===================================
+    - name: Upload test logs
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-logs
+        path: |
+          build/Testing/Temporary/LastTest.log
+          build/test_results.txt
+        retention-days: 7

@@ -24,16 +24,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-
-# Activar testing en el proyecto HITO3
-enable_testing()
-
-
 # ============================================================================
 # Incluir FetchContent desde el inicio
 # ============================================================================
 include(FetchContent)
-
 
 # ============================================================================
 # Opciones de compilación
@@ -248,28 +242,12 @@ endif()
 # ============================================================================
 file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
-# LOS FUENTES (excluyendo main.cpp para tests)
-
-list(FILTER SOURCES EXCLUDE REGEX ".*main\\.cpp$")
-
-
 list(LENGTH SOURCES SOURCE_COUNT)
 message(STATUS "Archivos fuente encontrados: ${SOURCE_COUNT}")
 
 if(NOT SOURCES)
     message(FATAL_ERROR "No se encontraron archivos .cpp en src/")
 endif()
-
-add_library(ChaosCrew_lib STATIC ${SOURCES})
-target_link_libraries(ChaosCrew_lib PUBLIC raylib EnTT::EnTT)
-
-
-
-# ============ AÑADIR TESTS ============
-add_subdirectory(tests)
-# ======================================
-
-
 
 # ============================================================================
 # Gestión de Assets
@@ -307,6 +285,9 @@ target_include_directories(chaos-crew PRIVATE
     ${CMAKE_SOURCE_DIR}/src/systems
     ${CMAKE_SOURCE_DIR}/src/utils
 )
+
+enable_testing()
+add_subdirectory(tests)
 
 # ============================================================================
 # Enlazado de librerías
