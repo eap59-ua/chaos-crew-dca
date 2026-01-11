@@ -1,9 +1,9 @@
 #include "Locale.hpp"
+#include "utils/Logger.hpp"
 #include <libintl.h>
 #include <locale.h>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
 #include <filesystem>
 
 // Platform-specific includes para obtener ruta del ejecutable
@@ -98,7 +98,7 @@ Locale& Locale::GetInstance() {
 
 void Locale::Init(const std::string& defaultLang) {
     if (initialized) {
-        std::cerr << "[Locale] Warning: Already initialized, skipping..." << std::endl;
+        LOG_WARN("[Locale] Already initialized, skipping...");
         return;
     }
 
@@ -106,7 +106,7 @@ void Locale::Init(const std::string& defaultLang) {
 
     // 1. Obtener ruta de traducciones
     std::string localePath = GetLocalePath();
-    std::cout << "[Locale] Using locale directory: " << localePath << std::endl;
+    LOG_INFO("[Locale] Using locale directory: {}", localePath);
 
     // 2. Configurar el locale del sistema
     setlocale(LC_ALL, "");
@@ -114,9 +114,9 @@ void Locale::Init(const std::string& defaultLang) {
     // 3. Especificar el directorio de traducciones
     const char* bindResult = bindtextdomain(TEXTDOMAIN, localePath.c_str());
     if (bindResult) {
-        std::cout << "[Locale] bindtextdomain: " << bindResult << std::endl;
+        LOG_DEBUG("[Locale] bindtextdomain: {}", bindResult);
     } else {
-        std::cerr << "[Locale] Error: bindtextdomain failed!" << std::endl;
+        LOG_ERROR("[Locale] bindtextdomain failed!");
     }
 
     // 4. Especificar la codificación de caracteres
@@ -125,7 +125,7 @@ void Locale::Init(const std::string& defaultLang) {
     // 5. Establecer el dominio de texto por defecto
     const char* domainResult = textdomain(TEXTDOMAIN);
     if (domainResult) {
-        std::cout << "[Locale] textdomain: " << domainResult << std::endl;
+        LOG_DEBUG("[Locale] textdomain: {}", domainResult);
     }
 
     // 6. Establecer el idioma inicial
@@ -133,12 +133,12 @@ void Locale::Init(const std::string& defaultLang) {
 
     initialized = true;
 
-    std::cout << "[Locale] Initialized with language: " << currentLang << std::endl;
+    LOG_INFO("[Locale] Initialized with language: {}", currentLang);
 }
 
 void Locale::SetLanguage(const std::string& lang) {
     if (!initialized) {
-        std::cerr << "[Locale] Error: Not initialized, call Init() first!" << std::endl;
+        LOG_ERROR("[Locale] Not initialized, call Init() first!");
         return;
     }
 
@@ -165,7 +165,7 @@ void Locale::SetLanguage(const std::string& lang) {
     bind_textdomain_codeset(TEXTDOMAIN, "UTF-8");
     textdomain(TEXTDOMAIN);
 
-    std::cout << "[Locale] Language changed to: " << lang << std::endl;
+    LOG_INFO("[Locale] Language changed to: {}", lang);
 }
 
 std::string Locale::GetCurrentLanguage() const {
