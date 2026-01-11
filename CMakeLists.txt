@@ -309,7 +309,20 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_SOURCE_DIR}/assets"
             "${CMAKE_BINARY_DIR}/assets"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/assets"
+            "${CMAKE_BINARY_DIR}/bin/assets"
         COMMENT "Actualizando assets en directorio de build"
+    )
+endif()
+
+# Copiar mapas al directorio de ejecución
+if(EXISTS "${CMAKE_SOURCE_DIR}/mapas")
+    add_custom_command(TARGET chaos-crew POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/mapas"
+            "${CMAKE_BINARY_DIR}/bin/mapas"
+        COMMENT "Copiando mapas al directorio de ejecución"
     )
 endif()
 
