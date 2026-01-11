@@ -1,4 +1,5 @@
 #include "ResourceManager.h"
+#include <iostream>
 #include "utils/Logger.hpp"
 
 // Implementación del Singleton
