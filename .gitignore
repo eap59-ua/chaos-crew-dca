@@ -33,6 +33,8 @@ chaos-crew-game
 
 # Build directories
 build/
+build_*/
+build_windows/
 bin/
 obj/
 /Debug/
@@ -80,6 +82,23 @@ Thumbs.db
 *.tmp
 *.bak
 *.swp
+nul
+
+# Test files
+test.cpp
+test_*.cpp
+test_*.sh
+*_test.bat
+*_test.sh
+build_test.*
+
+# ImGui settings (local only)
+imgui.ini
+
+# Temporary documentation (keep only final docs)
+INSTALAR_*.md
+INSTRUCCIONES_*.md
+docs/COMPILAR_*.md
 
 # Raylib (if building from source)
 raylib/build/
