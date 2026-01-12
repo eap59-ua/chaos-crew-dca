@@ -8,4 +8,5 @@ mapas/mapa6.xml
 mapas/mapa7.xml
 mapas/mapa8.xml
 mapas/mapa9.xml
+mapas/mapa10.xml
 
