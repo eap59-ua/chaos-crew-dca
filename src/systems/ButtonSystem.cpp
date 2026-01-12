@@ -97,11 +97,13 @@ void ButtonSystem(entt::registry& registry) {
         // LA CONDICIÓN MÁGICA:
         // Todos pisados a la vez Y no se ha ejecutado antes.
         if (allButtonsPressed && !alreadyExecuted) {
+            std::cout << "[ButtonSystem] Canal " << channel << " activado! Ejecutando acciones..." << std::endl;
 
             // 1. Ejecutar TODAS las acciones del grupo (cada botón puede tener su propia acción)
             for (auto entity : entities) {
                 auto& btn = registry.get<Button>(entity);
                 if (btn.onPressAction) {
+                    std::cout << "[ButtonSystem] Ejecutando acción del botón en canal " << channel << std::endl;
                     btn.onPressAction(registry);
                     // NO hacemos break aquí - ejecutamos todas las acciones del canal
                 }
