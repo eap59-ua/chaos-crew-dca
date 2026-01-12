@@ -98,12 +98,12 @@ void ButtonSystem(entt::registry& registry) {
         // Todos pisados a la vez Y no se ha ejecutado antes.
         if (allButtonsPressed && !alreadyExecuted) {
 
-            // 1. Ejecutar la acción (buscamos la primera válida en el grupo)
+            // 1. Ejecutar TODAS las acciones del grupo (cada botón puede tener su propia acción)
             for (auto entity : entities) {
                 auto& btn = registry.get<Button>(entity);
                 if (btn.onPressAction) {
                     btn.onPressAction(registry);
-                    break; // Ejecutamos solo una vez la acción del grupo
+                    // NO hacemos break aquí - ejecutamos todas las acciones del canal
                 }
             }
 
