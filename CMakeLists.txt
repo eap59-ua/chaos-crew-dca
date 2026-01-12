@@ -410,65 +410,59 @@ message(STATUS "")
 # ============================================================================
 # Reglas de instalación
 # ============================================================================
+# ============================================================================
+# Reglas de instalación (MODO PORTABLE / ITCH.IO)
+# ============================================================================
 include(GNUInstallDirs)
 
+# 1. EL EJECUTABLE: Lo ponemos en la raíz (.) en lugar de en /bin
 install(TARGETS chaos-crew
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    RUNTIME DESTINATION .
     COMPONENT Runtime
 )
 
+# 2. LOS ASSETS: Los ponemos en la raíz (.) para que queden junto al exe
 if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/assets"
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/chaos-crew
+        DESTINATION .
         COMPONENT Assets
         PATTERN "*.md" EXCLUDE
         PATTERN ".git*" EXCLUDE
     )
-    message(STATUS "Assets se instalarán en: ${CMAKE_INSTALL_DATAROOTDIR}/chaos-crew/assets")
+    message(STATUS "Assets se empaquetarán en: ./assets")
 endif()
 
-# Instalar mapas (niveles del juego) - CRÍTICO para que el juego funcione
+# 3. LOS MAPAS: Igual, en la raíz (.)
 if(EXISTS "${CMAKE_SOURCE_DIR}/mapas")
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/mapas"
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/chaos-crew
+        DESTINATION .
         COMPONENT Assets
         FILES_MATCHING
         PATTERN "*.xml"
-        PATTERN "*.tmx"   # Por si se usa Tiled
-        PATTERN "*.json"  # Por si se usan otros formatos
+        PATTERN "*.tmx"
+        PATTERN "*.json"
     )
-    message(STATUS "Mapas se instalarán en: ${CMAKE_INSTALL_DATAROOTDIR}/chaos-crew/mapas")
+    message(STATUS "Mapas se empaquetarán en: ./mapas")
 endif()
 
-# Documentación
+# 4. DOCUMENTACIÓN: Opcional, pero queda bien en la raíz
 if(EXISTS "${CMAKE_SOURCE_DIR}/README.md")
-    install(FILES
-        "${CMAKE_SOURCE_DIR}/README.md"
-        DESTINATION ${CMAKE_INSTALL_DOCDIR}
-        COMPONENT Documentation
-    )
+    install(FILES "${CMAKE_SOURCE_DIR}/README.md" DESTINATION . COMPONENT Documentation)
 endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/docs/HITO3.md")
-    install(FILES
-        "${CMAKE_SOURCE_DIR}/docs/HITO3.md"
-        DESTINATION ${CMAKE_INSTALL_DOCDIR}
-        COMPONENT Documentation
-    )
-endif()
-
-# Instalar traducciones (.mo) - SIEMPRE, sin depender de GETTEXT_FOUND
-# Los archivos .mo ya deben estar compilados en build/po/
+# 5. TRADUCCIONES:
+# IMPORTANTE: Aquí mantenemos una pequeña estructura de carpetas (locale/es_ES/...)
+# porque la librería 'gettext' suele buscar esa estructura específica.
 install(FILES
     "${CMAKE_BINARY_DIR}/po/es_ES/LC_MESSAGES/chaos-crew.mo"
-    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale/es_ES/LC_MESSAGES
+    DESTINATION locale/es_ES/LC_MESSAGES
     COMPONENT Translations
-    OPTIONAL  # No fallar si no existe (para builds sin gettext)
+    OPTIONAL
 )
 
 install(FILES
     "${CMAKE_BINARY_DIR}/po/en_US/LC_MESSAGES/chaos-crew.mo"
-    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale/en_US/LC_MESSAGES
+    DESTINATION locale/en_US/LC_MESSAGES
     COMPONENT Translations
     OPTIONAL
 )
