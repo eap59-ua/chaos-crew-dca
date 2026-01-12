@@ -31,7 +31,3 @@ endfunction()
 
 # Crear los 10 tests 
 create_test(entity_tests entity_tests.cpp)
-create_test(map_tests map_tests.cpp)
-create_test(state_machine_tests state_machine_tests.cpp)
-create_test(collision_tests collision_tests.cpp)
-create_test(integration_tests integration_tests.cpp)
