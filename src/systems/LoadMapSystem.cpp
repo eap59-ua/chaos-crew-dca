@@ -29,6 +29,7 @@
 #include <cfloat>
 #include <map>
 #include <string>
+#include <iostream>
 
 using namespace tinyxml2;
 using namespace std;
@@ -126,7 +127,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
             else if (properties && groupName == "ObjectsTraps")
             {
                 entt::entity entity = entt::null;
-                if (o.type == "Platform") {
+                if (o.type == "Platform") 
                     entity = createPlatform(registry, o.x, o.y, o.width, o.height, 0.0f, 0.0f, DARKGRAY);
                 else if (o.type == "Door")
                     entity = createDoor(registry, o.x, o.y, o.width, o.height, GREEN);
@@ -134,7 +135,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                     entity = createSpike(registry, o.x, o.y, o.width, o.height, spikeTex);
                 else if(o.type == "Wheel")
                     entity = createWheel(registry, o.x, o.y, o.width / 2.0f, wheelTex);
-                }
+                
                 
                 if (entity == entt::null) {
                      // Si no es un tipo conocido, saltamos o lanzamos error (opcional)
@@ -312,7 +313,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
             }
         }
     }
-}
+
 
 
 // --------------------------------------------------------------------------------------------------------------------------------------------

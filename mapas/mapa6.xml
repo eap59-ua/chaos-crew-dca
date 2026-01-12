@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="100">
+
+ <objectgroup id="4" name="SpawnPoints">
+  <object id="1" name="Player1" x="2" y="8" width="1" height="1"/>
+  <object id="2" name="Player2" x="27" y="8" width="1" height="1"/>
+ </objectgroup>
+
+ <objectgroup id="1" name="ObjectsStatics">
+  <object id="3" name="Base_Izq" type="Platform" x="0" y="9" width="6" height="1" />
+  <object id="4" name="Base_Der" type="Platform" x="24" y="9" width="6" height="1" />
+
+  <object id="5" name="Meta_Central" type="Platform" x="12" y="2" width="6" height="0.5" />
+  <object id="6" name="Door" type="Door" x="14" y="0.5" width="2" height="1.5" />
+
+  <object id="7" name="Piso_Medio_Izq" type="Platform" x="0" y="5" width="4" height="0.5" />
+  <object id="8" name="Piso_Medio_Der" type="Platform" x="26" y="5" width="4" height="0.5" />
+ </objectgroup>
+
+ <objectgroup name="ObjectsLogic">
+  <object id="20" name="Ascensor_Izq" type="Platform" x="6" y="9" width="3" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="-40"/> 
+        <property name="bucle_vertical" type="float" value="160.0"/> 
+      </properties>
+  </object>
+
+  <object id="21" name="Ascensor_Der" type="Platform" x="21" y="9" width="3" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="-40"/> 
+        <property name="bucle_vertical" type="float" value="150.0"/>
+      </properties>
+  </object>
+  
+  <object id="22" name="Rueda_Molesta" type="Wheel" x="14" y="5" width="0.5" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="100"/>
+        <property name="bucle_horizontal" type="float" value="100.0"/>
+      </properties>
+  </object>
+ </objectgroup>
+
+ <objectgroup id="2" name="ObjectsButtons">
+  <object id="30" name="Btn_Ayuda_Der" type="Button" x="1" y="4.5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="1"/>
+    <property name="action_type" value="spawn_platform"/>
+    <property name="spawn_x_1" type="float" value="18.0"/>
+    <property name="spawn_y_1" type="float" value="4.5"/>
+    <property name="spawn_w_1" type="float" value="4.0"/>
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+
+  <object id="31" name="Btn_Ayuda_Izq" type="Button" x="28" y="4.5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="2"/>
+    <property name="action_type" value="spawn_platform"/>
+    <property name="spawn_x_1" type="float" value="8.0"/>
+    <property name="spawn_y_1" type="float" value="4.5"/>
+    <property name="spawn_w_1" type="float" value="4.0"/>
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+ </objectgroup>
+
+ <objectgroup name="ObjectsTraps">
+ </objectgroup>
+
+</map>

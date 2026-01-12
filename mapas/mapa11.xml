@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="200">
+
+ <!-- ============================================ -->
+ <!-- SPAWN POINTS - Juntos en el inicio -->
+ <!-- ============================================ -->
+ <objectgroup id="4" name="SpawnPoints">
+  <object id="1" name="Player1" x="2" y="8" width="1" height="1"/>
+  <object id="2" name="Player2" x="4" y="8" width="1" height="1"/>
+ </objectgroup>
+
+ <!-- ============================================ -->
+ <!-- OBJETOS ESTÁTICOS - Camino "super fácil" -->
+ <!-- ============================================ -->
+ <objectgroup id="1" name="ObjectsStatics">
+  <!-- Suelo inicial ANCHO y "seguro" -->
+  <object id="3" name="Suelo_Inicio" type="Platform" x="0" y="9" width="30" height="1" />
+  
+  <!-- Escalones grandes y cómodos -->
+  <object id="4" name="Escalon_Grande_1" type="Platform" x="8" y="7" width="5" height="0.5" />
+  <object id="5" name="Escalon_Grande_2" type="Platform" x="15" y="5" width="5" height="0.5" />
+  <object id="6" name="Escalon_Grande_3" type="Platform" x="22" y="3" width="5" height="0.5" />
+  
+  <!-- Plataforma de la "meta" - FALSA -->
+  <object id="7" name="Plat_Meta_Falsa_1" type="Platform" x="27" y="2.5" width="3" height="0.5" />
+  <object id="8" name="Door_FALSA_1" type="Door" x="27.5" y="1" width="2" height="1.5" />
+  
+  <!-- Plataforma de la meta REAL (oculta abajo) -->
+  <object id="9" name="Plat_Meta_Real" type="Platform" x="1" y="2.5" width="3" height="0.5" />
+  <object id="10" name="Door_REAL" type="Door" x="1.5" y="1" width="2" height="1.5" />
+  
+  <!-- Plataforma alta a la izquierda (para llegar a meta real) -->
+  <object id="11" name="Plat_Oculta_1" type="Platform" x="0" y="4.5" width="3" height="0.5" />
+  <object id="12" name="Plat_Oculta_2" type="Platform" x="5" y="3.5" width="2" height="0.5" />
+  
+  <!-- Plataformas intermedias para poder acceder al camino secreto -->
+  <object id="13" name="Plat_Acceso_1" type="Platform" x="0" y="6.5" width="2" height="0.5" />
+  <object id="14" name="Plat_Acceso_2" type="Platform" x="3" y="5.5" width="2" height="0.5" />
+ </objectgroup>
+
+ <!-- ============================================ -->
+ <!-- OBJETOS LÓGICOS - Apariencia de ayuda -->
+ <!-- ============================================ -->
+ <objectgroup name="ObjectsLogic">
+  
+  <!-- Plataforma móvil "útil" -->
+  <object id="20" name="Plataforma_Movil_Falsa" type="Platform" x="10" y="8" width="3" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="40"/> 
+        <property name="bucle_horizontal" type="float" value="150.0"/>
+      </properties>
+  </object>
+
+ </objectgroup>
+
+ <!-- ============================================ -->
+ <!-- BOTONES - Solo UNO y parece obvio -->
+ <!-- ============================================ -->
+ <objectgroup id="2" name="ObjectsButtons">
+
+  <!-- Botón único "obvio" - Pero abre TRAMPA -->
+  <object id="30" name="Boton_Obvio_Trampa" type="Button" x="14" y="8.5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="1"/>
+    <property name="action_type" value="spawn_platform"/>
+    
+    <!-- Crea muro que bloquea el camino de vuelta -->
+    <property name="spawn_x_1" type="float" value="6.0"/>
+    <property name="spawn_y_1" type="float" value="7.0"/>
+    <property name="spawn_w_1" type="float" value="1.0"/>
+    <property name="spawn_h_1" type="float" value="3.0"/>
+   </properties>
+  </object>
+
+  <!-- Botón OCULTO que realmente ayuda -->
+  <object id="31" name="Boton_Secreto_Real" type="Button" x="0.5" y="4" width="0.8" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="2"/>
+    <property name="action_type" value="spawn_platform"/>
+    
+    <!-- Puente hacia la meta REAL -->
+    <property name="spawn_x_1" type="float" value="3.5"/>
+    <property name="spawn_y_1" type="float" value="3.0"/>
+    <property name="spawn_w_1" type="float" value="1.5"/>
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+
+ </objectgroup>
+
+ <!-- ============================================ -->
+ <!-- TRAMPAS - AQUÍ ESTÁ TODO EL TROLLEO -->
+ <!-- ============================================ -->
+ <objectgroup name="ObjectsTraps">
+
+    <!-- ========================================== -->
+    <!-- TRAMPA 1: Suelo que se ABRE cuando pasas -->
+    <!-- ========================================== -->
+    <object id="40" name="Suelo_Trampa_1" type="Platform" x="5" y="9" width="2" height="1">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="40"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="500"/>
+        <property name="speed" type="float" value="35"/>
+      </properties>
+    </object>
+
+    <object id="41" name="Suelo_Trampa_2" type="Platform" x="16" y="9" width="3" height="1">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="45"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="500"/>
+        <property name="speed" type="float" value="40"/>
+      </properties>
+    </object>
+
+    <object id="42" name="Suelo_Trampa_3" type="Platform" x="24" y="9" width="2" height="1">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="35"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="500"/>
+        <property name="speed" type="float" value="45"/>
+      </properties>
+    </object>
+
+    <!-- ========================================== -->
+    <!-- TRAMPA 2: Escalones que DESAPARECEN -->
+    <!-- ========================================== -->
+    <object id="43" name="Escalon_Falso_1" type="Platform" x="8" y="7" width="5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="50"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="400"/>
+        <property name="speed" type="float" value="30"/>
+      </properties>
+    </object>
+
+    <object id="44" name="Escalon_Falso_2" type="Platform" x="15" y="5" width="5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="55"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="400"/>
+        <property name="speed" type="float" value="35"/>
+      </properties>
+    </object>
+
+    <object id="45" name="Escalon_Falso_3" type="Platform" x="22" y="3" width="5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="60"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="400"/>
+        <property name="speed" type="float" value="40"/>
+      </properties>
+    </object>
+
+    <!-- ========================================== -->
+    <!-- TRAMPA 3: RUEDAS que aparecen de repente -->
+    <!-- ========================================== -->
+    
+    <!-- Rueda sniper 1 - Aparece a los 4 segundos -->
+    <object id="50" name="Rueda_Sorpresa_1" type="Wheel" x="-3" y="8.5" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="timer"/>
+        <property name="condition_value" type="float" value="4"/>
+        
+        <property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="450"/>
+        <property name="speed" type="float" value="12"/>
+      </properties>
+    </object>
+
+    <!-- Rueda sniper 2 - Aparece a los 7 segundos -->
+    <object id="51" name="Rueda_Sorpresa_2" type="Wheel" x="33" y="7" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="timer"/>
+        <property name="condition_value" type="float" value="7"/>
+        
+        <property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="-450"/>
+        <property name="speed" type="float" value="11"/>
+      </properties>
+    </object>
+
+    <!-- Rueda sniper 3 - Aparece a los 10 segundos -->
+    <object id="52" name="Rueda_Sorpresa_3" type="Wheel" x="-3" y="5" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="timer"/>
+        <property name="condition_value" type="float" value="10"/>
+        
+        <property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="450"/>
+        <property name="speed" type="float" value="13"/>
+      </properties>
+    </object>
+
+    <!-- Rueda sniper 4 - Aparece a los 13 segundos -->
+    <object id="53" name="Rueda_Sorpresa_4" type="Wheel" x="33" y="3" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="timer"/>
+        <property name="condition_value" type="float" value="13"/>
+        
+        <property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="-450"/>
+        <property name="speed" type="float" value="10"/>
+      </properties>
+    </object>
+
+    <!-- Rueda que sale de ABAJO hacia arriba -->
+    <object id="54" name="Rueda_Desde_Abajo" type="Wheel" x="20" y="12" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="180"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="-300"/>
+        <property name="speed" type="float" value="8"/>
+      </properties>
+    </object>
+
+    <!-- ========================================== -->
+    <!-- TRAMPA 4: PINCHOS OCULTOS que aparecen -->
+    <!-- ========================================== -->
+    
+    <!-- Pincho que sale del suelo -->
+    <object id="60" name="Pincho_Suelo_1" type="Spike" x="10" y="10" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="80"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="-50"/>
+        <property name="speed" type="float" value="15"/>
+      </properties>
+    </object>
+
+    <object id="61" name="Pincho_Suelo_2" type="Spike" x="18" y="10" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="90"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="-50"/>
+        <property name="speed" type="float" value="18"/>
+      </properties>
+    </object>
+
+    <!-- Pinchos que salen del TECHO -->
+    <object id="62" name="Pincho_Techo_1" type="Spike" x="12" y="-1" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="100"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="300"/>
+        <property name="speed" type="float" value="10"/>
+      </properties>
+    </object>
+
+    <object id="63" name="Pincho_Techo_2" type="Spike" x="19" y="-1" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="110"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="300"/>
+        <property name="speed" type="float" value="12"/>
+      </properties>
+    </object>
+
+    <object id="64" name="Pincho_Techo_3" type="Spike" x="25" y="-1" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="95"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="300"/>
+        <property name="speed" type="float" value="14"/>
+      </properties>
+    </object>
+
+    <!-- ========================================== -->
+    <!-- TRAMPA 5: Pinchos PERSEGUIDORES -->
+    <!-- ========================================== -->
+    
+    <object id="70" name="Pincho_Perseguidor_Izq" type="Spike" x="-2" y="8" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="300"/>
+        
+        <property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="250"/>
+        <property name="speed" type="float" value="7"/>
+      </properties>
+    </object>
+
+    <object id="71" name="Pincho_Perseguidor_Der" type="Spike" x="32" y="6" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="280"/>
+        
+        <property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="-250"/>
+        <property name="speed" type="float" value="6"/>
+      </properties>
+    </object>
+
+    <!-- ========================================== -->
+    <!-- TRAMPA 6: PINCHOS en la puerta FALSA -->
+    <!-- ========================================== -->
+    
+    <object id="80" name="Pincho_Puerta_Falsa_1" type="Spike" x="27" y="2" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="50"/>
+        
+        <property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="100"/>
+        <property name="speed" type="float" value="8"/>
+      </properties>
+    </object>
+
+    <object id="81" name="Pincho_Puerta_Falsa_2" type="Spike" x="29.5" y="2" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="50"/>
+        
+        <property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="-100"/>
+        <property name="speed" type="float" value="8"/>
+      </properties>
+    </object>
+
+    <!-- ========================================== -->
+    <!-- TRAMPA 7: Muros que BLOQUEAN el retorno -->
+    <!-- ========================================== -->
+    
+    <object id="90" name="Muro_Bloqueo_1" type="Platform" x="13" y="10" width="1" height="3">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="200"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="-200"/>
+        <property name="speed" type="float" value="5"/>
+      </properties>
+    </object>
+
+    <object id="91" name="Muro_Bloqueo_2" type="Platform" x="21" y="10" width="1" height="3">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="220"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="-200"/>
+        <property name="speed" type="float" value="4"/>
+      </properties>
+    </object>
+
+    <!-- ========================================== -->
+    <!-- TRAMPA 8: Plataforma MÓVIL trampa -->
+    <!-- ========================================== -->
+    
+    <object id="100" name="Plataforma_Empuja_Vacio" type="Platform" x="10" y="8" width="3" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="60"/>
+        
+        <property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="180"/>
+        <property name="speed" type="float" value="9"/>
+      </properties>
+    </object>
+
+ </objectgroup>
+
+</map>
