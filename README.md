@@ -91,9 +91,12 @@ cd chaos-crew-dca
 cmake -S . -B build
 cmake --build build
 
-# Ejecutar
+# Ejecutar (Linux/WSL)
 cd build/bin
 ./chaos-crew
+
+# O usar el script helper en WSL (configura locales automáticamente)
+./run-wsl.sh
 ```
 
 ### Compilación alternativa (Makefile legacy)
@@ -105,6 +108,29 @@ chmod +x build.sh
 # Compilar y ejecutar
 ./build.sh linux
 ```
+
+### Compilar en Windows (MSYS2)
+
+**Prerequisite**: MSYS2 must be installed (see Windows Requirements section above)
+
+```bash
+# Open "MSYS2 MinGW 64-bit" terminal
+cd /c/Users/YourUsername/path/to/chaos-crew-dca
+
+# Create build directory
+mkdir build_windows && cd build_windows
+
+# Configure with CMake
+cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+
+# Build the project
+cmake --build . -j$(nproc)
+
+# Run the game
+./bin/chaos-crew.exe
+```
+
+**Note**: The game executable and all assets will be in the `build_windows/bin/` directory.
 
 ## 🌍 Multi-language Support
 
@@ -119,6 +145,43 @@ Press **L** during gameplay to toggle between Spanish and English.
 
 The game automatically detects your system language at startup and selects the appropriate translation.
 
+### Requirements for i18n (Linux/WSL)
+
+On Linux/WSL, you need to have the required locales installed:
+
+```bash
+# 1. Install and generate locales
+sudo apt install locales
+sudo locale-gen es_ES.UTF-8
+sudo locale-gen en_US.UTF-8
+sudo update-locale
+
+# 2. Configure default locale (permanent fix for WSL)
+echo 'export LANG=es_ES.UTF-8' >> ~/.bashrc
+echo 'export LC_ALL=es_ES.UTF-8' >> ~/.bashrc
+source ~/.bashrc
+
+# 3. Verify configuration
+echo $LANG  # Should output: es_ES.UTF-8
+```
+
+**Troubleshooting for WSL**: If i18n doesn't work after the above steps, close and reopen your WSL terminal. Alternatively, run the game with explicit locale:
+```bash
+LANG=es_ES.UTF-8 LC_ALL=es_ES.UTF-8 ./bin/chaos-crew
+```
+
+### Windows Requirements
+
+For Windows compilation with i18n support, **MSYS2** is required:
+
+1. Download and install MSYS2 from https://www.msys2.org/
+2. Open "MSYS2 MinGW 64-bit" terminal
+3. Install dependencies:
+   ```bash
+   pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-make mingw-w64-x86_64-gettext mingw-w64-x86_64-tinyxml2
+   ```
+4. Compile the project (see Windows compilation section below)
+
 For more details, see [Internationalization Documentation](docs/INTERNATIONALIZATION.md).
 
 ## 🎮 Controls
@@ -130,7 +193,36 @@ For more details, see [Internationalization Documentation](docs/INTERNATIONALIZA
 | Jump                  | W / SPACE | ↑        |
 | Restart (Game Over)   | ENTER     | ENTER    |
 | Toggle Language       | L         | L        |
+| **Toggle Debug UI**   | **F1**    | **F1**   |
 | Pause                 | ESC       | ESC      |
+
+### 🎮 Gamepad Support
+
+Chaos Crew supports up to **5 players simultaneously** (2 keyboard + 3 gamepads):
+
+- **Auto-detection**: Gamepads are automatically detected when the game starts
+- **Compatible controllers**: Xbox controllers (native), PlayStation controllers (requires DS4Windows on Windows)
+- **Gamepad controls**: Left stick/D-pad for movement, A button (South face) for jump
+- **Player assignment**: Players 3-5 are automatically assigned to detected gamepads
+- **Display**: Connected gamepads are shown in the main menu with their names
+
+For best experience on Windows with PlayStation controllers, install [DS4Windows](https://ds4-windows.com/).
+
+## 🔧 Debug Interface
+
+Chaos Crew includes a built-in debug interface powered by **Dear ImGui**:
+
+- **Activation**: Press **F1** to toggle the debug panel
+- **Features**:
+  - Real-time FPS and frame time monitoring
+  - Adjustable float parameters (gravity, speed, etc.)
+  - Integer parameters (jump count, lives, etc.)
+  - Boolean toggles for features
+  - Action buttons for testing
+- **Customization**: Improved contrast dark theme for better visibility
+- **Use cases**: Level design, gameplay tuning, bug testing
+
+The debug interface is automatically compiled into development builds and can be toggled on/off during runtime.
 
 ## 👥 Equipo de Desarrollo
 

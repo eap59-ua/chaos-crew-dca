@@ -240,9 +240,14 @@ endif()
 set(CHAOSCREW_ENABLE_GETTEXT 0)
 
 if(GETTEXT_FOUND AND CHAOSCREW_HAVE_LIBINTL_H)
-    # Si no se encuentra la librería, igualmente permitimos compilar sin gettext
-    # (se usará el fallback sin i18n). Solo habilitamos i18n si existe libintl.
-    if(CHAOSCREW_INTL_LIB)
+    # En Linux, libintl está integrado en libc (no necesita librería separada)
+    # En Windows/MinGW, necesita libintl.dll.a o libintl.a
+    if(UNIX AND NOT APPLE)
+        # Linux: Si tiene header y gettext, es suficiente
+        set(CHAOSCREW_ENABLE_GETTEXT 1)
+        message(STATUS "Linux detected: using built-in libintl from glibc")
+    elseif(CHAOSCREW_INTL_LIB)
+        # Windows/Mac: Requiere librería separada
         set(CHAOSCREW_ENABLE_GETTEXT 1)
     endif()
 endif()
@@ -345,7 +350,9 @@ add_subdirectory(tests)
 target_link_libraries(chaos-crew PRIVATE rlImGui raylib tinyxml2 spdlog::spdlog)
 
 # Enlazar libintl únicamente si está disponible y la i18n está habilitada.
-if(CHAOSCREW_ENABLE_GETTEXT)
+# En Linux, libintl está integrado en glibc y no necesita linkear nada extra.
+# En Windows/Mac, necesita linkear libintl.dll.a o libintl.a
+if(CHAOSCREW_ENABLE_GETTEXT AND CHAOSCREW_INTL_LIB)
     target_link_libraries(chaos-crew PRIVATE ${CHAOSCREW_INTL_LIB})
 endif()
 

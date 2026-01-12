@@ -9,7 +9,31 @@ DebugUI& DebugUI::GetInstance() {
 
 void DebugUI::Init() {
     rlImGuiSetup(true); // true = dark theme
-    LOG_INFO("[DebugUI] ImGui initialized with dark theme");
+
+    // Customize ImGui colors for better visibility/contrast
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImVec4* colors = style.Colors;
+
+    // Make window backgrounds more visible (lighter dark gray)
+    colors[ImGuiCol_WindowBg] = ImVec4(0.15f, 0.15f, 0.18f, 0.95f);  // More visible background
+    colors[ImGuiCol_ChildBg] = ImVec4(0.12f, 0.12f, 0.15f, 0.90f);
+
+    // Headers with better contrast
+    colors[ImGuiCol_Header] = ImVec4(0.25f, 0.25f, 0.30f, 1.00f);
+    colors[ImGuiCol_HeaderHovered] = ImVec4(0.30f, 0.30f, 0.35f, 1.00f);
+    colors[ImGuiCol_HeaderActive] = ImVec4(0.35f, 0.35f, 0.40f, 1.00f);
+
+    // Frame backgrounds (for sliders, inputs)
+    colors[ImGuiCol_FrameBg] = ImVec4(0.20f, 0.20f, 0.25f, 1.00f);
+    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.25f, 0.25f, 0.30f, 1.00f);
+    colors[ImGuiCol_FrameBgActive] = ImVec4(0.30f, 0.30f, 0.35f, 1.00f);
+
+    // Increase window rounding for better aesthetics
+    style.WindowRounding = 6.0f;
+    style.FrameRounding = 4.0f;
+    style.GrabRounding = 3.0f;
+
+    LOG_INFO("[DebugUI] ImGui initialized with improved contrast dark theme");
 }
 
 void DebugUI::Shutdown() {

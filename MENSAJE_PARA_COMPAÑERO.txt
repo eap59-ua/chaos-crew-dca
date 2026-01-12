@@ -1,0 +1,44 @@
+🎮 CHAOS CREW - ENTREGA FINAL (12 ENERO 2026)
+================================================
+
+¡Hola! Te dejo todo preparado para la entrega final:
+
+✅ LO QUE YA ESTÁ HECHO:
+- i18n funcionando (español/inglés con tecla L)
+- Debug UI mejorado (F1)
+- Soporte gamepad (hasta 5 jugadores)
+- Documentación completa
+- PR listo para mergear: fix/i18n-windows-support
+
+🎯 LO QUE NECESITAS HACER (URGENTE):
+
+1. MERGEAR EL PR (5 min)
+   - Ir a: https://github.com/eap59-ua/chaos-crew-dca/pulls
+   - Aprobar y mergear "fix/i18n-windows-support"
+
+2. GENERAR INSTALABLES (10 min)
+   Ver archivo ENTREGA_FINAL.md para comandos detallados
+
+   Resumen:
+   - Linux: cd build && cpack -G DEB
+   - Windows: cd build_windows && cpack -G ZIP
+
+3. PUBLICAR EN ITCH.IO (30-45 min)
+   - Crear proyecto en https://itch.io/
+   - Subir los instalables
+   - Usar la descripción que está en ENTREGA_FINAL.md
+   - Tomar 3-5 capturas del juego
+   - Copiar el enlace final
+
+4. PREPARAR ZIP PARA MOODLE (10 min)
+   Ver ENTREGA_FINAL.md sección "PREPARAR ENTREGA PARA MOODLE"
+
+📁 ARCHIVOS IMPORTANTES:
+- ENTREGA_FINAL.md - Instrucciones completas paso a paso
+- README.md - Documentación del proyecto (actualizada)
+
+⏰ DEADLINE: 12 enero 2026 - 23:59
+
+Cualquier duda, me avisas. ¡Suerte! 💪
+
+- Erardo
