@@ -30,6 +30,7 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <clocale>
 
 using namespace tinyxml2;
 using namespace std;
@@ -66,6 +67,12 @@ static void AddPatronLoopVertical(entt::registry& registry, entt::entity e, floa
 
 // ==== Cargar el mapa XML ====
 void loadTiledMap(const std::string& filename, entt::registry& registry, Texture2D spikeTex, Texture2D wheelTex, Vector2& p1Pos, Vector2& p2Pos) {
+
+    char* prevLocale = std::setlocale(LC_NUMERIC, nullptr);
+    std::string savedLocale = prevLocale ? prevLocale : "";
+    std::setlocale(LC_NUMERIC, "C");
+
+
     XMLDocument doc;
 
     if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
@@ -312,6 +319,7 @@ void loadTiledMap(const std::string& filename, entt::registry& registry, Texture
                 }
             }
         }
+        if (!savedLocale.empty()) std::setlocale(LC_NUMERIC, savedLocale.c_str());
     }
 
 
