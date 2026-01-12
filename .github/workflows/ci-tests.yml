@@ -1,0 +1,127 @@
+name: Tests CI - P03
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      # ===================================
+      # PASO 1: Checkout del código
+      # ===================================
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ===================================
+      # PASO 2: Instalar dependencias
+      # (incluye libs típicas necesarias para compilar raylib en Linux)
+      # ===================================
+      - name: Install dependencies
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            build-essential \
+            git \
+            libboost-test-dev \
+            libx11-dev \
+            libxrandr-dev \
+            libxi-dev \
+            libgl1-mesa-dev \
+            libxcursor-dev \
+            libxinerama-dev \
+            libasound2-dev
+
+      # ===================================
+      # PASO 3: Debug workspace (por si algo falla)
+      # ===================================
+      - name: Debug workspace
+        run: |
+          set -euxo pipefail
+          echo "PWD: $(pwd)"
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          ls -la
+          ls -la "$GITHUB_WORKSPACE"
+
+      # ===================================
+      # PASO 4: Configurar CMake
+      # ===================================
+      - name: Configure CMake
+        run: |
+          set -euxo pipefail
+          cmake -S "$GITHUB_WORKSPACE" -B "$GITHUB_WORKSPACE/build" -DCMAKE_BUILD_TYPE=Debug
+          ls -la "$GITHUB_WORKSPACE/build"
+
+      # ===================================
+      # PASO 5: Compilar
+      # ===================================
+      - name: Build
+        run: |
+          set -euxo pipefail
+          cmake --build "$GITHUB_WORKSPACE/build" --parallel
+
+      # ===================================
+      # PASO 6: Ejecutar tests
+      # ===================================
+      - name: Run tests
+        run: |
+          set -euxo pipefail
+          ctest --test-dir "$GITHUB_WORKSPACE/build" --output-on-failure --verbose
+
+      # ===================================
+      # PASO 7: Reporte SIEMPRE, pero sin romper si no hay build
+      # ===================================
+      - name: Generate test report
+        if: always()
+        run: |
+          set -euxo pipefail
+
+          echo "## 🧪 Test Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          # Si no existe build o no se generó CTestTestfile, no ejecutes ctest
+          if [ ! -d "$GITHUB_WORKSPACE/build" ]; then
+            echo "❌ No existe build/. Algún paso anterior (deps/configure/build) falló." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          if [ ! -f "$GITHUB_WORKSPACE/build/CTestTestfile.cmake" ]; then
+            echo "❌ build/ existe, pero no hay CTestTestfile.cmake. CMake no llegó a configurar los tests." >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Contenido de build/:" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            ls -la "$GITHUB_WORKSPACE/build" >> "$GITHUB_STEP_SUMMARY" || true
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # Ahora sí: corre tests y guarda salida
+          ctest --test-dir "$GITHUB_WORKSPACE/build" --output-on-failure 2>&1 | tee "$GITHUB_WORKSPACE/build/test_results.txt"
+
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat "$GITHUB_WORKSPACE/build/test_results.txt" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      # ===================================
+      # PASO 8: Subir logs si falla
+      # ===================================
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: |
+            ${{ github.workspace }}/build/CMakeFiles/CMakeOutput.log
+            ${{ github.workspace }}/build/CMakeFiles/CMakeError.log
+            ${{ github.workspace }}/build/Testing/Temporary/LastTest.log
+            ${{ github.workspace }}/build/test_results.txt
+          retention-days: 7
+          if-no-files-found: warn

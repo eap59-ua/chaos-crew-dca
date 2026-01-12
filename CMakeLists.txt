@@ -335,6 +335,9 @@ target_include_directories(chaos-crew PRIVATE
     ${CMAKE_SOURCE_DIR}/src/utils
 )
 
+enable_testing()
+add_subdirectory(tests)
+
 # ============================================================================
 # Enlazado de librerías
 # ============================================================================
