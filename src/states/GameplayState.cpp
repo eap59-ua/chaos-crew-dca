@@ -12,12 +12,14 @@
 #include "../systems/TrollSystem.hpp"
 #include "../systems/LoadMapSystem.hpp"
 #include "../systems/PatronSystem.hpp"
+#include "../systems/ButtonSystem.hpp"
 
 // Incluimos el Sistema de Animación
 #include "../systems/AnimationSystem.hpp"
 
 #include "../core/ResourceManager.h"
 #include "../locale/Locale.hpp"
+#include "../utils/Logger.hpp"
 
 #include <filesystem>
 GameplayState::GameplayState(std::string mapPath) 
@@ -94,10 +96,14 @@ void GameplayState::init() {
     SetMusicVolume(bgMusic, 0.5f); 
     PlayMusicStream(bgMusic);
 
+    // --- POR DEFECTO ---
+    spawnP1 = { 100.0f, (float)SCREEN_HEIGHT - 200.0f };
+    spawnP2 = { 150.0f, (float)SCREEN_HEIGHT - 200.0f };
+
     // 3. Configurar escena
+    loadTiledMap(selectedMapPath, registry, trapSpikeTexture, trapWheelTexture, spawnP1, spawnP2);
     setupPlayers();
-    loadTiledMap(selectedMapPath, registry, trapSpikeTexture, trapWheelTexture);
-    
+
     // Resetear flags
     levelCompleted = false;
     isGameOver = false;
@@ -110,10 +116,50 @@ void GameplayState::init() {
 }
 
 void GameplayState::setupPlayers() {
-    // P1: Animaciones Virtual Guy
-    createPlayer(registry, 100, SCREEN_HEIGHT - 200, p1Anims, KEY_LEFT, KEY_RIGHT, KEY_UP);
-    // P2: Animaciones Pink Man
-    createPlayer(registry, 150, SCREEN_HEIGHT - 200, p2Anims, KEY_A, KEY_D, KEY_W);
+    std::cout << spawnP1.x << std::endl;
+    
+    
+    LOG_INFO("[GameplayState] ========== PLAYER SETUP START ==========");
+
+    // P1: Keyboard player 1 (Arrows) - Virtual Guy
+    createPlayer(registry, spawnP1.x, spawnP1.y, p1Anims, KEY_LEFT, KEY_RIGHT, KEY_UP);
+    LOG_INFO("[GameplayState] Player 1 created with keyboard (Arrows)");
+
+    // P2: Keyboard player 2 (WASD) - Pink Man
+    createPlayer(registry, spawnP2.x, spawnP2.y, p2Anims, KEY_A, KEY_D, KEY_W);
+    LOG_INFO("[GameplayState] Player 2 created with keyboard (WASD)");
+
+    // FORCE polling before detection
+    LOG_INFO("[GameplayState] Checking for gamepads...");
+    PollInputEvents();
+
+    // Detect and create gamepad players (P3, P4, P5)
+    int playerCount = 2; // Already have 2 keyboard players
+    const int MAX_PLAYERS = 5;
+
+    for (int gamepadIndex = 0; gamepadIndex < 4 && playerCount < MAX_PLAYERS; gamepadIndex++) {
+        bool available = IsGamepadAvailable(gamepadIndex);
+        LOG_INFO("[GameplayState] Gamepad {} availability: {}", gamepadIndex, available ? "YES" : "NO");
+
+        if (available) {
+            const char* gamepadName = GetGamepadName(gamepadIndex);
+            LOG_INFO("[GameplayState] Gamepad {} detected: {}", gamepadIndex, gamepadName);
+
+            // Alternate animations between Virtual Guy and Pink Man
+            PlayerAnimations& anims = (playerCount % 2 == 0) ? p1Anims : p2Anims;
+
+            // Create gamepad player with offset position
+            float xOffset = 50.0f * (playerCount - 1);
+            createPlayerWithGamepad(registry, 100 + xOffset, SCREEN_HEIGHT - 200, anims, gamepadIndex);
+
+            LOG_INFO("[GameplayState] Player {} created with Gamepad {}", playerCount + 1, gamepadIndex);
+            playerCount++;
+        }
+    }
+
+    if (playerCount == 2) {
+        LOG_INFO("[GameplayState] No gamepads detected, using keyboard only");
+    }
 }
 
 void GameplayState::setupPlatforms() {
@@ -140,6 +186,9 @@ void GameplayState::update(float deltaTime) {
     // Siempre actualizamos la música para que no se corte el loop
     UpdateMusicStream(bgMusic);
 
+    // IMPORTANT: Poll for gamepad events every frame for hot-plugging support
+    PollInputEvents();
+
     // --- LÓGICA DE ESPERA PARA SONIDOS ---
     if (isFinishing) {
         finishTimer += deltaTime;
@@ -163,6 +212,7 @@ void GameplayState::update(float deltaTime) {
     // 3. Lógica del Nivel
     TrapSystem(registry, deltaTime);
     PatronSystem(registry, deltaTime);
+    ButtonSystem(registry);
     
     // 4. Condiciones de Fin de Juego
     if (CheckDefeat(registry)) {

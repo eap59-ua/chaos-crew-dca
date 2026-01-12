@@ -3,6 +3,12 @@
 
 #include <string>
 
+// El build define esta macro desde CMake. Si no está definida, asumimos que
+// gettext/libintl no están disponibles y usamos el modo fallback.
+#ifndef CHAOSCREW_ENABLE_GETTEXT
+#define CHAOSCREW_ENABLE_GETTEXT 0
+#endif
+
 /**
  * @brief Singleton para gestionar internacionalización (i18n) usando GNU gettext
  *

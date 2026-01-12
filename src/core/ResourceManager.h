@@ -48,6 +48,17 @@ public:
      * Se debe llamar antes de CloseWindow() en main.cpp
      */
     void UnloadAll();
+    /**
+     * Gestión de música global
+     */
+    // Carga y reproduce la música de fondo global
+    void PlayGlobalMusic(const std::string& path);
+    
+    // Debe llamarse en el bucle principal (main.cpp) frame a frame
+    void UpdateGlobalMusic();
+
+    // Ajustar volumen (0.0 a 1.0)
+    void SetGlobalVolume(float volume);
 
     // Prevenir copias del Singleton
     ResourceManager(const ResourceManager&) = delete;
@@ -63,6 +74,9 @@ private:
     // Caches internos
     std::unordered_map<std::string, Texture2D> textureCache;
     std::unordered_map<std::string, Font> fontCache;
+
+    Music globalMusic = {0}; // Almacena la música actual
+    bool isMusicLoaded = false;
 };
 
 /* EJEMPLO DE USO:

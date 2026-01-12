@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="100">
+
+ <objectgroup id="4" name="SpawnPoints">
+  <object id="1" name="Player1" x="2" y="8" width="1" height="1"/>
+  <object id="2" name="Player2" x="22" y="8" width="1" height="1"/>
+ </objectgroup>
+
+ <objectgroup id="1" name="ObjectsStatics">
+  <object id="3" name="Suelo_P1" type="Platform" x="0" y="9" width="6" height="1" />
+  <object id="4" name="Plat_Boton" type="Platform" x="12" y="4" width="4" height="0.5" />
+  <object id="5" name="Muro_Izq_Jaula" type="Platform" x="18" y="5" width="1" height="5" />
+  <object id="6" name="Suelo_Jaula" type="Platform" x="19" y="9" width="6" height="1" />
+  <object id="7" name="Muro_Der_Jaula" type="Platform" x="25" y="5" width="1" height="5" />
+  <object id="8" name="Plat_Meta" type="Platform" x="26" y="5" width="4" height="0.5" />
+  <object id="9" name="Door" type="Door" x="27" y="3.5" width="2" height="1.5" />
+ </objectgroup>
+
+ <objectgroup name="ObjectsLogic">
+    
+    <object id="20" name="Transportador" type="Platform" x="10" y="9" width="3" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="-100"/> <property name="bucle_vertical" type="float" value="200.0"/>
+      </properties>
+    </object>
+
+    <object id="40" name="Sierra_Guardian" type="Wheel" x="12" y="2.5" width="0.5" height="0.5">
+       <properties>
+        <property name="speed" type="float" value="120"/>
+        <property name="bucle_horizontal" type="float" value="250.0"/>
+      </properties>
+    </object>
+
+    <object id="41" name="Sierra_Carcel" type="Wheel" x="22" y="5" width="0.5" height="0.5">
+       <properties>
+        <property name="speed" type="float" value="120"/> 
+        <property name="bucle_vertical" type="float" value="190.0"/> 
+      </properties>
+    </object>
+
+    <object id="42" name="Sierra_Carcel2" type="Wheel" x="24" y="5" width="0.5" height="0.5">
+       <properties>
+        <property name="speed" type="float" value="120"/> 
+        <property name="bucle_vertical" type="float" value="190.0"/> 
+      </properties>
+    </object>
+
+
+ </objectgroup>
+
+ <objectgroup id="2" name="ObjectsButtons">
+  <object id="30" name="Btn_Liberar_P2" type="Button" x="13.5" y="3.5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="1"/>
+    <property name="action_type" value="spawn_platform"/>
+    <property name="spawn_x_1" type="float" value="20.0"/>
+    <property name="spawn_y_1" type="float" value="7.0"/>
+    <property name="spawn_w_1" type="float" value="2.0"/>
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+ </objectgroup>
+
+ <objectgroup name="ObjectsTraps">
+    <object id="50" name="Suelo_Falso" type="Platform" x="7" y="9" width="2" height="1">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="60"/> 
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="500"/> <property name="speed" type="float" value="300"/>
+      </properties>
+    </object>
+ </objectgroup>
+
+</map>
