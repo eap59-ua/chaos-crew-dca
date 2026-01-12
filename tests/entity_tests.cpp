@@ -58,9 +58,6 @@ BOOST_AUTO_TEST_CASE(test_create_entity_with_position_and_sprite) {
 // ============================================================================
 // TEST #2: Crear jugador completo (CASO 4: ECS funciona)
 // ============================================================================
-// ¿Qué testea? Que un jugador puede tener todos sus componentes
-// ¿Por qué? En Chaos Crew, los jugadores necesitan múltiples componentes
-// Teoría: Unit test, valida arquitectura ECS real del juego
 
 BOOST_AUTO_TEST_CASE(test_create_complete_player_entity) {
     // ===== ARRANGE =====
@@ -138,9 +135,7 @@ BOOST_AUTO_TEST_CASE(test_apply_velocity_to_position) {
 // ============================================================================
 // TEST #4: Componente Solid (hitbox) (CASO 4: ECS funciona)
 // ============================================================================
-// ¿Qué testea? Que el componente Solid funciona correctamente
-// ¿Por qué? Solid define la hitbox para colisiones
-// Teoría: Unit test, valida componente de colisiones
+
 
 BOOST_AUTO_TEST_CASE(test_solid_component_hitbox) {
     // ===== ARRANGE =====
@@ -169,9 +164,6 @@ BOOST_AUTO_TEST_CASE(test_solid_component_hitbox) {
 // ============================================================================
 // TEST #5: Componente Platform (CASO 4: ECS funciona)
 // ============================================================================
-// ¿Qué testea? Que las plataformas tienen el componente correcto
-// ¿Por qué? Las plataformas son entidades del juego con comportamiento especial
-// Teoría: Unit test, valida componente de plataforma
 
 BOOST_AUTO_TEST_CASE(test_platform_component) {
     // ===== ARRANGE =====
@@ -205,9 +197,7 @@ BOOST_AUTO_TEST_CASE(test_platform_component) {
 // ============================================================================
 // TEST #6: Componente Obstacle (CASO 4: ECS funciona)
 // ============================================================================
-// ¿Qué testea? Que los obstáculos (pinchos, trampas) funcionan
-// ¿Por qué? Los obstáculos matan al jugador al tocarlos
-// Teoría: Unit test, valida componente de obstáculo
+
 
 BOOST_AUTO_TEST_CASE(test_obstacle_component) {
     // ===== ARRANGE =====
@@ -241,9 +231,6 @@ BOOST_AUTO_TEST_CASE(test_obstacle_component) {
 // ============================================================================
 // TEST #7: Estados del componente Player (CASO 4: ECS funciona)
 // ============================================================================
-// ¿Qué testea? Que el componente Player maneja estados correctamente
-// ¿Por qué? El estado del jugador determina comportamiento (muerto, en suelo, etc.)
-// Teoría: Unit test, valida lógica de estado del jugador
 
 BOOST_AUTO_TEST_CASE(test_player_component_states) {
     // ===== ARRANGE =====
@@ -288,9 +275,7 @@ BOOST_AUTO_TEST_CASE(test_player_component_states) {
 // ============================================================================
 // TEST #8: Gestión de múltiples entidades (CASO 4: ECS funciona)
 // ============================================================================
-// ¿Qué testea? Que el registry puede manejar muchas entidades a la vez
-// ¿Por qué? Un nivel tiene jugadores, enemigos, plataformas, obstáculos
-// Teoría: Unit test, valida escalabilidad del ECS
+
 
 BOOST_AUTO_TEST_CASE(test_multiple_entities_management) {
     // ===== ARRANGE =====
@@ -364,9 +349,6 @@ BOOST_AUTO_TEST_CASE(test_multiple_entities_management) {
 // ============================================================================
 // TEST #9: Eliminar componente (CASO 4: ECS funciona)
 // ============================================================================
-// ¿Qué testea? Que se pueden eliminar componentes de entidades
-// ¿Por qué? A veces necesitas quitar componentes (ej: quitar Velocity al morir)
-// Teoría: Unit test, valida gestión dinámica de componentes
 
 BOOST_AUTO_TEST_CASE(test_remove_component) {
     // ===== ARRANGE =====
@@ -404,9 +386,6 @@ BOOST_AUTO_TEST_CASE(test_remove_component) {
 // ============================================================================
 // TEST #10: Filtrado con view (CASO 4: ECS funciona)
 // ============================================================================
-// ¿Qué testea? Que view<> filtra entidades correctamente
-// ¿Por qué? Los sistemas procesan solo entidades con componentes específicos
-// Teoría: Unit test, valida sistema de queries del ECS
 
 BOOST_AUTO_TEST_CASE(test_entity_view_filtering) {
     // ===== ARRANGE =====
