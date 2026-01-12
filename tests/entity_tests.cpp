@@ -65,7 +65,6 @@ BOOST_AUTO_TEST_CASE(test_create_complete_player_entity) {
     auto playerEntity = registry.create();
     
     // ===== ACT =====
-    // Añadir componentes como en PlayerFactory.cpp
     registry.emplace<Position>(playerEntity, 100.0f, 500.0f);
     registry.emplace<Velocity>(playerEntity, 0.0f, 0.0f);
     
@@ -103,8 +102,7 @@ BOOST_AUTO_TEST_CASE(test_create_complete_player_entity) {
 // TEST #3: Aplicar velocidad a posición (CASO 4: Sistemas funcionan)
 // ============================================================================
 // ¿Qué testea? Que la física básica funciona (pos += vel * dt)
-// ¿Por qué? Es la base del MovementSystem de Chaos Crew
-// Teoría: Unit test, WhiteBox (conocemos la fórmula física)
+// ¿Por qué? Es la base del MovementSystem
 
 BOOST_AUTO_TEST_CASE(test_apply_velocity_to_position) {
     // ===== ARRANGE =====
@@ -122,7 +120,6 @@ BOOST_AUTO_TEST_CASE(test_apply_velocity_to_position) {
     float deltaTime = 0.1f;  // 100ms
     
     // ===== ACT =====
-    // Simular lo que hace MovementSystem (simplificado)
     position.x += velocity.vx * deltaTime;
     position.y += velocity.vy * deltaTime;
     

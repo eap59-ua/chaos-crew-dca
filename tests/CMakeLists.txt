@@ -22,8 +22,7 @@ function(create_test test_name test_file)
         ${CMAKE_SOURCE_DIR}/vendor/include
     )
     
-    target_link_libraries(${test_name} PRIVATE
-        ${CMAKE_SOURCE_DIR}/vendor/lib/libraylib.a)
+    target_link_libraries(${test_name} PRIVATE raylib)
 
     add_test(NAME ${test_name} COMMAND ${test_name})
     set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
