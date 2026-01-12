@@ -91,9 +91,12 @@ cd chaos-crew-dca
 cmake -S . -B build
 cmake --build build
 
-# Ejecutar
+# Ejecutar (Linux/WSL)
 cd build/bin
 ./chaos-crew
+
+# O usar el script helper en WSL (configura locales automáticamente)
+./run-wsl.sh
 ```
 
 ### Compilación alternativa (Makefile legacy)
@@ -147,10 +150,24 @@ The game automatically detects your system language at startup and selects the a
 On Linux/WSL, you need to have the required locales installed:
 
 ```bash
+# 1. Install and generate locales
 sudo apt install locales
 sudo locale-gen es_ES.UTF-8
 sudo locale-gen en_US.UTF-8
 sudo update-locale
+
+# 2. Configure default locale (permanent fix for WSL)
+echo 'export LANG=es_ES.UTF-8' >> ~/.bashrc
+echo 'export LC_ALL=es_ES.UTF-8' >> ~/.bashrc
+source ~/.bashrc
+
+# 3. Verify configuration
+echo $LANG  # Should output: es_ES.UTF-8
+```
+
+**Troubleshooting for WSL**: If i18n doesn't work after the above steps, close and reopen your WSL terminal. Alternatively, run the game with explicit locale:
+```bash
+LANG=es_ES.UTF-8 LC_ALL=es_ES.UTF-8 ./bin/chaos-crew
 ```
 
 ### Windows Requirements
