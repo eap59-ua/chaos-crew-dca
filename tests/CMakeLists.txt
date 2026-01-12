@@ -1,11 +1,16 @@
 # Tests para HITO3 - Chaos Crew 
 cmake_minimum_required(VERSION 3.15)
 
-# Encontrar Boost (header-only, 
+# Encontrar Boost (header-only, opcional para Windows)
 set(Boost_NO_BOOST_CMAKE ON)
-find_package(Boost 1.71 REQUIRED)
+find_package(Boost 1.71 QUIET)
 
-message(STATUS "Boost encontrado: ${Boost_VERSION}")
+if(Boost_FOUND)
+    message(STATUS "Boost encontrado: ${Boost_VERSION}")
+else()
+    message(WARNING "Boost no encontrado - tests deshabilitados")
+    return()
+endif()
 
 # Función para crear tests 
 function(create_test test_name test_file)

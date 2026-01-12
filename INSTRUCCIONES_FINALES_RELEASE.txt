@@ -1,0 +1,225 @@
+========================================
+INSTRUCCIONES FINALES - RELEASE v1.1.0
+========================================
+
+✅ COMPLETADO:
+--------------
+1. Tag v1.1.0 creado y subido a GitHub
+2. Instalable de Windows generado:
+   📦 build_windows/packages/chaos-crew-windows-v1.1.0.zip
+
+⏳ PENDIENTE:
+-------------
+
+PASO 1: Generar instalable de Linux (OPCIONAL - si tienes WSL/Linux)
+---------------------------------------------------------------------
+Si tienes acceso a WSL o Linux, ejecuta:
+
+```bash
+cd /mnt/c/Users/erard/Documents/DCA/chaos-crew-dca
+rm -rf build
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build . --config Release
+cpack -G TGZ
+mv packages/chaos-crew-0.2.0-Linux.tar.gz packages/chaos-crew-linux-v1.1.0.tar.gz
+```
+
+Si NO tienes Linux/WSL, puedes subir solo el instalable de Windows.
+
+
+PASO 2: Crear Release en GitHub
+--------------------------------
+1. Abre este enlace:
+   https://github.com/eap59-ua/chaos-crew-dca/releases/new?tag=v1.1.0
+
+2. Completa los campos:
+   - Tag: v1.1.0 (ya seleccionado automáticamente)
+   - Título: Chaos Crew - Versión Final v1.1.0 (Hito 3)
+   
+3. Descripción: Copia y pega esto:
+
+---INICIO DESCRIPCIÓN---
+
+# 🎮 Chaos Crew - Entrega Final (Hito 3)
+
+Juego de plataformas 2D multijugador desarrollado en C++ con Raylib para la asignatura de Desarrollo Colaborativo de Aplicaciones.
+
+## 🎯 Características Principales
+
+- **Multijugador Local**: Hasta 5 jugadores simultáneos (1 teclado + 4 gamepads)
+- **Internacionalización**: Soporte completo para Español e Inglés
+- **Interfaz de Debug**: Presiona F1 para acceder al panel de desarrollo
+- **Múltiples Niveles**: Sistema de progresión con diferentes desafíos
+- **Físicas Realistas**: Sistema de colisiones y movimiento fluido
+- **Audio Inmersivo**: Música de fondo y efectos de sonido
+
+## 🎮 Controles
+
+### Teclado (Jugador 1)
+- **Movimiento**: Flechas ← →
+- **Saltar**: Espacio
+- **Cambiar idioma**: L
+- **Debug**: F1
+
+### Gamepad (Jugadores 2-5)
+- **Movimiento**: Stick izquierdo / D-Pad
+- **Saltar**: Botón A (Xbox) / X (PlayStation)
+- Detección automática al conectar
+
+## 📦 Instalación
+
+### Windows
+1. Descarga `chaos-crew-windows-v1.1.0.zip`
+2. Extrae el archivo
+3. Ejecuta `chaos-crew.exe`
+
+### Linux
+1. Descarga `chaos-crew-linux-v1.1.0.tar.gz`
+2. Extrae: `tar -xzf chaos-crew-linux-v1.1.0.tar.gz`
+3. Ejecuta: `./chaos-crew`
+
+**Nota WSL**: Si usas WSL, asegúrate de tener configurado el locale:
+```bash
+export LANG=es_ES.UTF-8
+export LC_ALL=es_ES.UTF-8
+```
+
+## 🛠️ Requisitos del Sistema
+
+### Windows
+- Windows 10/11
+- Visual C++ Redistributable 2015-2022
+- DirectX 9.0c o superior
+
+### Linux
+- Ubuntu 20.04+ / Debian 11+ (o equivalente)
+- libintl (gettext)
+- OpenGL 3.3+
+
+## 🏗️ Compilar desde Código Fuente
+
+Ver [`README.md`](README.md) para instrucciones detalladas de compilación.
+
+## 📋 Requisitos Cumplidos (Hito 3)
+
+- ✅ Gestión de estados (menú, gameplay, game over)
+- ✅ Gráficos con sprites y gestor de contenido multimedia
+- ✅ Mecánica principal de plataformas
+- ✅ **Empaquetado multiplataforma (Windows/Linux) con CPack**
+- ✅ **Internacionalización (Español/Inglés) con GNU gettext**
+- ✅ **Suite de tests (10+ tests) con CTest**
+- ✅ CI/CD con GitHub Actions
+- ✅ Patrón ECS con EnTT
+- ✅ Sistema de logging con spdlog
+- ✅ Interfaz de debug con ImGui
+- ✅ Gestión de múltiples inputs (teclado + gamepads)
+- ✅ Multijugador local (hasta 5 jugadores)
+
+## 📝 Notas de la Versión
+
+Esta es la **entrega final del Hito 3**, que incluye:
+
+1. **Instaladores multiplataforma**: Generados con CPack para Windows y Linux
+2. **Localización completa**: Sistema de traducción con GNU gettext
+3. **Suite de tests**: Más de 10 tests automatizados con CTest
+4. **Documentación completa**: README actualizado con instrucciones de compilación e instalación
+
+## 🎓 Equipo de Desarrollo
+
+Proyecto desarrollado para la asignatura de Desarrollo Colaborativo de Aplicaciones (DCA) - Universidad de Alicante
+
+## 📄 Licencia
+
+Ver archivo LICENSE en el repositorio.
+
+---
+
+**¡Disfruta del juego!** 🎮✨
+
+---FIN DESCRIPCIÓN---
+
+4. Adjuntar archivos:
+   - Arrastra y suelta: build_windows/packages/chaos-crew-windows-v1.1.0.zip
+   - Si generaste Linux: build/packages/chaos-crew-linux-v1.1.0.tar.gz
+
+5. Marca "Set as the latest release" ✅
+
+6. Haz clic en "Publish release"
+
+
+PASO 3: Publicar en itch.io
+----------------------------
+Ver archivo ENTREGA_FINAL.md sección "Publicar en itch.io" para instrucciones detalladas.
+
+Resumen rápido:
+1. Crea cuenta en https://itch.io
+2. Dashboard → Create new project
+3. Sube los instalables (Windows y/o Linux)
+4. Configura página con descripción del juego
+5. Publica como "Public"
+
+
+PASO 4: Preparar entrega para Moodle
+-------------------------------------
+Crear archivo comprimido con:
+
+1. Código fuente (todo el repositorio excepto .git, build, .vscode, .claude)
+2. Instalables (los .zip generados)
+3. Archivo ITCH_IO_LINK.txt con la URL de itch.io
+
+Comando para Windows (con 7-Zip o WinRAR):
+- Selecciona todos los archivos del proyecto EXCEPTO:
+  * .git/
+  * build/
+  * build_windows/
+  * .vscode/
+  * .claude/
+- Comprimir como: chaos-crew-entrega-hito3.zip
+
+
+PASO 5: Entregar en Moodle
+---------------------------
+1. Ve al módulo de evaluación en UA Cloud
+2. Sube chaos-crew-entrega-hito3.zip
+3. Indica los miembros del equipo
+4. Confirma entrega
+
+Fecha límite: 12 de enero de 2026 - 23:59
+
+
+========================================
+ARCHIVOS GENERADOS:
+========================================
+
+✅ build_windows/packages/chaos-crew-windows-v1.1.0.zip
+   Ubicación: C:\Users\erard\Documents\DCA\chaos-crew-dca\build_windows\packages\
+
+⏳ build/packages/chaos-crew-linux-v1.1.0.tar.gz (opcional)
+   Ubicación: C:\Users\erard\Documents\DCA\chaos-crew-dca\build\packages\
+
+
+========================================
+ENLACES ÚTILES:
+========================================
+
+- Crear Release: https://github.com/eap59-ua/chaos-crew-dca/releases/new?tag=v1.1.0
+- Repositorio: https://github.com/eap59-ua/chaos-crew-dca
+- Tags: https://github.com/eap59-ua/chaos-crew-dca/tags
+- Itch.io: https://itch.io
+
+
+========================================
+ESTADO FINAL:
+========================================
+
+✅ Tag v1.1.0 creado y subido
+✅ Instalable Windows generado
+✅ tests/CMakeLists.txt modificado (Boost opcional)
+⏳ Pendiente: Crear release en GitHub
+⏳ Pendiente: Generar instalable Linux (opcional)
+⏳ Pendiente: Publicar en itch.io
+⏳ Pendiente: Entregar en Moodle
+
+¡Todo listo para la entrega final!
