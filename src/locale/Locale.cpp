@@ -71,21 +71,21 @@ static std::string GetLocalePath() {
     // Último fallback
     return "po";
 #else
-    // Linux: intentar primero la instalación del sistema
+    // Linux: Prioridad para desarrollo (po/ relativo al ejecutable)
+    std::string localePath = exePath + "/po";
+    if (fs::exists(localePath)) {
+        return fs::canonical(localePath).string();
+    }
+
+    // Segunda prioridad: instalación local (../share/locale)
+    localePath = exePath + "/../share/locale";
+    if (fs::exists(localePath)) {
+        return fs::canonical(localePath).string();
+    }
+
+    // Tercera prioridad: instalación del sistema
     if (fs::exists("/usr/share/locale")) {
         return "/usr/share/locale";
-    }
-
-    // Si no está instalado en el sistema, buscar relativo al ejecutable
-    std::string localePath = exePath + "/../share/locale";
-    if (fs::exists(localePath)) {
-        return fs::canonical(localePath).string();
-    }
-
-    // Fallback: directorio po/ relativo (para desarrollo)
-    localePath = exePath + "/po";
-    if (fs::exists(localePath)) {
-        return fs::canonical(localePath).string();
     }
 
     // Último fallback
