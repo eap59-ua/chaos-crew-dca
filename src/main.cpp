@@ -43,11 +43,32 @@ int main() {
     const int SCREEN_WIDTH = 1280;
     const int SCREEN_HEIGHT = 720;
 
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Chaos Crew - Hito 1 Alpha");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Chaos Crew");
     SetExitKey(KEY_NULL); //quitamos que con esc se salga del juego, para añadirlo en la pantalla de pausa.
 
+    // ============================================================================
+    // GAMEPAD DETECTION DEBUG
+    // ============================================================================
+    LOG_INFO("========== GAMEPAD DETECTION CHECK ==========");
+    LOG_INFO("Checking for connected gamepads after InitWindow...");
+
+    // Force poll inputs immediately after window creation
+    PollInputEvents();
+
+    for (int i = 0; i < 4; i++) {
+        bool available = IsGamepadAvailable(i);
+        if (available) {
+            const char* name = GetGamepadName(i);
+            LOG_INFO("Gamepad {} DETECTED: {}", i, name);
+        } else {
+            LOG_INFO("Gamepad {} NOT DETECTED", i);
+        }
+    }
+    LOG_INFO("=============================================");
+
     InitAudioDevice();
-    SetMasterVolume(0.5f);
+    SetMasterVolume(1.0f);
+    ResourceManager::GetInstance().PlayGlobalMusic("assets/sounds/Theme.wav");
 
     SetTargetFPS(60);
 
@@ -77,6 +98,7 @@ int main() {
     // Bucle principal del juego
     while (!stateMachine.is_game_ending() && !WindowShouldClose()) {
         deltaTime = GetFrameTime();
+        ResourceManager::GetInstance().UpdateGlobalMusic();
 
         // ============================================================================
         // TECLAS DE DEBUG Y TESTING

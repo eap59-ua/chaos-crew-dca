@@ -9,8 +9,25 @@
 #include "../components/Velocity.hpp"
 #include "../components/Solid.hpp"
 #include "../components/Obstacle.hpp"
+#include "../components/Button.hpp"
 
 #include "RenderSystem.hpp"
+
+// Renderizado de BOTONES (Versión sin texturas)
+void renderButtons(entt::registry& registry) {
+    // Ya no buscamos Sprite ni Position (la posición visual ya está en btn.bounds)
+    auto view = registry.view<Button>();
+
+    for (auto entity : view) {
+        const auto &btn = view.get<Button>(entity);
+
+        // 1. Dibujar el relleno del botón (el color cambia si se pisa en ButtonSystem)
+        DrawRectangleRec(btn.bounds, btn.color);
+
+        // 2. (Opcional) Dibujar un borde negro para que se distinga mejor del fondo
+        DrawRectangleLinesEx(btn.bounds, 2.0f, BLACK);
+    }
+}
 
 // Renderizado de JUGADORES (Usa Sprite y Texturas)
 void renderPlayers(entt::registry& registry) {
@@ -79,16 +96,6 @@ void renderTraps(entt::registry& registry) {
     for (auto entity : traps) {
         auto &pos = traps.get<Position>(entity);
         auto &solid = traps.get<Solid>(entity);
-
-        // --- DEBUG: DIBUJAR HITBOX ---
-        // Esto dibujará un contorno verde alrededor del área real de daño
-        DrawRectangleLines(
-            (int)pos.x, 
-            (int)pos.y, 
-            (int)solid.width, 
-            (int)solid.height, 
-            GREEN
-        );
 
         if (registry.any_of<Sprite>(entity)) {
             auto &sprite = registry.get<Sprite>(entity);
@@ -162,6 +169,7 @@ void renderScene(entt::registry& registry, Texture2D terrainTex, Texture2D doorT
 
     renderPlatforms(registry, terrainTex);
     renderDoors(registry, doorTex); // Pasamos la textura de la puerta
+    renderButtons(registry);
     
     renderPlayers(registry); 
     renderTraps(registry);

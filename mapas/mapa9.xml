@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="100">
+
+
+ <objectgroup id="4" name="SpawnPoints">
+  <object id="1" name="Player1" x="2" y="8" width="1" height="1"/>
+  <object id="2" name="Player2" x="27" y="8" width="1" height="1"/>
+ </objectgroup>
+
+
+ <objectgroup id="1" name="ObjectsStatics">
+  <!-- Plataformas iniciales para cada jugador -->
+  <object id="3" name="Base_P1" type="Platform" x="0" y="9" width="5" height="1" />
+  <object id="4" name="Base_P2" type="Platform" x="25" y="9" width="5" height="1" />
+  
+  <!-- Escalones de acceso -->
+  <object id="5" name="Escalon_P1_1" type="Platform" x="5" y="7.5" width="2" height="0.5" />
+  <object id="6" name="Escalon_P1_2" type="Platform" x="7" y="6" width="2" height="0.5" />
+  <object id="7" name="Escalon_P2_1" type="Platform" x="23" y="7.5" width="2" height="0.5" />
+  <object id="8" name="Escalon_P2_2" type="Platform" x="21" y="6" width="2" height="0.5" />
+  
+  <!-- Plataforma central elevada -->
+  <object id="9" name="Plat_Central_Alta" type="Platform" x="12" y="3" width="6" height="0.5" />
+  
+  <!-- Plataformas laterales medias -->
+  <object id="10" name="Plat_Izq_Media" type="Platform" x="0" y="4.5" width="4" height="0.5" />
+  <object id="11" name="Plat_Der_Media" type="Platform" x="26" y="4.5" width="4" height="0.5" />
+  
+  <!-- Zona de meta -->
+  <object id="12" name="Plat_Meta" type="Platform" x="13" y="2" width="4" height="0.5" />
+  <object id="13" name="Door" type="Door" x="14" y="0.5" width="2" height="1.5" />
+  
+  <!-- Decoración: pequeñas plataformas flotantes -->
+  <object id="14" name="Plat_Float_1" type="Platform" x="10" y="5" width="2" height="0.5" />
+  <object id="15" name="Plat_Float_2" type="Platform" x="18" y="5" width="2" height="0.5" />
+ </objectgroup>
+
+
+ <objectgroup name="ObjectsLogic">
+  
+  <!-- Ascensor izquierdo (sube y baja continuamente) -->
+  <object id="20" name="Ascensor_Izq" type="Platform" x="4" y="7" width="2.5" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="-35"/> 
+        <property name="bucle_vertical" type="float" value="180.0"/>
+      </properties>
+  </object>
+
+  <!-- Ascensor derecho (sube y baja continuamente) -->
+  <object id="21" name="Ascensor_Der" type="Platform" x="23.5" y="7" width="2.5" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="-35"/> 
+        <property name="bucle_vertical" type="float" value="180.0"/>
+      </properties>
+  </object>
+
+  <!-- Transportador horizontal central (va y viene) -->
+  <object id="22" name="Transportador_Central" type="Platform" x="9" y="7.5" width="3" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="45"/> 
+        <property name="bucle_horizontal" type="float" value="280.0"/>
+      </properties>
+  </object>
+
+  <!-- Rueda patrulla 1 (se mueve de izq a der) -->
+  <object id="23" name="Rueda_Patrulla_1" type="Wheel" x="6" y="5.5" width="0.5" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="60"/> 
+        <property name="bucle_horizontal" type="float" value="200.0"/>
+      </properties>
+  </object>
+
+  <!-- Rueda patrulla 2 (se mueve de der a izq) -->
+  <object id="24" name="Rueda_Patrulla_2" type="Wheel" x="23" y="5.5" width="0.5" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="-60"/> 
+        <property name="bucle_horizontal" type="float" value="200.0"/>
+      </properties>
+  </object>
+
+ </objectgroup>
+
+
+ <objectgroup id="2" name="ObjectsButtons">
+
+  <!-- Botón 1: P1 lo activa para ayudar a P2 -->
+  <object id="30" name="Boton_P1_Ayuda" type="Button" x="2" y="4" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="1"/>
+    <property name="action_type" value="spawn_platform"/>
+    
+    <!-- Crea puente para que P2 pueda avanzar -->
+    <property name="spawn_x_1" type="float" value="20.0"/>
+    <property name="spawn_y_1" type="float" value="4.0"/>
+    <property name="spawn_w_1" type="float" value="3.0"/>
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+
+  <!-- Botón 2: P2 lo activa para ayudar a P1 -->
+  <object id="31" name="Boton_P2_Ayuda" type="Button" x="27" y="4" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="2"/>
+    <property name="action_type" value="spawn_platform"/>
+    
+    <!-- Crea puente para que P1 pueda avanzar -->
+    <property name="spawn_x_1" type="float" value="7.0"/>
+    <property name="spawn_y_1" type="float" value="4.0"/>
+    <property name="spawn_w_1" type="float" value="3.0"/>
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+
+  <!-- Botón 3: Ambos deben coordinarse para crear el puente final -->
+  <object id="32" name="Boton_Final_Izq" type="Button" x="10" y="2.5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="3"/>
+    <property name="action_type" value="spawn_platform"/>
+    
+    <!-- Puente hacia la meta (parte 1) -->
+    <property name="spawn_x_1" type="float" value="11.0"/>
+    <property name="spawn_y_1" type="float" value="1.5"/>
+    <property name="spawn_w_1" type="float" value="2.0"/>
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+
+  <!-- Botón 4: Segundo botón para completar el puente final -->
+  <object id="33" name="Boton_Final_Der" type="Button" x="19" y="2.5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="3"/>
+    <property name="action_type" value="spawn_platform"/>
+    
+    <!-- Puente hacia la meta (parte 2) -->
+    <property name="spawn_x_1" type="float" value="17.0"/>
+    <property name="spawn_y_1" type="float" value="1.5"/>
+    <property name="spawn_w_1" type="float" value="2.0"/>
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+
+ </objectgroup>
+
+
+ <objectgroup name="ObjectsTraps">
+
+    <!-- Pinchos estáticos en el suelo -->
+    <object id="40" name="Pincho_Centro_1" type="Spike" x="11" y="8.5" width="0.5" height="0.5" />
+    <object id="41" name="Pincho_Centro_2" type="Spike" x="18" y="8.5" width="0.5" height="0.5" />
+    
+    <!-- Pincho móvil que se activa por proximidad (lado izquierdo) -->
+    <object id="42" name="Pincho_Movil_Izq" type="Spike" x="5" y="5.5" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="120"/>
+        
+        <property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="150"/>
+        <property name="speed" type="float" value="5"/>
+      </properties>
+    </object>
+
+    <!-- Pincho móvil (lado derecho) -->
+    <object id="43" name="Pincho_Movil_Der" type="Spike" x="24.5" y="5.5" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="120"/>
+        
+        <property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="-150"/>
+        <property name="speed" type="float" value="5"/>
+      </properties>
+    </object>
+
+    <!-- Plataforma trampa que cae cuando te acercas -->
+    <object id="44" name="Plat_Trampa_Izq" type="Platform" x="9" y="4" width="2" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="40"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="300"/>
+        <property name="speed" type="float" value="15"/>
+      </properties>
+    </object>
+
+    <object id="45" name="Plat_Trampa_Der" type="Platform" x="19" y="4" width="2" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="40"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="300"/>
+        <property name="speed" type="float" value="15"/>
+      </properties>
+    </object>
+
+    <!-- Rueda sniper que aparece por timer -->
+    <object id="46" name="Rueda_Sniper_Timer" type="Wheel" x="-2" y="6" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="timer"/>
+        <property name="condition_value" type="float" value="8"/>
+        
+        <property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="320"/>
+        <property name="speed" type="float" value="7"/>
+      </properties>
+    </object>
+
+    <!-- Muro que bloquea temporalmente el paso -->
+    <object id="47" name="Muro_Bloqueo" type="Platform" x="14.5" y="7" width="1" height="2.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="180"/>
+        
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="-180"/>
+        <property name="speed" type="float" value="4"/>
+      </properties>
+    </object>
+
+ </objectgroup>
+
+</map>

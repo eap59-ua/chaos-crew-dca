@@ -5,10 +5,15 @@
 #include "../components/Velocity.hpp"
 #include "../components/Sprite.hpp"
 #include <cmath> // Necesario para roundf si queremos ser muy precisos, pero float va bien.
+#include <iostream>
 
 entt::entity createSpike(entt::registry& registry,
                          float mapX, float mapY, float mapWidth, float mapHeight, Texture2D texture)
 {
+    std::cout << "--- DEBUG SPIKE ---" << std::endl;
+    std::cout << "Texture ID: " << texture.id << std::endl; // Si es 0, no se ha cargado
+    std::cout << "Texture Width: " << texture.width << std::endl; // Si es 0, error
+    std::cout << "Map Width: " << mapWidth << std::endl;
     auto e = registry.create();
 
     float textureWidth = (float)texture.width;

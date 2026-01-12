@@ -1,4 +1,5 @@
 #include "ResourceManager.h"
+#include <iostream>
 #include "utils/Logger.hpp"
 
 // Implementación del Singleton
@@ -63,7 +64,37 @@ Font& ResourceManager::GetFont(const std::string& path, int fontSize) {
     fontCache[cacheKey] = font;
     return fontCache[cacheKey];
 }
+void ResourceManager::PlayGlobalMusic(const std::string& path) {
+    // Si ya hay música cargada, la descargamos primero
+    if (isMusicLoaded) {
+        StopMusicStream(globalMusic);
+        UnloadMusicStream(globalMusic);
+        isMusicLoaded = false;
+    }
 
+    std::cout << "[ResourceManager] Cargando Musica Global: " << path << std::endl;
+    globalMusic = LoadMusicStream(path.c_str());
+
+    if (globalMusic.stream.buffer != nullptr) {
+        isMusicLoaded = true;
+        SetMusicVolume(globalMusic, 0.5f); // Volumen por defecto
+        PlayMusicStream(globalMusic);
+    } else {
+        std::cerr << "[ResourceManager] ERROR: No se pudo cargar musica: " << path << std::endl;
+    }
+}
+
+void ResourceManager::UpdateGlobalMusic() {
+    if (isMusicLoaded) {
+        UpdateMusicStream(globalMusic);
+    }
+}
+
+void ResourceManager::SetGlobalVolume(float volume) {
+    if (isMusicLoaded) {
+        SetMusicVolume(globalMusic, volume);
+    }
+}
 // Descargar todos los recursos cacheados
 void ResourceManager::UnloadAll() {
     LOG_INFO("[ResourceManager] Unloading all resources...");
@@ -81,6 +112,14 @@ void ResourceManager::UnloadAll() {
         UnloadFont(pair.second);
     }
     fontCache.clear();
+
+    // Descargar música global si está cargada
+    if (isMusicLoaded) {
+        StopMusicStream(globalMusic);
+        UnloadMusicStream(globalMusic);
+        isMusicLoaded = false;
+        std::cout << "[ResourceManager] Musica global descargada." << std::endl;
+    }
 
     LOG_INFO("[ResourceManager] All resources unloaded");
 }

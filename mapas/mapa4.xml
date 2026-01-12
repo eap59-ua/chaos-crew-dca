@@ -1,28 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="150">
 
-<!--NUEVA TRAMPA: RUEDA DE PINCHOS -->
+ <objectgroup id="4" name="SpawnPoints">
+  <object id="1" name="Player1" x="2" y="8" width="1" height="1"/>
+  <object id="2" name="Player2" x="27" y="8" width="1" height="1"/>
+ </objectgroup>
 
-<map version="1.10" tiledversion="1.11.1"
-     orientation="orthogonal" renderorder="right-down"
-     width="30" height="20" tilewidth="32" tileheight="32"
-     infinite="0">
+ <objectgroup id="1" name="ObjectsStatics">
+  <object id="3" name="Base_Izq" type="Platform" x="0" y="9" width="4" height="1" />
+  <object id="4" name="Base_Der" type="Platform" x="26" y="9" width="4" height="1" />
 
-  <objectgroup name="ObjectsStatics">
-    <!-- Suelo -->
-    <object id="1" name="Suelo" type="Platform" x="0" y="9" width="32" height="1" />
+  <object id="5" name="Muro_Central" type="Platform" x="14" y="4" width="2" height="7" />
+  
+  <object id="6" name="Piso1_Izq" type="Platform" x="0" y="5" width="6" height="0.5" />
+  <object id="7" name="Piso1_Der" type="Platform" x="25" y="6" width="6" height="0.5" />
 
-    <!-- Puerta salida -->
-    <object id="2" name="Door" type="Door" x="27" y="7.5" width="2" height="1.5"/>
-  </objectgroup>
+  <object id="8" name="Techo_Meta" type="Platform" x="12" y="2" width="6" height="0.5" />
+  <object id="9" name="Door" type="Door" x="14" y="0.5" width="2" height="1.5" /> 
 
-  <objectgroup name="ObjectsLogic">
-    <!-- Rueda de pinchos: círculo rojo -->
-    <object id="3" name="RuedaPinchos" type="Wheel" x="12" y="5" width="1.5" height="0.87">
+ </objectgroup>
+
+ <objectgroup name="ObjectsLogic">
+  
+  <object id="20" name="Ascensor_Izq" type="Platform" x="5" y="9" width="2" height="0.5">
       <properties>
-        <property name="speed" value="200"/>
-        <property name="bucle_vertical" value="200"/>
+        <property name="speed" type="float" value="-40"/> 
+        <property name="bucle_vertical" type="float" value="150.0"/> </properties>
+  </object>
+
+  <object id="21" name="Ascensor_Der" type="Platform" x="23" y="9" width="2" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="-40"/> 
+        <property name="bucle_vertical" type="float" value="150.0"/>
+      </properties>
+  </object>
+
+  <object id="22" name="Transportador_Alto" type="Platform" x="8" y="3" width="3" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="50"/> 
+        <property name="bucle_horizontal" type="float" value="370.0"/> 
+      </properties>
+  </object>
+
+  <object id="23" name="Rueda_Izq" type="Wheel" x="3" y="4.2" width="0.5" height="0.5">
+      <properties>
+        <property name="speed" type="float" value="80"/> 
+        <property name="bucle_horizontal" type="float" value="120.0"/> 
+      </properties>
+  </object>
+
+ </objectgroup>
+
+ <objectgroup id="2" name="ObjectsButtons">
+
+  <object id="30" name="Btn_Para_P2" type="Button" x="4" y="5" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="1"/>
+    <property name="action_type" value="spawn_platform"/>
+    
+    <property name="spawn_x_1" type="float" value="22.0"/>
+    <property name="spawn_y_1" type="float" value="3.5"/> 
+    <property name="spawn_w_1" type="float" value="2.0"/> 
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+
+  <object id="31" name="Btn_Para_P1" type="Button" x="29" y="6" width="1" height="0.5">
+   <properties>
+    <property name="channel" type="int" value="2"/>
+    <property name="action_type" value="spawn_platform"/>
+    
+    <property name="spawn_x_1" type="float" value="4.0"/>
+    <property name="spawn_y_1" type="float" value="2.5"/>
+    <property name="spawn_w_1" type="float" value="2.0"/> 
+    <property name="spawn_h_1" type="float" value="0.5"/>
+   </properties>
+  </object>
+
+ </objectgroup>
+
+ <objectgroup name="ObjectsTraps">
+
+    <object id="40" name="Suelo_Falso_Izq" type="Platform" x="8" y="4" width="2" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="50"/> 
+        <property name="action" value="move_vertical"/>
+        <property name="action_amount" type="float" value="440"/> 
+        <property name="speed" type="float" value="20"/> 
       </properties>
     </object>
-  </objectgroup>
+
+    <object id="42" name="Rueda_Sniper" type="Wheel" x="22" y="8.5" width="0.5" height="0.5">
+      <properties>
+        <property name="condition" value="proximity"/>
+        <property name="condition_value" type="float" value="180"/>
+        
+        <property name="action" value="move_horizontal"/>
+        <property name="action_amount" type="float" value="180"/> 
+        <property name="speed" type="float" value="9"/>
+      </properties>
+    </object>
+
+ </objectgroup>
 
 </map>
