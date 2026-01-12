@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(test_platform_component) {
     
     registry.emplace<Platform>(platformEntity);
     
-    // ===== ASSERT =====
+    // ===== ASSERT ===== 
     BOOST_TEST(registry.all_of<Platform>(platformEntity),
                "Platform entity should have Platform component");
     
