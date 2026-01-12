@@ -8,7 +8,7 @@
 // Estos son los componentes que usará tu juego real
 
 struct SpriteComponent {
-    int textureID;    // ID de la textura en Raylib
+    int textureID;    // ID de la textura en Raylib 
     float x, y;       // Posición en pantalla
     float width, height;
 };
@@ -20,7 +20,7 @@ struct TransformComponent {
 };
 
 struct VelocityComponent {
-    float vx, vy;     // Velocidad en pixels/segundo
+    float vx, vy;     
 };
 
 // ============================================================================
@@ -56,12 +56,11 @@ BOOST_AUTO_TEST_CASE(test_create_entity_with_sprite) {
     BOOST_TEST(retrievedSprite.y == 200.0f);
 }
 
-// ============================================================================
+// ==================================================================
 // TEST #2: Añadir múltiples componentes (CASO 4: ECS funciona)
-// ============================================================================
-// ¿Qué testea? Que una entidad puede tener múltiples componentes
-// ¿Por qué? Los personajes del juego necesitan Transform + Sprite + Velocity
-// Teoría: Unit test, verifica arquitectura ECS
+// ==================================================================
+// ¿Qué testea? Que una entidad puede tener múltiples componentesss
+// Los personajes del juego necesitan Transform Sprite Velocityy
 
 BOOST_AUTO_TEST_CASE(test_entity_multiple_components) {
     // ===== ARRANGE =====
@@ -84,9 +83,6 @@ BOOST_AUTO_TEST_CASE(test_entity_multiple_components) {
 // ============================================================================
 // TEST #3: Sistema de movimiento (CASO 4: Update funciona)
 // ============================================================================
-// ¿Qué testea? Que el sistema de movimiento actualiza posiciones correctamente
-// ¿Por qué? Es la base del gameplay (mover personajes)
-// Teoría: Unit test + WhiteBox (conocemos la implementación del sistema)
 
 BOOST_AUTO_TEST_CASE(test_movement_system_update) {
     // ===== ARRANGE =====
@@ -97,8 +93,8 @@ BOOST_AUTO_TEST_CASE(test_movement_system_update) {
     
     float deltaTime = 1.0f;  // 1 segundo de simulación
     
-    // ===== ACT =====
-    // Simular el sistema de movimiento (esto es lo que hará tu GameSystem)
+    // ===== ACT ===== 
+    // Simular el sistema de movimiento
     auto view = registry.view<TransformComponent, VelocityComponent>();
     for (auto entity : view) {
         auto& transform = view.get<TransformComponent>(entity);
@@ -116,20 +112,3 @@ BOOST_AUTO_TEST_CASE(test_movement_system_update) {
     BOOST_TEST(transform.y == 5.0f);   // 0 + 5*1 = 5
 }
 
-// ============================================================================
-// NOTAS TEÓRICAS
-// ============================================================================
-/*
-BOOST_TEST vs BOOST_REQUIRE:
-- BOOST_TEST: Si falla, continúa ejecutando el test (para ver múltiples errores)
-- BOOST_REQUIRE: Si falla, detiene el test inmediatamente (crítico)
-
-Ejemplo:
-BOOST_REQUIRE(registry.valid(entity));  // Crítico: si no es válido, no seguir
-BOOST_TEST(transform.x == 10.0f);       // Si falla, ver otros asserts también
-
-BOOST_CHECK_CLOSE para floats:
-- NUNCA usar == para comparar floats (errores de redondeo)
-- Usar: BOOST_CHECK_CLOSE(actual, expected, tolerance)
-- Ejemplo: BOOST_CHECK_CLOSE(transform.x, 10.0f, 0.0001);
-*/

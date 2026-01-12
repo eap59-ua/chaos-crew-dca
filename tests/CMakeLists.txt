@@ -1,17 +1,16 @@
-# Tests para HITO3 - Chaos Crew
+# Tests para HITO3 - Chaos Crew 
 cmake_minimum_required(VERSION 3.15)
 
-# Encontrar Boost (header-only, no linkear)
+# Encontrar Boost (header-only, 
 set(Boost_NO_BOOST_CMAKE ON)
 find_package(Boost 1.71 REQUIRED)
 
 message(STATUS "Boost encontrado: ${Boost_VERSION}")
 
-# Función para crear tests
+# Función para crear tests 
 function(create_test test_name test_file)
     add_executable(${test_name} ${test_file})
     
-    # Solo incluir headers (no linkear con nada)
     target_include_directories(${test_name} PRIVATE
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/src/components
@@ -26,7 +25,7 @@ function(create_test test_name test_file)
     set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endfunction()
 
-# Crear los 10 tests
+# Crear los 10 tests 
 create_test(entity_tests entity_tests.cpp)
 create_test(map_tests map_tests.cpp)
 create_test(state_machine_tests state_machine_tests.cpp)
