@@ -196,6 +196,18 @@ For more details, see [Internationalization Documentation](docs/INTERNATIONALIZA
 | **Toggle Debug UI**   | **F1**    | **F1**   |
 | Pause                 | ESC       | ESC      |
 
+### 🎮 Gamepad Support
+
+Chaos Crew supports up to **5 players simultaneously** (2 keyboard + 3 gamepads):
+
+- **Auto-detection**: Gamepads are automatically detected when the game starts
+- **Compatible controllers**: Xbox controllers (native), PlayStation controllers (requires DS4Windows on Windows)
+- **Gamepad controls**: Left stick/D-pad for movement, A button (South face) for jump
+- **Player assignment**: Players 3-5 are automatically assigned to detected gamepads
+- **Display**: Connected gamepads are shown in the main menu with their names
+
+For best experience on Windows with PlayStation controllers, install [DS4Windows](https://ds4-windows.com/).
+
 ## 🔧 Debug Interface
 
 Chaos Crew includes a built-in debug interface powered by **Dear ImGui**:
