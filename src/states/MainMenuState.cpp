@@ -74,7 +74,7 @@ void MainMenuState::render() {
     int startY = 200;
     for (int i = 0; i < (int)maps.size(); ++i) {
         const bool isSel = (i == selected);
-        const char* name = maps[i].c_str(); // puedes recortar "mapas/" + ".xml" si quieres
+        const char* name = TextFormat("MAPA %d", i+1); 
 
         int x = 300;
         int y = startY + i * 40;
