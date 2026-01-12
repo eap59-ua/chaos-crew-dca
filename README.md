@@ -106,6 +106,29 @@ chmod +x build.sh
 ./build.sh linux
 ```
 
+### Compilar en Windows (MSYS2)
+
+**Prerequisite**: MSYS2 must be installed (see Windows Requirements section above)
+
+```bash
+# Open "MSYS2 MinGW 64-bit" terminal
+cd /c/Users/YourUsername/path/to/chaos-crew-dca
+
+# Create build directory
+mkdir build_windows && cd build_windows
+
+# Configure with CMake
+cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+
+# Build the project
+cmake --build . -j$(nproc)
+
+# Run the game
+./bin/chaos-crew.exe
+```
+
+**Note**: The game executable and all assets will be in the `build_windows/bin/` directory.
+
 ## 🌍 Multi-language Support
 
 Chaos Crew supports multiple languages with automatic detection:
@@ -119,6 +142,29 @@ Press **L** during gameplay to toggle between Spanish and English.
 
 The game automatically detects your system language at startup and selects the appropriate translation.
 
+### Requirements for i18n (Linux/WSL)
+
+On Linux/WSL, you need to have the required locales installed:
+
+```bash
+sudo apt install locales
+sudo locale-gen es_ES.UTF-8
+sudo locale-gen en_US.UTF-8
+sudo update-locale
+```
+
+### Windows Requirements
+
+For Windows compilation with i18n support, **MSYS2** is required:
+
+1. Download and install MSYS2 from https://www.msys2.org/
+2. Open "MSYS2 MinGW 64-bit" terminal
+3. Install dependencies:
+   ```bash
+   pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-make mingw-w64-x86_64-gettext mingw-w64-x86_64-tinyxml2
+   ```
+4. Compile the project (see Windows compilation section below)
+
 For more details, see [Internationalization Documentation](docs/INTERNATIONALIZATION.md).
 
 ## 🎮 Controls
@@ -130,7 +176,24 @@ For more details, see [Internationalization Documentation](docs/INTERNATIONALIZA
 | Jump                  | W / SPACE | ↑        |
 | Restart (Game Over)   | ENTER     | ENTER    |
 | Toggle Language       | L         | L        |
+| **Toggle Debug UI**   | **F1**    | **F1**   |
 | Pause                 | ESC       | ESC      |
+
+## 🔧 Debug Interface
+
+Chaos Crew includes a built-in debug interface powered by **Dear ImGui**:
+
+- **Activation**: Press **F1** to toggle the debug panel
+- **Features**:
+  - Real-time FPS and frame time monitoring
+  - Adjustable float parameters (gravity, speed, etc.)
+  - Integer parameters (jump count, lives, etc.)
+  - Boolean toggles for features
+  - Action buttons for testing
+- **Customization**: Improved contrast dark theme for better visibility
+- **Use cases**: Level design, gameplay tuning, bug testing
+
+The debug interface is automatically compiled into development builds and can be toggled on/off during runtime.
 
 ## 👥 Equipo de Desarrollo
 
