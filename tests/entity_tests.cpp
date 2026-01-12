@@ -13,6 +13,8 @@
 // TEST #1: Crear entidad con Position y Sprite (CASO 1: Entidades con sprite)
 // ============================================================================
 // ¿Qué testea? Que se puede crear una entidad con los componentes reales del juego
+// ¿Por qué? Valida que el ECS de Chaos Crew funciona correctamente
+// Teoría: Unit test, BlackBox, usa componentes REALES del juego
 
 BOOST_AUTO_TEST_CASE(test_create_entity_with_position_and_sprite) {
     // ===== ARRANGE =====
@@ -58,6 +60,7 @@ BOOST_AUTO_TEST_CASE(test_create_entity_with_position_and_sprite) {
 // ============================================================================
 // ¿Qué testea? Que un jugador puede tener todos sus componentes
 // ¿Por qué? En Chaos Crew, los jugadores necesitan múltiples componentes
+// Teoría: Unit test, valida arquitectura ECS real del juego
 
 BOOST_AUTO_TEST_CASE(test_create_complete_player_entity) {
     // ===== ARRANGE =====
@@ -102,6 +105,9 @@ BOOST_AUTO_TEST_CASE(test_create_complete_player_entity) {
 // ============================================================================
 // TEST #3: Aplicar velocidad a posición (CASO 4: Sistemas funcionan)
 // ============================================================================
+// ¿Qué testea? Que la física básica funciona (pos += vel * dt)
+// ¿Por qué? Es la base del MovementSystem de Chaos Crew
+// Teoría: Unit test, WhiteBox (conocemos la fórmula física)
 
 BOOST_AUTO_TEST_CASE(test_apply_velocity_to_position) {
     // ===== ARRANGE =====
@@ -156,8 +162,8 @@ BOOST_AUTO_TEST_CASE(test_solid_component_hitbox) {
     BOOST_TEST(retrievedSolid.height == 48.0f);
     
     // Verificar que Solid y Position pueden coexistir
-    BOOST_TEST(registry.all_of<Position, Solid>(entity),
-               "Entity should have both Position and Solid");
+    bool hasBothComponents = registry.all_of<Position, Solid>(entity);
+    BOOST_TEST(hasBothComponents, "Entity should have both Position and Solid");
 }
 
 // ============================================================================
@@ -186,7 +192,8 @@ BOOST_AUTO_TEST_CASE(test_platform_component) {
     BOOST_TEST(registry.all_of<Platform>(platformEntity),
                "Platform entity should have Platform component");
     
-    BOOST_TEST(registry.all_of<Position, Solid, Platform>(platformEntity),
+    bool hasAllPlatformComponents = registry.all_of<Position, Solid, Platform>(platformEntity);
+    BOOST_TEST(hasAllPlatformComponents,
                "Platform should have Position, Solid and Platform components");
     
     // Verificar dimensiones típicas de plataforma
@@ -221,7 +228,8 @@ BOOST_AUTO_TEST_CASE(test_obstacle_component) {
     BOOST_TEST(registry.all_of<Obstacle>(spikeEntity),
                "Spike entity should have Obstacle component");
     
-    BOOST_TEST(registry.all_of<Position, Solid, Obstacle>(spikeEntity),
+    bool hasAllObstacleComponents = registry.all_of<Position, Solid, Obstacle>(spikeEntity);
+    BOOST_TEST(hasAllObstacleComponents,
                "Obstacle should have Position, Solid and Obstacle components");
     
     // Verificar que el obstáculo tiene hitbox pequeña
@@ -260,7 +268,8 @@ BOOST_AUTO_TEST_CASE(test_player_component_states) {
     // Verificar estado inicial
     BOOST_TEST(!player.isDead, "Player should start alive");
     BOOST_TEST(!player.onGround, "Player should start in air");
-    BOOST_TEST(!player.left && !player.right, "Player should not be moving initially");
+    BOOST_TEST(!player.left, "Player should not be moving left");
+    BOOST_TEST(!player.right, "Player should not be moving right");
     BOOST_TEST(!player.jump, "Player should not be jumping initially");
     
     // Simular que el jugador aterriza
@@ -331,15 +340,15 @@ BOOST_AUTO_TEST_CASE(test_multiple_entities_management) {
     auto obstacleView = registry.view<Obstacle>();
     
     size_t playerCount = 0;
-    for (auto entity : playerView) { playerCount++; }
+    for (auto entity : playerView) { (void)entity; playerCount++; }
     BOOST_TEST(playerCount == 2, "Should have 2 players");
     
     size_t platformCount = 0;
-    for (auto entity : platformView) { platformCount++; }
+    for (auto entity : platformView) { (void)entity; platformCount++; }
     BOOST_TEST(platformCount == 3, "Should have 3 platforms");
     
     size_t obstacleCount = 0;
-    for (auto entity : obstacleView) { obstacleCount++; }
+    for (auto entity : obstacleView) { (void)entity; obstacleCount++; }
     BOOST_TEST(obstacleCount == 2, "Should have 2 obstacles");
     
     // Verificar que cada entidad es válida
@@ -369,7 +378,8 @@ BOOST_AUTO_TEST_CASE(test_remove_component) {
     registry.emplace<Player>(entity);
     
     // Verificar que tiene todos los componentes
-    BOOST_REQUIRE(registry.all_of<Position, Velocity, Player>(entity));
+    bool hasAllComponents = registry.all_of<Position, Velocity, Player>(entity);
+    BOOST_REQUIRE(hasAllComponents);
     
     // ===== ACT =====
     // Eliminar Velocity (simular muerte o congelamiento)
@@ -432,25 +442,25 @@ BOOST_AUTO_TEST_CASE(test_entity_view_filtering) {
     // (MovementSystem usaría esto)
     auto movingView = registry.view<Position, Velocity>();
     size_t movingCount = 0;
-    for (auto entity : movingView) { movingCount++; }
+    for (auto entity : movingView) { (void)entity; movingCount++; }
     BOOST_TEST(movingCount == 3, "Should have 3 moving entities (projectile, player, enemy)");
     
     // View 2: Solo jugadores (Position + Player)
     auto playerView = registry.view<Position, Player>();
     size_t playerCount = 0;
-    for (auto entity : playerView) { playerCount++; }
+    for (auto entity : playerView) { (void)entity; playerCount++; }
     BOOST_TEST(playerCount == 1, "Should have 1 player");
     
     // View 3: Entidades con colisión (Position + Solid)
     auto solidView = registry.view<Position, Solid>();
     size_t solidCount = 0;
-    for (auto entity : solidView) { solidCount++; }
+    for (auto entity : solidView) { (void)entity; solidCount++; }
     BOOST_TEST(solidCount == 1, "Should have 1 solid entity (enemy)");
     
     // View 4: Todas las entidades con Position (todos menos vacíos)
     auto allPositionView = registry.view<Position>();
     size_t allCount = 0;
-    for (auto entity : allPositionView) { allCount++; }
+    for (auto entity : allPositionView) { (void)entity; allCount++; }
     BOOST_TEST(allCount == 4, "Should have 4 entities with Position");
     
     // Verificar que view NO incluye entidades sin los componentes requeridos

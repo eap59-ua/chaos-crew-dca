@@ -19,8 +19,12 @@ function(create_test test_name test_file)
         ${CMAKE_SOURCE_DIR}/src/systems
         ${CMAKE_SOURCE_DIR}/src/utils
         ${Boost_INCLUDE_DIRS}
+        ${CMAKE_SOURCE_DIR}/vendor/include
     )
     
+    target_link_libraries(${test_name} PRIVATE
+        ${CMAKE_SOURCE_DIR}/vendor/lib/libraylib.a)
+
     add_test(NAME ${test_name} COMMAND ${test_name})
     set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endfunction()
